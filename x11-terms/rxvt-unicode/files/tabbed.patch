@@ -1,0 +1,118 @@
+--- rxvt-unicode-9.06_orig/src/perl/tabbed	2008-06-15 16:52:47.000000000 +0200
++++ rxvt-unicode-9.06/src/perl/tabbed	2008-11-19 07:16:13.000000000 +0100
+@@ -1,4 +1,7 @@
+ #! perl
++# Fri Aug 22 18:01:55 CEST 2008 @709 /Internet Time/
++# added some code to make life easier and friendler with great urxvt and this
++# nice plugin. NOTE: i don't know perl! gryf.
+ 
+ sub refresh {
+    my ($self) = @_;
+@@ -12,7 +15,7 @@
+ 
+    substr $text, 0, 7, "[NEW] |";
+    @$rend[0 .. 5] = ($self->{rs_tab}) x 6;
+-   push @ofs, [0, 6, sub { $_[0]->new_tab }];
++   push @ofs, [0, 6, sub { $_[0]->new_tab("shell") }];
+ 
+    my $ofs = 7;
+    my $idx = 0;
+@@ -23,7 +26,7 @@
+       my $act = $tab->{activity} && $tab != $self->{cur}
+                 ? "*" : " ";
+ 
+-      my $txt = "$act$idx$act";
++      my $txt = "$act$idx-$tab->{name}$act";
+       my $len = length $txt;
+ 
+       substr $text, $ofs, $len + 1, "$txt|";
+@@ -47,7 +50,8 @@
+    my ($self, @argv) = @_;
+ 
+    my $offset = $self->fheight;
+-
++   my $tab_name = shift @argv;
++   
+    # save a backlink to us, make sure tabbed is inactive
+    push @urxvt::TERM_INIT, sub {
+       my ($term) = @_;
+@@ -64,12 +68,15 @@
+    };
+ 
+    push @urxvt::TERM_EXT, urxvt::ext::tabbed::tab::;
+-
++   
+    my $term = new urxvt::term
+       $self->env, $urxvt::RXVTNAME,
+       -embed => $self->parent,
+       @argv,
+    ;
++   
++   # add name to new created tab. gryf
++   $self->{tabs}[-1]->{name} = $tab_name;
+ }
+ 
+ sub configure {
+@@ -248,7 +255,7 @@
+       shift @argv;
+    } while @argv && $argv[0] ne "-e";
+ 
+-   $self->new_tab (@argv);
++   $self->new_tab ("shell", @argv);
+ 
+    ()
+ }
+@@ -307,7 +314,41 @@
+    my ($self, $tab, $event, $keysym, $str) = @_;
+ 
+    if ($event->{state} & urxvt::ShiftMask) {
+-      if ($keysym == 0xff51 || $keysym == 0xff53) {
++	  # change default shift+downarrow behavior with some more
++	  # sofisticated :) gryf
++	  if ($event->{state} & urxvt::ControlMask) {
++		  if ($keysym == 0x4e){ # CTRL+SHIFT+N new shell
++			  $self->new_tab("shell");
++			  return 1;
++		  }elsif ($keysym == 0x4d){ # CTRL+SHIFT+M new mc
++			  $self->new_tab("mc", '-e', 'mc');
++			  return 1;
++		  }elsif ($keysym == 0x52){ # CTRL+SHIFT+R su -
++			  $self->new_tab("root", '-e', 'su', '-');
++			  return 1;
++		  }elsif ($keysym == 0x54){ # CTRL+SHIFT+T htop
++			  $self->new_tab("htop", '-e', 'htop');
++			  return 1;
++		  }elsif ($keysym == 0x59){ # CTRL+SHIFT+Y ssh bombadil
++			  $self->new_tab("bombadil", '-e', 'ssh', '-p', '6622', 'bombadil');
++			  return 1;
++		  }elsif ($keysym == 0x47){ # CTRL+SHIFT+G ssh esm
++			  $self->new_tab("elysium", '-e', 'ssh', 'home.elysium.pl');
++			  return 1;
++		  }elsif ($keysym == 0x4a){ # CTRL+SHIFT+J ssh benq
++			  $self->new_tab("benq", '-e', 'ssh', 'benqwifi');
++			  return 1;
++#		  }elsif ($keysym == 0x53){ # CTRL+SHIFT+S ssh mslug
++#			  $self->new_tab("mslug", '-e', 'ssh', 'mslug');
++#			  return 1;
++		  }elsif ($keysym == 0x53){ # CTRL+SHIFT+S ssh mslug
++			  $self->new_tab("intruder", '-e', 'ssh', 'intruder');
++			  return 1;
++		  }elsif ($keysym == 0x49){ # CTRL+SHIFT+I irssi on freenode
++			  $self->new_tab("irssi", '-e', 'irssi', '--config=~/.irssi/config_freenode');
++			  return 1;
++		  }
++	  }elsif ($keysym == 0xff51 || $keysym == 0xff53) {
+          my ($idx) = grep $self->{tabs}[$_] == $tab, 0 .. $#{ $self->{tabs} };
+ 
+          --$idx if $keysym == 0xff51;
+@@ -316,10 +357,6 @@
+          $self->make_current ($self->{tabs}[$idx % @{ $self->{tabs}}]);
+          
+          return 1;
+-      } elsif ($keysym == 0xff54) {
+-         $self->new_tab;
+-
+-         return 1;
+       }
+    }
+    elsif ($event->{state} & urxvt::ControlMask) {

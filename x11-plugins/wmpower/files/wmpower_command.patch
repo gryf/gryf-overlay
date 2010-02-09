@@ -1,0 +1,137 @@
+--- wmpower-0.4.2/src/wmpower.c	2005-07-15 18:43:35.000000000 +0200
++++ wmpower-0.4.2r10/src/wmpower.c	2007-07-05 13:08:06.000000000 +0200
+@@ -54,14 +54,15 @@
+ void ShowBatteryPercentage(int percentage);
+ void ShowBatteryLed(int present, int percentage, int ac_on_line);
+ 
+-int no_meddling     = 0;   /* Should we stop managing power status?        */
++int no_meddling     = 1;   /* Should we stop managing power status?        */
+ int no_full_battery = 0;   /* Should we always use max power when plugged? */
+ 
+ int CriticalLevel   = 10;  /* Battery critical level */
+-int LowLevel        = 40;  /* Battery low level      */
++int LowLevel        = 50;  /* Battery low level      */
+ 
+ #define CMDLINELEN 512
+-int WarnTime = 2;          /* When to execute the warn command */
++int CriticalPercent = 10;  /* Battery low percent, when execute warn command */
++int WarnTime = 8;          /* When to execute the warn command */
+ char WarnCommand[CMDLINELEN] = ""; /* The warn command to execute      */
+ 
+ float BlinkRate = 3.00;    /* blinks per second      */
+@@ -98,7 +99,13 @@
+ 
+   BlinkRate = (BlinkRate >= 0.0) ? BlinkRate : -1.0 * BlinkRate;
+ 	waittime  = 0;       /* /proc polling interval */
+-
++	
++  /* det default */
++  set_noflushd_use(0);
++  set_lin_seti_use(0);
++  set_toshiba_hardware_use(0);
++  set_cpufreq_use(0);
++  
+   fprintf(stderr, "\nWelcome to wmpower version %s...\n", VERSION);
+ 
+ 	cpufreq_online_governor  = NULL;
+@@ -164,13 +171,15 @@
+       set_pm_features();
+     }
+ 
+-    /* Execute the warning command, if needed */
+-    if (WarnCommand && *WarnCommand && !power_status.ac_on_line && !warned
+-				&& power_status.battery_time <= WarnTime)
+-		{
++    /* Execute the warning command, if needed 
++	 * But, look at percentage usage instead of remaining time.
++	 */
++	 if (WarnCommand && *WarnCommand && !power_status.ac_on_line && !warned){
++		 if(power_status.battery_percentage <= CriticalPercent && power_status.battery_time <= WarnTime || power_status.battery_percentage == 1){
+ 			warned = 1;
+ 			sprintf(Command, "%s &", WarnCommand);
+ 			system(Command);
++		 }
+     }
+     if (power_status.ac_on_line)
+       warned = 0;
+@@ -352,7 +361,7 @@
+     copyXPMArea ((temp % 10) * 6 + 4, 69, 6, 7, 39, 50);
+   }
+ 
+-  /* Plot the ° Symbol */
++  /* Plot the ï¿½ Symbol */
+   copyXPMArea (135, 60, 6, 7, 45, 50);
+ 
+   /* Plot the C Symbol */
+@@ -449,30 +458,33 @@
+   printf("\nkernels, plus special support for Toshiba and Compal hardware.");
+   printf("\n\nUsage: wmpower [options]\n");
+   printf("\n\nOptions:\n");
+-  printf("\t-no-meddling\t\tDon't manage power status, just show info.\n");
++  printf("\t-meddling\t\tmanage power status, just show info.\n");
+   printf("\t-no-full-battery\tDon't wait for 100%% battery before going back\n");
+   printf("\t\t\t\tto full power.\n");
+-  printf("\t-no-cpufreq\t\tDon't scale CPU frequency according to power status.\n");
+-  printf("\t-no-noflushd\t\tDisable use of \"noflushd\" daemon:\n");
++  printf("\t-cpufreq\t\tScale CPU frequency according to power status.\n");
++  printf("\t-noflushd\t\tEnable use of \"noflushd\" daemon:\n");
+   printf("\t\t\t\tnoflushd is a tool for managing spin-down\n");
+   printf("\t\t\t\tof hard disks after a certain amount of time\n");
+   printf("\t\t\t\tsee <http://noflushd.sourceforge.net> for details.\n");
+-  printf("\t-no-lin-seti\t\tDon't manage \"lin-seti\" daemon:\n");
++  printf("\t-lin-seti\t\tManage \"lin-seti\" daemon:\n");
+   printf("\t\t\t\t\"lin-seti\" is a Seti@Home cache manager that can\n");
+   printf("\t\t\t\twork as a daemon. For details go to\n");
+   printf("\t\t\t\t<http://sourceforge.net/projects/lin-seti/>.\n");
+-  printf("\t-no-toshiba\t\tDisable direct access to toshiba hardware,\n");
++  printf("\t-toshiba\t\tEnable direct access to toshiba hardware,\n");
+   printf("\t\t\t\tuse only generic ACPI/APM calls instead.\n");
+   printf("\t\t\t\tThis is recommended on newer toshibas.\n");
+   printf("\t-battery <num>\t\tMonitor your nth battery instead of first one.\n");
+   printf("\t-display <display>\tUse alternate display.\n");
+   printf("\t-geometry <geometry>\twmpower window geometry.\n");
+   printf("\t-l\t\t\tUse a low-color pixmap.\n");
+-  printf("\t-L <LowLevel>\t\tDefine level at which yellow LED turns on.\n");
+-  printf("\t-C <CriticalLevel>\tDefine level at which red LED turns on.\n");
++  printf("\t-L <LowLevel>\t\tDefine battery level at which yellow LED turns on (50%).\n");
++  printf("\t-C <CriticalLevel>\tDefine battery level at which red LED turns on (10%).\n");
+   printf("\t-B <Volume>\t\tBeep at Critical Level (-100%% to 100%%).\n");
++  printf("\t-P <percent>\t\tWarn command to run when remaining battery percentage is achieved (30%).\n");
++  printf("\t-W <minutes>\t\tMinutes of remaining time when to run warn command (8min).\n");
++  printf("\t\t\t\tComand will be executed only, when remaining time and percentage of\n");
++  printf("\t\t\t\tbattery borders are crossed.\n");
+   printf("\t-w <command>\t\tWarn command to run when remaining time is low.\n");
+-  printf("\t-W <minutes>\t\tMinutes of remaining time when to run warn command.\n");
+   printf("\t-u <seconds>\t\tSet wmpower polling interval.\n");
+   printf("\t-g <governor>\t\tUse this CPUFreq scaling governor while running on battery power.\n");
+   printf("\t-G <governor>\t\tUse this CPUFreq scaling governor while running on AC power.\n");
+@@ -536,6 +548,11 @@
+ 					if (argc == i+1) message();
+ 					LowLevel = atoi (argv[++i]);
+ 					break;
++				case 'P':
++					if (cmdline[2] != '\0') message();
++					if (argc == i+1) message();
++					CriticalPercent = atoi (argv[++i]);
++					break;
+ 				case 'l':
+ 					if (cmdline[2] != '\0') message();
+ 					UseLowColorPixmap = 1;
+@@ -569,12 +586,12 @@
+ 					open_syslog_on_stderr();
+ 					break;
+ 				case 'n':
+-					if (!strcmp(cmdline, "-no-meddling"))     {no_meddling = 1;             break;}
++					if (!strcmp(cmdline, "-meddling"))        {no_meddling = 0;             break;}
+ 					if (!strcmp(cmdline, "-no-full-battery")) {no_full_battery = 1;         break;}
+-					if (!strcmp(cmdline, "-no-noflushd"))     {set_noflushd_use(0);         break;}
+-					if (!strcmp(cmdline, "-no-lin-seti"))     {set_lin_seti_use(0);         break;}
+-					if (!strcmp(cmdline, "-no-toshiba"))      {set_toshiba_hardware_use(0); break;}
+-					if (!strcmp(cmdline, "-no-cpufreq"))      {set_cpufreq_use(0);          break;}
++					if (!strcmp(cmdline, "-noflushd"))        {set_noflushd_use(1);         break;}
++					if (!strcmp(cmdline, "-lin-seti"))        {set_lin_seti_use(1);         break;}
++					if (!strcmp(cmdline, "-toshiba"))         {set_toshiba_hardware_use(1); break;}
++					if (!strcmp(cmdline, "-cpufreq"))         {set_cpufreq_use(1);          break;}
+ 				default:
+ 					message();
+       }

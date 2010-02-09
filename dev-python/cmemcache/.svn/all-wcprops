@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/proj/sunrise/!svn/ver/7760/reviewed/dev-python/cmemcache
+END
+metadata.xml
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/proj/sunrise/!svn/ver/5718/reviewed/dev-python/cmemcache/metadata.xml
+END
+Manifest
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/proj/sunrise/!svn/ver/7760/reviewed/dev-python/cmemcache/Manifest
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/proj/sunrise/!svn/ver/7760/reviewed/dev-python/cmemcache/ChangeLog
+END
+cmemcache-0.91.ebuild
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/proj/sunrise/!svn/ver/7760/reviewed/dev-python/cmemcache/cmemcache-0.91.ebuild
+END

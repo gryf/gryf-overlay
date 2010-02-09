@@ -1,0 +1,14 @@
+--- sylpheed-1.0.6/src/imap.c.orig	2005-12-31 12:59:37.000000000 +0100
++++ sylpheed-1.0.6/src/imap.c	2005-12-31 13:01:27.000000000 +0100
+@@ -2327,6 +2327,11 @@
+ 	    folder->ns_others   != NULL ||
+ 	    folder->ns_shared   != NULL)
+ 		return;
++	
++	if (!imap_has_capability(session, "NAMESPACE")) {
++		imap_get_namespace_by_list(session, folder);
++		return;
++	}
+ 
+ 	if (imap_cmd_namespace(session, &ns_str) != IMAP_SUCCESS) {
+ 		log_warning(_("can't get namespace\n"));

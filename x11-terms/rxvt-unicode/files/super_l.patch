@@ -1,0 +1,32 @@
+diff -rupN rxvt-unicode-9.06/src/command.C rxvt-unicode-9.06_mod/src/command.C
+--- rxvt-unicode-9.06/src/command.C	2008-11-05 17:21:05.000000000 +0100
++++ rxvt-unicode-9.06_mod/src/command.C	2009-11-22 18:37:06.000000000 +0100
+@@ -398,7 +398,7 @@ map_function_key (KeySym keysym)
+ void
+ rxvt_term::key_press (XKeyEvent &ev)
+ {
+-  int ctrl, meta, shft, len;
++  int ctrl, meta, shft, super, len;
+   KeySym keysym;
+   int valid_keysym;
+   char kbuf[KBUFSZ];
+@@ -417,6 +417,8 @@ rxvt_term::key_press (XKeyEvent &ev)
+   shft = ev.state & ShiftMask;
+   ctrl = ev.state & ControlMask;
+   meta = ev.state & ModMetaMask;
++  super = ev.state & Mod4Mask;
++
+ 
+   if (numlock_state || (ev.state & ModNumLockMask))
+     {
+@@ -849,6 +851,10 @@ rxvt_term::key_press (XKeyEvent &ev)
+       const char ch = C0_ESC;
+       tt_write (&ch, 1);
+     }
++  if (super) {
++      char buf[3] = { 0x18, '@', 's' };
++      tt_write (buf, 3);
++  }
+ 
+   tt_write (kbuf, (unsigned int)len);
+ }

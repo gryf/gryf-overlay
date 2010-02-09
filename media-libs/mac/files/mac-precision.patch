@@ -1,0 +1,115 @@
+--- mac-3.99-u4-b4/src/MACLib/APESimple.cpp.old	2005-11-28 11:10:22.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/APESimple.cpp	2005-11-28 11:12:04.000000000 -0800
+@@ -298,7 +298,7 @@
+         if (spTempBuffer == NULL) throw(ERROR_INSUFFICIENT_MEMORY);
+ 
+         // get the header
+-        THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_HEADER_DATA, (int) spTempBuffer.GetPtr(), spAPEDecompress->GetInfo(APE_INFO_WAV_HEADER_BYTES)));
++        THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_HEADER_DATA, (long) spTempBuffer.GetPtr(), spAPEDecompress->GetInfo(APE_INFO_WAV_HEADER_BYTES)));
+ 
+         // initialize the output
+         if (nOutputMode == UNMAC_DECODER_OUTPUT_WAV)
+@@ -370,7 +370,7 @@
+             {
+                 spTempBuffer.Assign(new unsigned char[spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_BYTES)], TRUE);
+                 if (spTempBuffer == NULL) throw(ERROR_INSUFFICIENT_MEMORY);
+-                THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_DATA, (int) spTempBuffer.GetPtr(), spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_BYTES)))
++                THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_DATA, (long) spTempBuffer.GetPtr(), spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_BYTES)))
+         
+                 unsigned int nBytesToWrite = spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_BYTES);
+                 unsigned int nBytesWritten = 0;
+@@ -392,7 +392,7 @@
+                 spTempBuffer.Assign(new unsigned char[nTerminatingBytes], TRUE);
+                 if (spTempBuffer == NULL) throw(ERROR_INSUFFICIENT_MEMORY);
+                 
+-                THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_DATA, (int) spTempBuffer.GetPtr(), nTerminatingBytes))
++                THROW_ON_ERROR(spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_DATA, (long) spTempBuffer.GetPtr(), nTerminatingBytes))
+ 
+                 if (bHasTag)
+                 {
+--- mac-3.99-u4-b4/src/MACLib/APEInfo.cpp.old	2005-11-28 11:09:13.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/APEInfo.cpp	2005-11-28 11:09:51.000000000 -0800
+@@ -311,7 +311,7 @@
+         break;
+     }
+     case APE_INFO_IO_SOURCE:
+-        nRetVal = (int) m_spIO.GetPtr();
++        nRetVal = (long) m_spIO.GetPtr();
+         break;
+     case APE_INFO_FRAME_BYTES:
+     {
+@@ -350,10 +350,10 @@
+         break;
+     }
+     case APE_INFO_TAG:
+-        nRetVal = (int) m_spAPETag.GetPtr();
++        nRetVal = (long) m_spAPETag.GetPtr();
+         break;
+     case APE_INTERNAL_INFO:
+-        nRetVal = (int) &m_APEFileInfo;
++        nRetVal = (long) &m_APEFileInfo;
+         break;
+     default:
+ 	break;
+--- mac-3.99-u4-b4/src/MACLib/APEDecompress.cpp.old	2005-11-28 11:08:03.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/APEDecompress.cpp	2005-11-28 11:08:32.000000000 -0800
+@@ -452,7 +452,7 @@
+             }
+             else
+             {
+-                WAVEFORMATEX wfeFormat; GetInfo(APE_INFO_WAVEFORMATEX, (int) &wfeFormat, 0);
++                WAVEFORMATEX wfeFormat; GetInfo(APE_INFO_WAVEFORMATEX, (long) &wfeFormat, 0);
+                 WAVE_HEADER WAVHeader; FillWaveHeader(&WAVHeader, 
+                     (m_nFinishBlock - m_nStartBlock) * GetInfo(APE_INFO_BLOCK_ALIGN), 
+                     &wfeFormat,    0);
+--- mac-3.99-u4-b4/src/MACLib/MD5.cpp.old	2005-11-28 11:12:35.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/MD5.cpp	2005-11-28 11:13:10.000000000 -0800
+@@ -100,7 +100,7 @@
+     CopyToLittleEndian (tempBuffer, in, 16);
+     x = tempBuffer;
+ #else
+-    if ( (unsigned int)in & 3 ) {
++    if ( (unsigned long)in & 3 ) {
+         memcpy ( tempBuffer, in, 64 );
+         x = tempBuffer;
+     } 
+--- mac-3.99-u4-b4/src/MACLib/Old/APEDecompressOld.cpp.old	2005-11-28 11:05:19.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/Old/APEDecompressOld.cpp	2005-11-28 11:05:37.000000000 -0800
+@@ -250,7 +250,7 @@
+             }
+             else
+             {
+-                WAVEFORMATEX wfeFormat; GetInfo(APE_INFO_WAVEFORMATEX, (int) &wfeFormat, 0);
++                WAVEFORMATEX wfeFormat; GetInfo(APE_INFO_WAVEFORMATEX, (long) &wfeFormat, 0);
+                 WAVE_HEADER WAVHeader; FillWaveHeader(&WAVHeader, 
+                     (m_nFinishBlock - m_nStartBlock) * GetInfo(APE_INFO_BLOCK_ALIGN), 
+                     &wfeFormat,    0);
+--- mac-3.99-u4-b4/src/MACLib/Old/UnMAC.cpp.old	2005-11-28 11:06:57.000000000 -0800
++++ mac-3.99-u4-b4/src/MACLib/Old/UnMAC.cpp	2005-11-28 11:07:23.000000000 -0800
+@@ -78,7 +78,7 @@
+     // set the initialized flag to TRUE
+     m_bInitialized = TRUE;
+     
+-    m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (int) &m_wfeInput);
++    m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (long) &m_wfeInput);
+ 
+     // return a successful value
+     return ERROR_SUCCESS;
+@@ -197,7 +197,7 @@
+     {
+         m_pAPEDecompressCore->GenerateDecodedArrays(nBlocks, nSpecialCodes, FrameIndex, CPULoadBalancingFactor);
+ 
+-        WAVEFORMATEX WaveFormatEx; m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (int) &WaveFormatEx);
++        WAVEFORMATEX WaveFormatEx; m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (long) &WaveFormatEx);
+         m_pPrepare->UnprepareOld(m_pAPEDecompressCore->GetDataX(), m_pAPEDecompressCore->GetDataY(), nBlocks, &WaveFormatEx, 
+             pOutputData, (unsigned int *) &CRC, (int *) &nSpecialCodes, m_pAPEDecompress->GetInfo(APE_INFO_FILE_VERSION));
+     }
+@@ -205,7 +205,7 @@
+     {
+         m_pAPEDecompressCore->GenerateDecodedArrays(nBlocks, nSpecialCodes, FrameIndex, CPULoadBalancingFactor);
+         
+-        WAVEFORMATEX WaveFormatEx; m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (int) &WaveFormatEx);
++        WAVEFORMATEX WaveFormatEx; m_pAPEDecompress->GetInfo(APE_INFO_WAVEFORMATEX, (long) &WaveFormatEx);
+         m_pPrepare->UnprepareOld(m_pAPEDecompressCore->GetDataX(), NULL, nBlocks, &WaveFormatEx, 
+             pOutputData, (unsigned int *) &CRC, (int *) &nSpecialCodes, m_pAPEDecompress->GetInfo(APE_INFO_FILE_VERSION));
+     }

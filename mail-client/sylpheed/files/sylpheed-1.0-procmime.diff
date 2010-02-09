@@ -1,0 +1,39 @@
+--- sylpheed-1.0.6/src/procmime.c.orig	2005-12-31 13:05:55.000000000 +0100
++++ sylpheed-1.0.6/src/procmime.c	2005-12-31 13:06:54.000000000 +0100
+@@ -962,6 +962,9 @@
+ 		g_free(dir);
+ 		mime_type_list = g_list_concat(mime_type_list, list);
+ 
++		list = procmime_get_mime_type_list("/usr/share/mime/globs");
++		mime_type_list = g_list_concat(mime_type_list, list);
++
+ 		if (!mime_type_list) {
+ 			g_warning("mime.types not found\n");
+ 			return NULL;
+@@ -1014,7 +1017,7 @@
+ 		g_strstrip(buf);
+ 
+ 		p = buf;
+-		while (*p && !isspace(*p)) p++;
++		while (*p && !isspace(*p) && (*p != ':')) p++;
+ 		if (*p) {
+ 			*p = '\0';
+ 			p++;
+@@ -1027,7 +1030,7 @@
+ 		mime_type->type = g_strdup(buf);
+ 		mime_type->sub_type = g_strdup(delim + 1);
+ 
+-		while (*p && isspace(*p)) p++;
++		while (*p && (isspace(*p) || (*p == '*') || (*p == '.'))) p++;
+ 		if (*p)
+ 			mime_type->extension = g_strdup(p);
+ 		else
+@@ -1039,7 +1042,7 @@
+ 	fclose(fp);
+ 
+ 	if (!list)
+-		g_warning("Can't read mime.types\n");
++		g_warning("Can't read %s\n", file);
+ 
+ 	return list;
+ }
