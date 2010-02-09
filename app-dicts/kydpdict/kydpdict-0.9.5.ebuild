@@ -4,8 +4,6 @@
 
 RESTRICT="nomirror"
 
-inherit kde
-
 S=${WORKDIR}/${P}
 DESCRIPTION="Kydpdict is a graphical frontend to Collins', PWN Oxford & SAP dictionaries."
 SRC_URI="http://members.elysium.pl/ytm/src/$P.tar.bz2"
@@ -14,18 +12,22 @@ KEYWORDS="x86"
 SLOT="0"
 LICENSE="GPL-2"
 
-need-qt 3
-
-
 src_compile(){
-    myconf="$myconf --prefix=/usr --with-x --datadir=/usr/share"
-    kde_src_compile configure make
+	local myconf
+	myconf="$myconf  --with-x --datadir=/usr/share"
+	econf ${myconf} || die "econf failed"
+	emake || die "make failed"
 }
 
+src_install() {
+	emake DESTDIR="${D}" install || die "emake install failed"
+}
 
 pkg_postinst(){
-    einfo "This is only a front-end to dictionaries."
-    einfo "You need to have windows version installed. In fact you need only four files: "
-    einfo "dict100.dat, dict101.dat, dict100.idx, dict101.idx"
-    einfo "angpol.win polang.win"
+	echo
+	elog "This is only a front-end to dictionaries."
+	elog "You need to have windows version installed. In fact you need only four files:"
+	elog "dict100.dat, dict101.dat, dict100.idx, dict101.idx"
+	elog "angpol.win polang.win"
+	echo
 }
