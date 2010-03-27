@@ -1,0 +1,11 @@
+--- nozomi.c.orig    2007-02-14 21:14:41.000000000 +0100 
++++ nozomi.c    2007-02-14 19:49:51.000000000 +0100 
+@@ -1733,7 +1733,7 @@ 
+                BUG_ON(!dc->tty_flip_wq); 
+                return -ENOMEM; 
+        } 
+-       INIT_WORK(&dc->tty_flip_wq_struct, tty_flip_queue_function, dc); 
++       INIT_WORK(&dc->tty_flip_wq_struct, tty_flip_queue_function); 
+ #endif 
+        spin_lock_init(&dc->spin_mutex); 
+        make_proc_dirs();
