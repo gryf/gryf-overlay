@@ -1,0 +1,38 @@
+--- common/lib/modules/fglrx/build_mod/firegl_public.h
++++ common/lib/modules/fglrx/build_mod/firegl_public.h
+@@ -78,7 +78,7 @@
+     if (!pgd_present(*(pgd_p)))	\
+     { \
+         __KE_ERROR("FATAL ERROR: User queue buffer not present! (pgd)\n"); \
+-        return (unsigned long)NOPAGE_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
++	return VM_FAULT_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
+         /* alternatively we could generate a NOPAGE_OOM "out of memory" */ \
+     } \
+ } while(0)
+@@ -91,7 +91,7 @@
+     if (!pud_present(*(pud_p)))	\
+     { \
+         __KE_ERROR("FATAL ERROR: User queue buffer not present! (pud)\n"); \
+-        return (unsigned long)NOPAGE_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
++	return VM_FAULT_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
+         /* alternatively we could generate a NOPAGE_OOM "out of memory" */ \
+     } \
+     pmd_p = pmd_offset(pud_p, pte_linear); \
+@@ -111,7 +111,7 @@
+     if (!pmd_present(*(pmd_p)))	\
+     { \
+         __KE_ERROR("FATAL ERROR: User queue buffer not present! (pmd)\n"); \
+-        return (unsigned long)NOPAGE_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
++	return VM_FAULT_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
+         /* alternatively we could generate a NOPAGE_OOM "out of memory" */ \
+     } \
+ } while(0)
+@@ -157,7 +157,7 @@
+     if (!pte_present(pte)) \
+     { \
+         __KE_ERROR("FATAL ERROR: User queue buffer not present! (pte)\n"); \
+-        return (unsigned long)NOPAGE_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
++	return VM_FAULT_SIGBUS;   /* Something bad happened; generate SIGBUS */ \
+         /* alternatively we could generate a NOPAGE_OOM "out of memory" */ \
+     } \
+ } while(0)
