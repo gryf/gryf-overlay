@@ -1,13 +1,14 @@
-# Copyright 1999-2006 Gentoo Foundation
+# Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-libs/glib/glib-1.2.10-r5.ebuild,v 1.48 2006/11/03 15:04:21 grobian Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-libs/glib/glib-1.2.10-r5.ebuild,v 1.52 2007/06/27 15:28:52 vapier Exp $
 
-inherit libtool flag-o-matic eutils portability
+inherit autotools libtool flag-o-matic eutils portability
 
 DESCRIPTION="The GLib library of C routines"
 HOMEPAGE="http://www.gtk.org/"
 SRC_URI="ftp://ftp.gtk.org/pub/gtk/v1.2/${P}.tar.gz
-	 ftp://ftp.gnome.org/pub/GNOME/stable/sources/glib/${P}.tar.gz"
+	 ftp://ftp.gnome.org/pub/GNOME/stable/sources/glib/${P}.tar.gz
+	 mirror://gentoo/glib-1.2.10-r1-as-needed.patch.bz2"
 
 LICENSE="LGPL-2.1"
 SLOT="1"
@@ -20,15 +21,22 @@ src_unpack() {
 	unpack ${A}
 	cd "${S}"
 
+	epatch "${FILESDIR}"/${P}-automake.patch
 	epatch "${FILESDIR}"/${P}-m4.patch
 	epatch "${FILESDIR}"/${P}-configure-LANG.patch #133679
 
 	# Allow glib to build with gcc-3.4.x #47047
 	epatch "${FILESDIR}"/${P}-gcc34-fix.patch
 
-	elibtoolize
+	# Fix for -Wl,--as-needed (bug #133818)
+	epatch "${DISTDIR}"/glib-1.2.10-r1-as-needed.patch.bz2
+
 	use ppc64 && use hardened && replace-flags -O[2-3] -O1
 	append-ldflags $(dlopen_lib)
+
+	rm -f acinclude.m4 #168198
+	eautoreconf
+	elibtoolize
 }
 
 src_compile() {
@@ -53,9 +61,5 @@ src_install() {
 	dohtml -r docs
 
 	cd "${D}"/usr/$(get_libdir) || die
-	if use ppc-macos ; then
-		chmod 755 libgmodule-1.2.*.dylib
-	else
-		chmod 755 libgmodule-1.2.so.*
-	fi
+	chmod 755 libgmodule-1.2.so.*
 }
