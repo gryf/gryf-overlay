@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-text/calibre/calibre-0.6.37.ebuild,v 1.5 2010/02/10 21:04:19 ssuominen Exp $
+# $Header: /var/cvsroot/gentoo-x86/app-text/calibre/calibre-0.6.44.ebuild,v 1.1 2010/03/06 11:12:20 zmedico Exp $
 
 EAPI=2
 PYTHON_DEPEND=2:2.6
@@ -21,8 +21,10 @@ SLOT="0"
 IUSE=""
 
 # libusb-compat is untested
-SHARED_DEPEND=">=dev-python/setuptools-0.6_rc5
+SHARED_DEPEND=">=dev-python/cssutils-0.9.7_alpha2
+	>=dev-python/setuptools-0.6_rc5
 	>=dev-python/imaging-1.1.6
+	>=dev-libs/chmlib-0.40
 	>=dev-libs/libusb-0.1.12:0
 	>=dev-python/PyQt4-4.7[X,svg,webkit]
 	>=dev-python/mechanize-0.1.11
@@ -35,8 +37,6 @@ SHARED_DEPEND=">=dev-python/setuptools-0.6_rc5
 	>=dev-python/dnspython-1.6.0
 	>=app-text/poppler-0.12.3-r3[qt4,xpdf-headers]
 	>=sys-apps/help2man-1.36.4
-	>=dev-python/cssutils-0.9.7_alpha2
-	>=media-libs/libwmf-0.2.8
 	>=app-text/podofo-0.7"
 
 RDEPEND="$SHARED_DEPEND
