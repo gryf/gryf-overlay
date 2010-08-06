@@ -1,5 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
+# Fixed to compile with python2. Python3 is crashing. gryf.
 # $Header: $
 
 EAPI="2"
@@ -11,9 +12,9 @@ SRC_URI="http://www.clifford.at/${PN}/${P}.tar.gz"
 
 LICENSE="LGPL-3"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~x86"
+KEYWORDS="~amd64 ~ppc x86"
 
-IUSE="examples perl python ruby"
+IUSE="perl python ruby"
 
 COMMON_DEPEND="sys-libs/ncurses[unicode]
 	perl? ( dev-lang/perl )
@@ -25,6 +26,10 @@ DEPEND="${COMMON_DEPEND}
 	ruby? ( dev-lang/swig )"
 
 RDEPEND="${COMMON_DEPEND}"
+
+RESTRICT_PYTHON_ABIS="2.*"
+PYTHON_DEPEND="2"
+
 
 src_prepare() {
 	sed -i \
@@ -52,32 +57,13 @@ src_compile() {
 }
 
 src_install() {
-	python_version
 	emake prefix="/usr" DESTDIR="${D}" libdir="$(get_libdir)" install || die "make install failed"
-
 	dodoc README
-
-	local exdir="/usr/share/doc/${PF}/examples"
-	if use examples; then
-		insinto ${exdir}
-		doins example.{c,stfl}
-		insinto  ${exdir}/python
-		doins python/example.py
-		if use perl; then
-			insinto ${exdir}/perl
-			doins perl5/example.pl
-		fi
-		if use ruby; then
-			insinto ${exdir}/ruby
-			doins ruby/example.rb
-		fi
-	fi
-
 	fixlocalpod
 }
 
 pkg_postinst() {
-	python_mod_optimize /usr/$(get_libdir)/python${PYVER}/stfl.py
+	python_mod_optimize $(python_get_sitedir)/stfl.py
 }
 
 pkg_postrm() {
