@@ -1,0 +1,107 @@
+diff -ur slim-1.3.2_orig/app.cpp slim-1.3.2/app.cpp
+--- slim-1.3.2_orig/app.cpp	2010-07-08 07:04:10.000000000 +0200
++++ slim-1.3.2/app.cpp	2010-08-18 21:47:42.000000000 +0200
+@@ -50,6 +50,15 @@
+                 // We assume PAM is asking for the username
+                 panel->EventHandler(Panel::Get_Name);
+                 switch(panel->getAction()){
++                    case Panel::KSuspend:
++                        Suspend();
++                        break;
++                    case Panel::KHalt:
++                        Halt();
++                        break;
++                    case Panel::KReboot:
++                        Reboot();
++                        break;
+                     case Panel::Suspend:
+                     case Panel::Halt:
+                     case Panel::Reboot:
+@@ -394,12 +403,15 @@
+             case Panel::Console:
+                 Console();
+                 break;
++            case Panel::KReboot:
+             case Panel::Reboot:
+                 Reboot();
+                 break;
++            case Panel::KHalt:
+             case Panel::Halt:
+                 Halt();
+                 break;
++            case Panel::KSuspend:
+             case Panel::Suspend:
+                 Suspend();
+                 break;
+@@ -420,6 +432,9 @@
+     }
+     catch(PAM::Auth_Exception& e){
+         switch(LoginPanel->getAction()){
++            case Panel::KSuspend:
++            case Panel::KReboot:
++            case Panel::KHalt:
+             case Panel::Exit:
+             case Panel::Console:
+                 return true; // <--- This is simply fake!
+@@ -440,6 +455,9 @@
+     if (!focuspass){
+         LoginPanel->EventHandler(Panel::Get_Name);
+         switch(LoginPanel->getAction()){
++            case Panel::KSuspend:
++            case Panel::KReboot:
++            case Panel::KHalt:
+             case Panel::Exit:
+             case Panel::Console:
+                 cerr << APPNAME << ": Got a special command (" << LoginPanel->GetName() << ")" << endl;
+@@ -454,6 +472,10 @@
+     struct passwd *pw;
+ 
+     switch(LoginPanel->getAction()){
++        case Panel::KSuspend:
++        case Panel::KHalt:
++        case Panel::KReboot:
++            return true;
+         case Panel::Suspend:
+         case Panel::Halt:
+         case Panel::Reboot:
+diff -ur slim-1.3.2_orig/panel.cpp slim-1.3.2/panel.cpp
+--- slim-1.3.2_orig/panel.cpp	2010-07-08 07:04:10.000000000 +0200
++++ slim-1.3.2/panel.cpp	2010-08-17 21:28:19.000000000 +0200
+@@ -351,6 +351,22 @@
+     string formerString = "";
+     
+     XLookupString(&event.xkey, &ascii, 1, &keysym, &compstatus);
++    if (reinterpret_cast<XKeyEvent&>(event).state & ControlMask) {
++        switch(keysym){
++            case XK_s:
++                action = KSuspend;
++                return false;
++            case XK_h:
++                action = KHalt;
++                return false;
++            case XK_r:
++                action = KReboot;
++                return false;
++            default:
++                break;
++        }
++    }
++
+     switch(keysym){
+         case XK_F1:
+             SwitchSession();
+diff -ur slim-1.3.2_orig/panel.h slim-1.3.2/panel.h
+--- slim-1.3.2_orig/panel.h	2010-07-08 07:04:10.000000000 +0200
++++ slim-1.3.2/panel.h	2010-08-17 21:28:37.000000000 +0200
+@@ -40,7 +40,10 @@
+         Reboot,
+         Halt,
+         Exit,
+-        Suspend
++        Suspend,
++        KHalt,
++        KReboot,
++        KSuspend
+     };
+     enum FieldType {
+         Get_Name,
