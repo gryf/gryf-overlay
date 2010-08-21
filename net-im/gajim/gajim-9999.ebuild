@@ -17,7 +17,7 @@ SRC_URI=""
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc x86 ~x86-fbsd"
+KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="avahi crypt dbus gnome idle libnotify nls spell srv X xhtml"
 
 COMMON_DEPEND=">=dev-python/pygtk-2.12.0"
