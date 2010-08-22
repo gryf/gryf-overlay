@@ -94,7 +94,7 @@ pkg_postinst() {
 	elog " - Halt (CTRL-H)"
 	elog " - Reboot (CTRL-R)"
 	elog " - Suspend (CTRL-S)"
-	elog "All actions are performed without password prompt."
+	elog "All above actions are performed without password prompt."
 	elog
 	if ! use pam; then
 		elog "You have merged ${PN} without USE=pam, this will cause ${PN} to fall back to"
