@@ -13,7 +13,7 @@ ESVN_REPO_URI="http://texworks.googlecode.com/svn/trunk/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="x86"
-IUSE=""
+IUSE="latex"
 
 LANGS="ar ca cs de es fa fr it ja ko nl pl pt_BR ru sl tr zh_CN"
 for LNG in ${LANGS}; do
