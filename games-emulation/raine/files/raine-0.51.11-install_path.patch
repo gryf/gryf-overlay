@@ -1,0 +1,14 @@
+--- raine-0.51.11_orig/makefile	2011-04-29 11:02:44.000000000 +0200
++++ raine-0.51.11/makefile	2011-10-24 17:11:09.000000000 +0200
+@@ -295,11 +295,7 @@
+ endif
+    RAINE_UNIX = 1
+ 
+-ifdef VERBOSE
+    INSTALL = /usr/bin/install
+-else
+-    INSTALL = @install
+-endif
+    INSTALL_BIN = $(INSTALL) -m 755
+    INSTALL_DATA = $(INSTALL) -m 644
+    RD = rmdir --ignore-fail-on-non-empty
