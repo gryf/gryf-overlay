@@ -1,0 +1,307 @@
+diff -ur sylpheed-3.1.4_orig/src/addressbook.c sylpheed-3.1.4/src/addressbook.c
+--- sylpheed-3.1.4_orig/src/addressbook.c	2012-10-03 17:25:03.253072293 +0200
++++ sylpheed-3.1.4/src/addressbook.c	2012-10-03 17:25:41.651355851 +0200
+@@ -201,12 +201,18 @@
+ static gboolean addressbook_list_button_released(GtkWidget	*widget,
+ 						 GdkEventButton	*event,
+ 						 gpointer	 data);
++static gboolean addressbook_list_key_pressed	(GtkWidget	*widget,
++						 GdkEventKey *event,
++						 gpointer	 data);
+ static gboolean addressbook_tree_button_pressed	(GtkWidget	*ctree,
+ 						 GdkEventButton	*event,
+ 						 gpointer	 data);
+ static gboolean addressbook_tree_button_released(GtkWidget	*ctree,
+ 						 GdkEventButton	*event,
+ 						 gpointer	 data);
++static gboolean addressbook_tree_key_pressed	(GtkWidget	*ctree,
++						 GdkEventKey *event,
++						 gpointer	 data);
+ 
+ static gboolean addressbook_drag_motion		(GtkWidget	*widget,
+ 						 GdkDragContext	*context,
+@@ -718,6 +724,9 @@
+ 	g_signal_connect(G_OBJECT(treeview), "button_release_event",
+ 			 G_CALLBACK(addressbook_tree_button_released),
+ 			 NULL);
++	g_signal_connect(G_OBJECT(treeview), "key_press_event",
++			 G_CALLBACK(addressbook_tree_key_pressed),
++			 NULL);
+ 
+ 	gtk_drag_dest_set(treeview, GTK_DEST_DEFAULT_ALL,
+ 			  addressbook_drag_types, N_DRAG_TYPES,
+@@ -843,6 +852,9 @@
+ 	g_signal_connect(G_OBJECT(listview), "button_release_event",
+ 			 G_CALLBACK(addressbook_list_button_released),
+ 			 NULL);
++	g_signal_connect(G_OBJECT(listview), "key_press_event",
++			 G_CALLBACK(addressbook_list_key_pressed),
++			 NULL);
+ 	g_signal_connect(G_OBJECT(listview), "row_expanded",
+ 			 G_CALLBACK(addressbook_person_expand_node), NULL);
+ 	g_signal_connect(G_OBJECT(listview), "row_collapsed",
+@@ -3721,6 +3733,51 @@
+ 	return FALSE;
+ }
+ 
++static gboolean addressbook_tree_key_pressed(GtkWidget *widget, 
++        GdkEventKey *event, gpointer data)
++{
++    if (event && event->keyval == GDK_Menu)
++    {
++        GtkTreeView *treeview = GTK_TREE_VIEW(widget);
++        GtkTreeSelection *selection;
++
++        if (!event)
++            return FALSE;
++
++        selection = gtk_tree_view_get_selection(treeview);
++
++        if (selection){
++            addressbook_menuitem_set_sensitive();
++            gtk_menu_popup(GTK_MENU(addrbook.tree_popup), NULL, NULL, NULL, 
++                    NULL, 3, event->time);
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++
++static gboolean addressbook_list_key_pressed(GtkWidget *widget, 
++        GdkEventKey *event, gpointer data)
++{
++    if (event && event->keyval == GDK_Menu)
++    {
++        GtkTreeSelection *selection;
++
++        if (!event)
++            return FALSE;
++
++        selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
++
++        if (selection){
++            gtk_menu_popup(GTK_MENU(addrbook.list_popup), NULL, NULL,
++                    NULL, NULL, 3, event->time);
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++
++
+ static void size_allocated(GtkWidget *widget, GtkAllocation *allocation,
+ 			   gpointer data)
+ {
+diff -ur sylpheed-3.1.4_orig/src/folderview.c sylpheed-3.1.4/src/folderview.c
+--- sylpheed-3.1.4_orig/src/folderview.c	2012-10-03 17:25:03.254072301 +0200
++++ sylpheed-3.1.4/src/folderview.c	2012-10-03 17:25:41.651355851 +0200
+@@ -1639,7 +1639,7 @@
+ }
+ 
+ static gboolean folderview_menu_popup(FolderView *folderview,
+-				      GdkEventButton *event)
++				      guint32 event_time)
+ {
+ 	FolderItem *item = NULL;
+ 	Folder *folder;
+@@ -1663,11 +1663,6 @@
+ 	gboolean search_folder   = FALSE;
+ 	gboolean folder_property = FALSE;
+ 
+-	if (!event) return FALSE;
+-
+-	if (event->button != 3)
+-		return FALSE;
+-
+ 	if (!gtk_tree_selection_get_selected
+ 		(folderview->selection, NULL, &iter))
+ 		return FALSE;
+@@ -1861,15 +1856,13 @@
+ 		       item->stype != F_VIRTUAL);
+ 	SET_VISIBILITY(ifactory, "/Edit search condition...",
+ 		       item->stype == F_VIRTUAL);
+-
+ #undef SET_SENS
+ #undef SET_VISIBILITY
+ #undef SET_VISIBILITY2
+ 
+ 	syl_plugin_signal_emit("folderview-menu-popup", ifactory);
+ 
+-	gtk_menu_popup(GTK_MENU(popup), NULL, NULL, NULL, NULL,
+-		       event->button, event->time);
++	gtk_menu_popup(GTK_MENU(popup), NULL, NULL, NULL, NULL, 3, event_time);
+ 
+ 	return FALSE;
+ }
+@@ -1910,7 +1903,7 @@
+ 					(folderview->selected);
+ 		}
+ 		gtk_tree_selection_select_path(folderview->selection, path);
+-		folderview_menu_popup(folderview, event);
++		folderview_menu_popup(folderview, event->time);
+ 		gtk_tree_path_free(path);
+ 		return TRUE;
+ 	}
+@@ -2016,6 +2009,16 @@
+ 			}
+ 		}
+ 		break;
++	case GDK_Menu:
++		if (folderview->selected) {
++			selected = gtk_tree_row_reference_get_path
++				(folderview->selected);
++			gtk_tree_selection_select_path(folderview->selection, selected);
++			folderview_menu_popup(folderview, event->time);
++			gtk_tree_path_free(selected);
++			return TRUE;
++		}
++		break;
+ 	default:
+ 		break;
+ 	}
+diff -ur sylpheed-3.1.4_orig/src/mimeview.c sylpheed-3.1.4/src/mimeview.c
+--- sylpheed-3.1.4_orig/src/mimeview.c	2012-10-03 17:25:03.255072309 +0200
++++ sylpheed-3.1.4/src/mimeview.c	2012-10-03 17:25:41.652355859 +0200
+@@ -838,6 +838,51 @@
+ 	}
+ }
+ 
++static gint mimeview_popup_menu(gint event_button, gint event_time,
++		MimeView *mimeview)
++{
++	MimeInfo *partinfo;
++
++	partinfo = mimeview_get_selected_part(mimeview);
++	if (partinfo && (partinfo->mime_type == MIME_TEXT ||
++				partinfo->mime_type == MIME_TEXT_HTML ||
++				partinfo->mime_type == MIME_MESSAGE_RFC822 ||
++				partinfo->mime_type == MIME_IMAGE ||
++				partinfo->mime_type == MIME_MULTIPART))
++		menu_set_sensitive(mimeview->popupfactory, "/Display as text", FALSE);
++	else
++		menu_set_sensitive(mimeview->popupfactory, "/Display as text", TRUE);
++
++	if (partinfo && partinfo->mime_type == MIME_APPLICATION_OCTET_STREAM)
++		menu_set_sensitive(mimeview->popupfactory, "/Open", FALSE);
++	else
++		menu_set_sensitive(mimeview->popupfactory, "/Open", TRUE);
++
++	if (partinfo && (partinfo->mime_type == MIME_TEXT ||
++				partinfo->mime_type == MIME_TEXT_HTML ||
++				partinfo->mime_type == MIME_MESSAGE_RFC822))
++		menu_set_sensitive(mimeview->popupfactory, "/Print...", TRUE);
++	else
++		menu_set_sensitive(mimeview->popupfactory, "/Print...", FALSE);
++
++	if (partinfo && partinfo->mime_type == MIME_MESSAGE_RFC822) {
++		gtk_widget_show(mimeview->reply_separator);
++		gtk_widget_show(mimeview->reply_menuitem);
++	} else {
++		gtk_widget_hide(mimeview->reply_separator);
++		gtk_widget_hide(mimeview->reply_menuitem);
++	}
++#if USE_GPGME
++	menu_set_sensitive(mimeview->popupfactory,
++			"/Check signature",
++			mimeview_is_signed(mimeview));
++#endif
++
++	gtk_menu_popup(GTK_MENU(mimeview->popupmenu), NULL, NULL, NULL, NULL,
++			event_button, event_time);
++	return TRUE;
++}
++
+ static gint mimeview_button_pressed(GtkWidget *widget, GdkEventButton *event,
+ 				    MimeView *mimeview)
+ {
+@@ -861,51 +906,7 @@
+ 		/* call external program for image, audio or html */
+ 		mimeview_launch(mimeview);
+ 	} else if (event->button == 3) {
+-		partinfo = mimeview_get_selected_part(mimeview);
+-		if (partinfo && (partinfo->mime_type == MIME_TEXT ||
+-				 partinfo->mime_type == MIME_TEXT_HTML ||
+-				 partinfo->mime_type == MIME_MESSAGE_RFC822 ||
+-				 partinfo->mime_type == MIME_IMAGE ||
+-				 partinfo->mime_type == MIME_MULTIPART))
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Display as text", FALSE);
+-		else
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Display as text", TRUE);
+-		if (partinfo &&
+-		    partinfo->mime_type == MIME_APPLICATION_OCTET_STREAM)
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Open", FALSE);
+-		else
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Open", TRUE);
+-
+-		if (partinfo && (partinfo->mime_type == MIME_TEXT ||
+-				 partinfo->mime_type == MIME_TEXT_HTML ||
+-				 partinfo->mime_type == MIME_MESSAGE_RFC822))
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Print...", TRUE);
+-		else
+-			menu_set_sensitive(mimeview->popupfactory,
+-					   "/Print...", FALSE);
+-
+-		if (partinfo && partinfo->mime_type == MIME_MESSAGE_RFC822) {
+-			gtk_widget_show(mimeview->reply_separator);
+-			gtk_widget_show(mimeview->reply_menuitem);
+-		} else {
+-			gtk_widget_hide(mimeview->reply_separator);
+-			gtk_widget_hide(mimeview->reply_menuitem);
+-		}
+-#if USE_GPGME
+-		menu_set_sensitive(mimeview->popupfactory,
+-				   "/Check signature",
+-				   mimeview_is_signed(mimeview));
+-#endif
+-
+-		gtk_menu_popup(GTK_MENU(mimeview->popupmenu),
+-			       NULL, NULL, NULL, NULL,
+-			       event->button, event->time);
+-		return TRUE;
++		return mimeview_popup_menu(event->button, event->time, mimeview);
+ 	}
+ 
+ 	return FALSE;
+@@ -981,6 +982,10 @@
+ 		if (summaryview)
+ 			summary_pass_key_press_event(summaryview, event);
+ 		break;
++	case GDK_Menu:
++		if (summaryview)
++			return mimeview_popup_menu(3, event->time, mimeview);
++		break;
+ 	default:
+ 		break;
+ 	}
+diff -ur sylpheed-3.1.4_orig/src/summaryview.c sylpheed-3.1.4/src/summaryview.c
+--- sylpheed-3.1.4_orig/src/summaryview.c	2012-10-03 17:25:03.256072316 +0200
++++ sylpheed-3.1.4/src/summaryview.c	2012-10-03 17:25:41.654355873 +0200
+@@ -5898,6 +5898,7 @@
+ 		return TRUE;
+ 	} else if (event->button == 3) {
+ 		/* right clicked */
++        printf("debug dla ubogich\n");
+ 		syl_plugin_signal_emit("summaryview-menu-popup",
+ 				       summaryview->popupfactory);
+ 		gtk_menu_popup(GTK_MENU(summaryview->popupmenu), NULL, NULL,
+@@ -5983,6 +5984,13 @@
+ 	case GDK_Escape:
+ 		gtk_widget_grab_focus(summaryview->folderview->treeview);
+ 		return TRUE;
++    case GDK_Menu:
++		syl_plugin_signal_emit("summaryview-menu-popup",
++                summaryview->popupfactory);
++		gtk_menu_popup(GTK_MENU(summaryview->popupmenu), NULL, NULL,
++                NULL, NULL, 3, event->time);
++        return TRUE;
++        break;
+ 	default:
+ 		break;
+ 	}
+Only in sylpheed-3.1.4_orig/src: version.h
+Only in sylpheed-3.1.4_orig: sylpheed.spec

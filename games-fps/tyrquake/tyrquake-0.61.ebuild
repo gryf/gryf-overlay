@@ -17,7 +17,7 @@ dir=${GAMES_DATADIR}/quake1
 
 # These dependencies have not been checked
 COMMON="media-libs/alsa-lib
-	media-libs/jpeg
+	virtual/jpeg
 	media-libs/libogg
 	media-libs/libpng
 	media-libs/libvorbis
