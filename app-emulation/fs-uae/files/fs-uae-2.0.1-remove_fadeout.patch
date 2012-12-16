@@ -1,0 +1,11 @@
+--- fs-uae-2.0.1_orig/libfsemu/src/emu/render.c	2012-10-26 18:28:39.000000000 +0200
++++ fs-uae-2.0.1/libfsemu/src/emu/render.c	2012-12-13 22:21:49.109558006 +0100
+@@ -1063,7 +1063,7 @@
+  * This function is called at the end of the frame rendering function
+  */
+ static void handle_quit_sequence() {
+-    int fade_time = 750 * 1000;
++    int fade_time = 0;
+ 
+     int64_t dt = fs_emu_monotonic_time() - g_fs_emu_quit_time;
+     if (dt > fade_time && g_fs_emu_emulation_thread_stopped) {

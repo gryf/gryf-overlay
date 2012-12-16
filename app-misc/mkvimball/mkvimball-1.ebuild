@@ -9,7 +9,7 @@ HOMEPAGE="http://mysite.verizon.net/astronaut/src/index.html#MKVIMBALL"
 SRC_URI="http://mysite.verizon.net/astronaut/src/${PN}.tar.gz"
 
 SLOT="0"
-KEYWORDS="x86"
+KEYWORDS="x86 amd64"
 IUSE=""
 
 S="${WORKDIR}/MKVIMBALL"

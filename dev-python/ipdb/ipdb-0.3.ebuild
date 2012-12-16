@@ -18,7 +18,7 @@ SRC_URI="mirror://pypi/i/${MY_PN}/${MY_P}.tar.gz"
 
 LICENSE="GPL"
 SLOT="0"
-KEYWORDS="x86"
+KEYWORDS="x86 amd64"
 IUSE=""
 
 RDEPEND="dev-python/setuptools dev-python/ipython"
