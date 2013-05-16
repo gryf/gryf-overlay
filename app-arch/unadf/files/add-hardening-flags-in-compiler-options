@@ -1,0 +1,44 @@
+Description: Add hardening flags in compiler options
+Author: Boris Pek <tehnick-8@mail.ru>
+Last-Update: 2012-06-19
+
+--- a/Demo/Makefile
++++ b/Demo/Makefile
+@@ -8,6 +8,9 @@
+ CFLAGS=-I$(LIBDIR) -Wall -Wno-uninitialized -pedantic -std=gnu99 -ggdb
+ LDFLAGS=-L$(LIBDIR) -ladf
+ 
++CFLAGS+=$(shell dpkg-buildflags --get CFLAGS) $(shell dpkg-buildflags --get CPPFLAGS)
++LDFLAGS+=$(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
++
+ EXES= unadf
+ 
+ 
+--- a/Lib/Makefile
++++ b/Lib/Makefile
+@@ -16,11 +16,13 @@
+ DEFINES= 
+ 
+ CFLAGS=$(DEFINES) -I${NATIV_DIR} -I.. -I. -Wall -ggdb -std=gnu99
++CFLAGS+=$(shell dpkg-buildflags --get CFLAGS) $(shell dpkg-buildflags --get CPPFLAGS)
+ 
+ CC=gcc 
+ DEPEND=makedepend
+ 
+ LDFLAGS=-L. -ladf
++LDFLAGS+=$(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
+ LDSHARED=$(CC)
+ 
+ OBJS=	 adf_hd.o adf_disk.o adf_raw.o adf_bitm.o adf_dump.o\
+--- a/Demo/unadf.c
++++ b/Demo/unadf.c
+@@ -489,8 +489,7 @@
+ 
+     dev = adfMountDev( devname,TRUE );
+     if (!dev) {
+-        sprintf(strbuf,"Can't mount the dump device '%s'.\n", devname);
+-        fprintf(stderr, strbuf);
++        fprintf(stderr,"Can't mount the dump device '%s'.\n", devname);
+         adfEnvCleanUp(); exit(1);
+     }
+     if (!qflag)

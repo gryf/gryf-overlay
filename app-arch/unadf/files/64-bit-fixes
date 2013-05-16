@@ -1,0 +1,2367 @@
+Patch to make it work on 64 bit. See news from 11 April 2011 on
+http://lclevy.free.fr/adflib/.
+
+Source:
+
+http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=15;filename=adflib_stdint_diff.txt;att=1;bug=458129
+http://grimnorth.se/~noname/tmp/adflib_stdint_diff.txt
+
+Slightly modified (and removed the .depend files from the patches)
+
+Index: unadf-0.7.11a/Demo/Makefile
+===================================================================
+--- unadf-0.7.11a.orig/Demo/Makefile	2006-12-03 19:29:00.000000000 +0100
++++ unadf-0.7.11a/Demo/Makefile	2012-05-31 17:10:09.000000000 +0200
+@@ -5,7 +5,7 @@
+ 
+ DEPEND=makedepend
+ 
+-CFLAGS=-I$(LIBDIR) -O2 -Wall -Wno-uninitialized -pedantic
++CFLAGS=-I$(LIBDIR) -Wall -Wno-uninitialized -pedantic -std=gnu99 -ggdb
+ LDFLAGS=-L$(LIBDIR) -ladf
+ 
+ EXES= unadf
+Index: unadf-0.7.11a/Demo/unadf.c
+===================================================================
+--- unadf-0.7.11a.orig/Demo/unadf.c	2006-12-03 17:22:00.000000000 +0100
++++ unadf-0.7.11a/Demo/unadf.c	2012-05-31 17:10:09.000000000 +0200
+@@ -74,12 +74,12 @@
+     if (entry->type==ST_DIR)
+         printf("         ");
+     else
+-        printf("%7ld  ",entry->size);
++        printf("%7d  ",entry->size);
+ 
+ 	printf("%4d/%02d/%02d  %2d:%02d:%02d ",entry->year, entry->month, entry->days,
+         entry->hour, entry->mins, entry->secs);
+     if (sect)
+-        printf(" %06ld ",entry->sector);
++        printf(" %06d ",entry->sector);
+ 
+     if (strlen(path)>0)
+         printf(" %s/",path);
+@@ -101,7 +101,7 @@
+ {
+     struct File *file;
+     FILE* out;
+-    long n;
++    int32_t n;
+     char *filename;
+ 
+     filename = NULL;
+@@ -243,7 +243,7 @@
+         printf("???"); break;
+     }
+ 
+-    printf(". Cylinders = %ld, Heads = %ld, Sectors = %ld",dev->cylinders,dev->heads,dev->sectors);
++    printf(". Cylinders = %d, Heads = %d, Sectors = %d",dev->cylinders,dev->heads,dev->sectors);
+ 
+     printf(". Volumes = %d\n",dev->nVol);
+ }
+@@ -273,7 +273,7 @@
+     if (vol->volName!=NULL)
+         printf(" \"%s\"", vol->volName);
+ 
+-    printf(" between sectors [%ld-%ld].",vol->firstBlock, vol->lastBlock);
++    printf(" between sectors [%d-%d].",vol->firstBlock, vol->lastBlock);
+ 
+     printf(" %s ",isFFS(vol->dosType) ? "FFS" : "OFS");
+     if (isINTL(vol->dosType))
+Index: unadf-0.7.11a/Lib/Makefile
+===================================================================
+--- unadf-0.7.11a.orig/Lib/Makefile	2006-12-03 19:37:00.000000000 +0100
++++ unadf-0.7.11a/Lib/Makefile	2012-05-31 17:10:09.000000000 +0200
+@@ -15,7 +15,7 @@
+ 
+ DEFINES= 
+ 
+-CFLAGS=$(DEFINES) -I${NATIV_DIR} -I.. -I. -Wall -O2 -pedantic
++CFLAGS=$(DEFINES) -I${NATIV_DIR} -I.. -I. -Wall -ggdb -std=gnu99
+ 
+ CC=gcc 
+ DEPEND=makedepend
+Index: unadf-0.7.11a/Lib/adf_bitm.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_bitm.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_bitm.c	2012-05-31 17:10:09.000000000 +0200
+@@ -35,7 +35,7 @@
+ #include"adf_util.h"
+ #include"Win32/defendian.h"
+ 
+-extern unsigned long bitMask[32];
++extern uint32_t bitMask[32];
+ 
+ extern struct Env adfEnv;
+ 
+@@ -77,9 +77,9 @@
+  * adfCountFreeBlocks
+  *
+  */
+-long adfCountFreeBlocks(struct Volume* vol)
++int32_t adfCountFreeBlocks(struct Volume* vol)
+ {
+-    long freeBlocks;
++    int32_t freeBlocks;
+     int j;
+ 
+ 	freeBlocks = 0L;
+@@ -95,10 +95,10 @@
+  * adfReadBitmap
+  *
+  */
+-RETCODE adfReadBitmap(struct Volume* vol, long nBlock, struct bRootBlock* root)
++RETCODE adfReadBitmap(struct Volume* vol, int32_t nBlock, struct bRootBlock* root)
+ {
+-	long mapSize, nSect;
+-	long j, i;
++	int32_t mapSize, nSect;
++	int32_t j, i;
+ 	struct bBitmapExtBlock bmExt;
+ 
+     mapSize = nBlock / (127*32);
+@@ -205,7 +205,7 @@
+  */
+ void adfSetBlockFree(struct Volume* vol, SECTNUM nSect)
+ {
+-    unsigned long oldValue;
++    uint32_t oldValue;
+     int sectOfMap = nSect-2;
+     int block = sectOfMap/(127*32);
+     int indexInMap = (sectOfMap/32)%127;
+@@ -230,7 +230,7 @@
+  */
+ void adfSetBlockUsed(struct Volume* vol, SECTNUM nSect)
+ {
+-    unsigned long oldValue;
++    uint32_t oldValue;
+     int sectOfMap = nSect-2;
+     int block = sectOfMap/(127*32);
+     int indexInMap = (sectOfMap/32)%127;
+@@ -263,11 +263,11 @@
+ {
+ 	int i, j;
+     BOOL diskFull;
+-    long block = vol->rootBlock;
++    int32_t block = vol->rootBlock;
+ 
+     i = 0;
+     diskFull = FALSE;
+-/*printf("lastblock=%ld\n",vol->lastBlock);*/
++/*printf("lastblock=%d\n",vol->lastBlock);*/
+ 	while( i<nbSect && !diskFull ) {
+         if ( adfIsBlockFree(vol, block) ) {
+             sectList[i] = block;
+@@ -298,7 +298,7 @@
+  */
+ RETCODE adfCreateBitmap(struct Volume *vol)
+ {
+-    long nBlock, mapSize ;
++    int32_t nBlock, mapSize ;
+     int i, j;
+ 
+     nBlock = vol->lastBlock - vol->firstBlock +1 - 2;
+@@ -445,7 +445,7 @@
+ {
+ 	unsigned char buf[LOGICAL_BLOCK_SIZE];
+ 
+-/*printf("bitmap %ld\n",nSect);*/
++/*printf("bitmap %d\n",nSect);*/
+ 	if (adfReadBlock(vol, nSect, buf)!=RC_OK)
+ 		return RC_ERROR;
+ 
+@@ -471,7 +471,7 @@
+ adfWriteBitmapBlock(struct Volume* vol, SECTNUM nSect, struct bBitmapBlock* bitm)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-	unsigned long newSum;
++	uint32_t newSum;
+ 	
+ 	memcpy(buf,bitm,LOGICAL_BLOCK_SIZE);
+ #ifdef LITT_ENDIAN
+Index: unadf-0.7.11a/Lib/adf_bitm.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_bitm.h	2006-12-03 17:23:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_bitm.h	2012-05-31 17:10:09.000000000 +0200
+@@ -37,7 +37,7 @@
+ 
+ SECTNUM adfGet1FreeBlock(struct Volume *vol);
+ RETCODE adfUpdateBitmap(struct Volume *vol);
+-PREFIX long adfCountFreeBlocks(struct Volume* vol);
++PREFIX int32_t adfCountFreeBlocks(struct Volume* vol);
+ RETCODE adfReadBitmap(struct Volume* , SECTNUM nBlock, struct bRootBlock* root);
+ BOOL adfIsBlockFree(struct Volume* vol, SECTNUM nSect);
+ void adfSetBlockFree(struct Volume* vol, SECTNUM nSect);
+Index: unadf-0.7.11a/Lib/adf_blk.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_blk.h	2006-12-03 18:44:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_blk.h	2012-05-31 17:10:09.000000000 +0200
+@@ -25,12 +25,13 @@
+  *
+  */
+ 
++#include <stdint.h>
+ 
+ #ifndef ADF_BLK_H
+ #define ADF_BLK_H 1
+ 
+-#define ULONG   unsigned long
+-#define USHORT  unsigned short
++#define ULONG   uint32_t
++#define USHORT  uint16_t
+ #define UCHAR   unsigned char
+ 
+ #define LOGICAL_BLOCK_SIZE    512
+@@ -105,129 +106,129 @@
+ struct bBootBlock {
+ /*000*/	char	dosType[4];
+ /*004*/	ULONG	checkSum;
+-/*008*/	long	rootBlock;
++/*008*/	int32_t	rootBlock;
+ /*00c*/	UCHAR	data[500+512];
+ };
+ 
+ 
+ struct bRootBlock {
+-/*000*/	long	type;
+-        long	headerKey;
+-        long	highSeq;
+-/*00c*/	long	hashTableSize;
+-        long	firstData;
++/*000*/	int32_t	type;
++        int32_t	headerKey;
++        int32_t	highSeq;
++/*00c*/	int32_t	hashTableSize;
++        int32_t	firstData;
+ /*014*/	ULONG	checkSum;
+-/*018*/	long	hashTable[HT_SIZE];		/* hash table */
+-/*138*/	long	bmFlag;				/* bitmap flag, -1 means VALID */
+-/*13c*/	long	bmPages[BM_SIZE];
+-/*1a0*/	long	bmExt;
+-/*1a4*/	long	cDays; 	/* creation date FFS and OFS */
+-/*1a8*/	long	cMins;
+-/*1ac*/	long	cTicks;
++/*018*/	int32_t	hashTable[HT_SIZE];		/* hash table */
++/*138*/	int32_t	bmFlag;				/* bitmap flag, -1 means VALID */
++/*13c*/	int32_t	bmPages[BM_SIZE];
++/*1a0*/	int32_t	bmExt;
++/*1a4*/	int32_t	cDays; 	/* creation date FFS and OFS */
++/*1a8*/	int32_t	cMins;
++/*1ac*/	int32_t	cTicks;
+ /*1b0*/	char	nameLen;
+ /*1b1*/	char 	diskName[MAXNAMELEN+1];
+         char	r2[8];
+-/*1d8*/	long	days;		/* last access : days after 1 jan 1978 */
+-/*1dc*/	long	mins;		/* hours and minutes in minutes */
+-/*1e0*/	long	ticks;		/* 1/50 seconds */
+-/*1e4*/	long	coDays;	/* creation date OFS */
+-/*1e8*/	long	coMins;
+-/*1ec*/	long	coTicks;
+-        long	nextSameHash;	/* == 0 */
+-        long	parent;		/* == 0 */
+-/*1f8*/	long	extension;		/* FFS: first directory cache block */
+-/*1fc*/	long	secType;	/* == 1 */
++/*1d8*/	int32_t	days;		/* last access : days after 1 jan 1978 */
++/*1dc*/	int32_t	mins;		/* hours and minutes in minutes */
++/*1e0*/	int32_t	ticks;		/* 1/50 seconds */
++/*1e4*/	int32_t	coDays;	/* creation date OFS */
++/*1e8*/	int32_t	coMins;
++/*1ec*/	int32_t	coTicks;
++        int32_t	nextSameHash;	/* == 0 */
++        int32_t	parent;		/* == 0 */
++/*1f8*/	int32_t	extension;		/* FFS: first directory cache block */
++/*1fc*/	int32_t	secType;	/* == 1 */
+ };
+ 
+ 
+ struct bFileHeaderBlock {
+-/*000*/	long	type;		/* == 2 */
+-/*004*/	long	headerKey;	/* current block number */
+-/*008*/	long	highSeq;	/* number of data block in this hdr block */
+-/*00c*/	long	dataSize;	/* == 0 */
+-/*010*/	long	firstData;
++/*000*/	int32_t	type;		/* == 2 */
++/*004*/	int32_t	headerKey;	/* current block number */
++/*008*/	int32_t	highSeq;	/* number of data block in this hdr block */
++/*00c*/	int32_t	dataSize;	/* == 0 */
++/*010*/	int32_t	firstData;
+ /*014*/	ULONG	checkSum;
+-/*018*/	long	dataBlocks[MAX_DATABLK];
+-/*138*/	long	r1;
+-/*13c*/	long	r2;
+-/*140*/	long	access;	/* bit0=del, 1=modif, 2=write, 3=read */
+-/*144*/	unsigned long	byteSize;
++/*018*/	int32_t	dataBlocks[MAX_DATABLK];
++/*138*/	int32_t	r1;
++/*13c*/	int32_t	r2;
++/*140*/	int32_t	access;	/* bit0=del, 1=modif, 2=write, 3=read */
++/*144*/	uint32_t	byteSize;
+ /*148*/	char	commLen;
+ /*149*/	char	comment[MAXCMMTLEN+1];
+         char	r3[91-(MAXCMMTLEN+1)];
+-/*1a4*/	long	days;
+-/*1a8*/	long	mins;
+-/*1ac*/	long	ticks;
++/*1a4*/	int32_t	days;
++/*1a8*/	int32_t	mins;
++/*1ac*/	int32_t	ticks;
+ /*1b0*/	char	nameLen;
+ /*1b1*/	char	fileName[MAXNAMELEN+1];
+-        long	r4;
+-/*1d4*/	long	real;		/* unused == 0 */
+-/*1d8*/	long	nextLink;	/* link chain */
+-        long	r5[5];
+-/*1f0*/	long	nextSameHash;	/* next entry with sane hash */
+-/*1f4*/	long	parent;		/* parent directory */
+-/*1f8*/	long	extension;	/* pointer to extension block */
+-/*1fc*/	long	secType;	/* == -3 */
++        int32_t	r4;
++/*1d4*/	int32_t	real;		/* unused == 0 */
++/*1d8*/	int32_t	nextLink;	/* link chain */
++        int32_t	r5[5];
++/*1f0*/	int32_t	nextSameHash;	/* next entry with sane hash */
++/*1f4*/	int32_t	parent;		/* parent directory */
++/*1f8*/	int32_t	extension;	/* pointer to extension block */
++/*1fc*/	int32_t	secType;	/* == -3 */
+ };
+ 
+ 
+ /*--- file header extension block structure ---*/
+ 
+ struct bFileExtBlock {
+-/*000*/	long	type;		/* == 0x10 */
+-/*004*/	long	headerKey;
+-/*008*/	long	highSeq;
+-/*00c*/	long	dataSize;	/* == 0 */
+-/*010*/	long	firstData;	/* == 0 */
++/*000*/	int32_t	type;		/* == 0x10 */
++/*004*/	int32_t	headerKey;
++/*008*/	int32_t	highSeq;
++/*00c*/	int32_t	dataSize;	/* == 0 */
++/*010*/	int32_t	firstData;	/* == 0 */
+ /*014*/	ULONG	checkSum;
+-/*018*/	long	dataBlocks[MAX_DATABLK];
+-        long	r[45];
+-        long	info;		/* == 0 */
+-        long	nextSameHash;	/* == 0 */
+-/*1f4*/	long	parent;		/* header block */
+-/*1f8*/	long	extension;	/* next header extension block */
+-/*1fc*/	long	secType;	/* -3 */	
++/*018*/	int32_t	dataBlocks[MAX_DATABLK];
++        int32_t	r[45];
++        int32_t	info;		/* == 0 */
++        int32_t	nextSameHash;	/* == 0 */
++/*1f4*/	int32_t	parent;		/* header block */
++/*1f8*/	int32_t	extension;	/* next header extension block */
++/*1fc*/	int32_t	secType;	/* -3 */	
+ };
+ 
+ 
+ 
+ struct bDirBlock {
+-/*000*/	long	type;		/* == 2 */
+-/*004*/	long	headerKey;
+-/*008*/	long	highSeq;	/* == 0 */
+-/*00c*/	long	hashTableSize;	/* == 0 */
+-        long	r1;		/* == 0 */
++/*000*/	int32_t	type;		/* == 2 */
++/*004*/	int32_t	headerKey;
++/*008*/	int32_t	highSeq;	/* == 0 */
++/*00c*/	int32_t	hashTableSize;	/* == 0 */
++        int32_t	r1;		/* == 0 */
+ /*014*/	ULONG	checkSum;
+-/*018*/	long	hashTable[HT_SIZE];		/* hash table */
+-        long	r2[2];
+-/*140*/	long	access;
+-        long	r4;		/* == 0 */
++/*018*/	int32_t	hashTable[HT_SIZE];		/* hash table */
++        int32_t	r2[2];
++/*140*/	int32_t	access;
++        int32_t	r4;		/* == 0 */
+ /*148*/	char	commLen;
+ /*149*/	char	comment[MAXCMMTLEN+1];
+         char	r5[91-(MAXCMMTLEN+1)];
+-/*1a4*/	long	days;		/* last access */
+-/*1a8*/	long	mins;
+-/*1ac*/	long	ticks;
++/*1a4*/	int32_t	days;		/* last access */
++/*1a8*/	int32_t	mins;
++/*1ac*/	int32_t	ticks;
+ /*1b0*/	char	nameLen;
+ /*1b1*/	char 	dirName[MAXNAMELEN+1];
+-        long	r6;
+-/*1d4*/	long	real;		/* ==0 */
+-/*1d8*/	long	nextLink;	/* link list */
+-        long	r7[5];
+-/*1f0*/	long	nextSameHash;
+-/*1f4*/	long	parent;
+-/*1f8*/	long	extension;		/* FFS : first directory cache */
+-/*1fc*/	long	secType;	/* == 2 */
++        int32_t	r6;
++/*1d4*/	int32_t	real;		/* ==0 */
++/*1d8*/	int32_t	nextLink;	/* link list */
++        int32_t	r7[5];
++/*1f0*/	int32_t	nextSameHash;
++/*1f4*/	int32_t	parent;
++/*1f8*/	int32_t	extension;		/* FFS : first directory cache */
++/*1fc*/	int32_t	secType;	/* == 2 */
+ };
+ 
+ 
+ 
+ struct bOFSDataBlock{
+-/*000*/	long	type;		/* == 8 */
+-/*004*/	long	headerKey;	/* pointer to file_hdr block */
+-/*008*/	long	seqNum;	/* file data block number */
+-/*00c*/	long	dataSize;	/* <= 0x1e8 */
+-/*010*/	long	nextData;	/* next data block */
++/*000*/	int32_t	type;		/* == 8 */
++/*004*/	int32_t	headerKey;	/* pointer to file_hdr block */
++/*008*/	int32_t	seqNum;	/* file data block number */
++/*00c*/	int32_t	dataSize;	/* <= 0x1e8 */
++/*010*/	int32_t	nextData;	/* next data block */
+ /*014*/	ULONG	checkSum;
+ /*018*/	UCHAR	data[488];
+ /*200*/	};
+@@ -242,31 +243,31 @@
+ 
+ 
+ struct bBitmapExtBlock {
+-/*000*/	long	bmPages[127];
+-/*1fc*/	long	nextBlock;
++/*000*/	int32_t	bmPages[127];
++/*1fc*/	int32_t	nextBlock;
+ 	};
+ 
+ 
+ struct bLinkBlock {
+-/*000*/	long	type;		/* == 2 */
+-/*004*/	long	headerKey;	/* self pointer */
+-        long	r1[3];
++/*000*/	int32_t	type;		/* == 2 */
++/*004*/	int32_t	headerKey;	/* self pointer */
++        int32_t	r1[3];
+ /*014*/	ULONG	checkSum;
+ /*018*/	char	realName[64];
+-        long	r2[83];
+-/*1a4*/	long	days;		/* last access */
+-/*1a8*/	long	mins;
+-/*1ac*/	long	ticks;
++        int32_t	r2[83];
++/*1a4*/	int32_t	days;		/* last access */
++/*1a8*/	int32_t	mins;
++/*1ac*/	int32_t	ticks;
+ /*1b0*/	char	nameLen;
+ /*1b1*/	char 	name[MAXNAMELEN+1];
+-        long	r3;
+-/*1d4*/	long	realEntry;
+-/*1d8*/	long	nextLink;
+-        long	r4[5];
+-/*1f0*/	long	nextSameHash;
+-/*1f4*/	long	parent;	
+-        long	r5;
+-/*1fc*/	long	secType;	/* == -4, 4, 3 */
++        int32_t	r3;
++/*1d4*/	int32_t	realEntry;
++/*1d8*/	int32_t	nextLink;
++        int32_t	r4[5];
++/*1f0*/	int32_t	nextSameHash;
++/*1f4*/	int32_t	parent;	
++        int32_t	r5;
++/*1fc*/	int32_t	secType;	/* == -4, 4, 3 */
+ 	};
+ 
+ 
+@@ -274,11 +275,11 @@
+ /*--- directory cache block structure ---*/
+ 
+ struct bDirCacheBlock {
+-/*000*/	long	type;		/* == 33 */
+-/*004*/	long	headerKey;
+-/*008*/	long	parent;
+-/*00c*/	long	recordsNb;
+-/*010*/	long	nextDirC;
++/*000*/	int32_t	type;		/* == 33 */
++/*004*/	int32_t	headerKey;
++/*008*/	int32_t	parent;
++/*00c*/	int32_t	recordsNb;
++/*010*/	int32_t	nextDirC;
+ /*014*/	ULONG	checkSum;
+ /*018*/	unsigned char records[488];
+ 	};
+Index: unadf-0.7.11a/Lib/adf_cache.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_cache.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_cache.c	2012-05-31 17:10:09.000000000 +0200
+@@ -27,6 +27,7 @@
+ 
+ #include<stdlib.h>
+ #include<string.h>
++#include<stdint.h>
+ 
+ #include"adf_defs.h"
+ #include"adf_str.h"
+@@ -253,9 +254,9 @@
+     else
+         newEntry->size = 0L;
+     newEntry->protect = entry->access;
+-    newEntry->days = (short)entry->days;
+-    newEntry->mins = (short)entry->mins;
+-    newEntry->ticks  = (short)entry->ticks;
++    newEntry->days = (int16_t)entry->days;
++    newEntry->mins = (int16_t)entry->mins;
++    newEntry->ticks  = (int16_t)entry->ticks;
+     newEntry->type = (signed char)entry->secType;
+     newEntry->nLen = entry->nameLen;
+     memcpy(newEntry->name, entry->name, newEntry->nLen);
+@@ -361,7 +362,7 @@
+     int entryLen;
+ 
+     entryLen = adfEntry2CacheEntry(entry, &newEntry);
+-/*printf("adfAddInCache--%4ld %2d %6ld %8lx %4d %2d:%02d:%02d %30s %22s\n",
++/*printf("adfAddInCache--%4ld %2d %6d %8lx %4d %2d:%02d:%02d %30s %22s\n",
+     newEntry.header, newEntry.type, newEntry.size, newEntry.protect,
+     newEntry.days, newEntry.mins/60, newEntry.mins%60, 
+ 	newEntry.ticks/50,
+@@ -375,7 +376,7 @@
+ /*printf("parent=%4ld\n",dirc.parent);*/
+         while(n < dirc.recordsNb) {
+             adfGetCacheEntry(&dirc, &offset, &caEntry);
+-/*printf("*%4ld %2d %6ld %8lx %4d %2d:%02d:%02d %30s %22s\n",
++/*printf("*%4ld %2d %6d %8lx %4d %2d:%02d:%02d %30s %22s\n",
+     caEntry.header, caEntry.type, caEntry.size, caEntry.protect,
+     caEntry.days, caEntry.mins/60, caEntry.mins%60, 
+ 	caEntry.ticks/50,
+@@ -424,7 +425,7 @@
+ 			return RC_ERROR;
+         dirc.nextDirC = nCache;
+     }
+-/*printf("dirc.headerKey=%ld\n",dirc.headerKey);*/
++/*printf("dirc.headerKey=%d\n",dirc.headerKey);*/
+     if (adfWriteDirCBlock(vol, dirc.headerKey, &dirc)!=RC_OK)
+ 		return RC_ERROR;
+ /*if (strcmp(entry->name,"file_5u")==0)
+@@ -454,7 +455,7 @@
+     nSect = parent->extension;
+     found = FALSE;
+     do {
+-/*printf("dirc=%ld\n",nSect);*/
++/*printf("dirc=%d\n",nSect);*/
+         if (adfReadDirCBlock(vol, nSect, &dirc)!=RC_OK)
+ 			return RC_ERROR;
+         offset = 0; n = 0;
+@@ -545,7 +546,7 @@
+         dirc.parent = parent->headerKey;
+     else {
+         (*adfEnv.wFct)("adfCreateEmptyCache : unknown secType");
+-/*printf("secType=%ld\n",parent->secType);*/
++/*printf("secType=%d\n",parent->secType);*/
+     }
+         
+     dirc.recordsNb = 0;
+@@ -588,10 +589,10 @@
+  * adfWriteDirCblock
+  *
+  */
+-RETCODE adfWriteDirCBlock(struct Volume* vol, long nSect, struct bDirCacheBlock* dirc)
++RETCODE adfWriteDirCBlock(struct Volume* vol, int32_t nSect, struct bDirCacheBlock* dirc)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-    unsigned long newSum;
++    uint32_t newSum;
+  
+     dirc->type = T_DIRC;
+     dirc->headerKey = nSect; 
+Index: unadf-0.7.11a/Lib/adf_cache.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_cache.h	2006-12-03 17:24:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_cache.h	2012-05-31 17:10:09.000000000 +0200
+@@ -41,7 +41,7 @@
+ RETCODE adfDelFromCache(struct Volume *vol, struct bEntryBlock *parent, SECTNUM);
+ 
+ RETCODE adfReadDirCBlock(struct Volume *vol, SECTNUM nSect, struct bDirCacheBlock *dirc);
+-RETCODE adfWriteDirCBlock(struct Volume*, long, struct bDirCacheBlock* dirc);
++RETCODE adfWriteDirCBlock(struct Volume*, int32_t, struct bDirCacheBlock* dirc);
+ 
+ #endif /* _ADF_CACHE_H */
+ 
+Index: unadf-0.7.11a/Lib/adf_defs.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_defs.h	2006-12-03 19:41:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_defs.h	2012-05-31 17:10:09.000000000 +0200
+@@ -25,20 +25,22 @@
+  */
+ 
+ 
++#include <stdint.h>
++
+ #ifndef _ADF_DEFS_H
+ #define _ADF_DEFS_H 1
+ 
+ #define ADFLIB_VERSION "0.7.11a"
+ #define ADFLIB_DATE "January 20th, 2007"
+ 
+-#define SECTNUM long
+-#define RETCODE long
++#define SECTNUM int32_t
++#define RETCODE int32_t
+ 
+ #define TRUE    1
+ #define FALSE   0
+ 
+-#define ULONG   unsigned long
+-#define USHORT  unsigned short
++#define ULONG   uint32_t
++#define USHORT  uint16_t
+ #define UCHAR   unsigned char
+ #define BOOL    int
+ 
+Index: unadf-0.7.11a/Lib/adf_dir.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_dir.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_dir.c	2012-05-31 17:10:09.000000000 +0200
+@@ -140,7 +140,7 @@
+                 }
+             }
+             nSect2 = previous.nextSameHash;
+-/*printf("sect=%ld\n",nSect2);*/
++/*printf("sect=%d\n",nSect2);*/
+         }while(nSect2!=0);
+         
+         previous.nextSameHash = nSect;
+@@ -202,7 +202,7 @@
+         (*adfEnv.wFct)(buf);
+         return RC_ERROR;
+     }
+-/*    printf("name=%s  nSect2=%ld\n",name, nSect2);*/
++/*    printf("name=%s  nSect2=%d\n",name, nSect2);*/
+ 
+     /* in parent hashTable */
+     if (nSect2==0) {
+@@ -237,7 +237,7 @@
+             (*adfEnv.notifyFct)(pSect,ST_DIR);
+     }
+     else {
+-      sprintf(buf, "adfRemoveEntry : secType %ld not supported", entry.secType);
++      sprintf(buf, "adfRemoveEntry : secType %d not supported", entry.secType);
+         (*adfEnv.wFct)(buf);
+         return RC_ERROR;
+     }
+@@ -291,7 +291,7 @@
+  *
+  */
+ RETCODE adfSetEntryAccess(struct Volume* vol, SECTNUM parSect, char* name,
+-    long newAcc)
++    int32_t newAcc)
+ {
+     struct bEntryBlock parent, entry;
+     SECTNUM nSect;
+@@ -365,7 +365,7 @@
+     int i;
+     struct Entry *entry;
+     SECTNUM nextSector;
+-    long *hashTable;
++    int32_t *hashTable;
+     struct bEntryBlock parent;
+ 
+ 
+@@ -542,7 +542,7 @@
+     entry->name = strdup(buf);
+     if (entry->name==NULL)
+         return RC_MALLOC;
+-/*printf("len=%d name=%s parent=%ld\n",entryBlk->nameLen, entry->name,entry->parent );*/
++/*printf("len=%d name=%s parent=%d\n",entryBlk->nameLen, entry->name,entry->parent );*/
+     adfDays2Date( entryBlk->days, &(entry->year), &(entry->month), &(entry->days));
+ 	entry->hour = entryBlk->mins/60;
+     entry->mins = entryBlk->mins%60;
+@@ -595,7 +595,7 @@
+  * adfNameToEntryBlk
+  *
+  */
+-SECTNUM adfNameToEntryBlk(struct Volume *vol, long ht[], char* name, 
++SECTNUM adfNameToEntryBlk(struct Volume *vol, int32_t ht[], char* name, 
+     struct bEntryBlock *entry, SECTNUM *nUpdSect)
+ {
+     int hashVal;
+@@ -653,7 +653,7 @@
+  *
+  */
+     char* 
+-adfAccess2String(long acc)
++adfAccess2String(int32_t acc)
+ {
+     static char ret[8+1];
+ 
+@@ -815,7 +815,7 @@
+     int 
+ adfGetHashValue(unsigned char *name, BOOL intl)
+ {
+-    unsigned long hash, len;
++    uint32_t hash, len;
+     unsigned int i;
+     unsigned char upper;
+ 
+@@ -839,11 +839,11 @@
+  */
+ void printEntry(struct Entry* entry)
+ {
+-    printf("%-30s %2d %6ld ", entry->name, entry->type, entry->sector);
++    printf("%-30s %2d %6d ", entry->name, entry->type, entry->sector);
+     printf("%2d/%02d/%04d %2d:%02d:%02d",entry->days, entry->month, entry->year,
+         entry->hour, entry->mins, entry->secs);
+     if (entry->type==ST_FILE)
+-        printf("%8ld ",entry->size);
++        printf("%8d ",entry->size);
+     else
+         printf("         ");
+     if (entry->type==ST_FILE || entry->type==ST_DIR)
+@@ -975,7 +975,7 @@
+     }
+     if (ent->nameLen<0 || ent->nameLen>MAXNAMELEN || ent->commLen>MAXCMMTLEN) {
+         (*adfEnv.wFct)("adfReadEntryBlock : nameLen or commLen incorrect"); 
+-        printf("nameLen=%d, commLen=%d, name=%s sector%ld\n",
++        printf("nameLen=%d, commLen=%d, name=%s sector%d\n",
+             ent->nameLen,ent->commLen,ent->name, ent->headerKey);
+     }
+ 
+@@ -990,7 +990,7 @@
+ RETCODE adfWriteEntryBlock(struct Volume* vol, SECTNUM nSect, struct bEntryBlock *ent)
+ {
+     unsigned char buf[512];
+-    unsigned long newSum;
++    uint32_t newSum;
+    
+ 
+     memcpy(buf, ent, sizeof(struct bEntryBlock));
+@@ -1015,7 +1015,7 @@
+ RETCODE adfWriteDirBlock(struct Volume* vol, SECTNUM nSect, struct bDirBlock *dir)
+ {
+     unsigned char buf[512];
+-    unsigned long newSum;
++    uint32_t newSum;
+     
+ 
+ /*printf("wdirblk=%d\n",nSect);*/
+Index: unadf-0.7.11a/Lib/adf_dir.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_dir.h	2006-12-03 17:25:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_dir.h	2012-05-31 17:10:09.000000000 +0200
+@@ -52,15 +52,15 @@
+ RETCODE adfWriteDirBlock(struct Volume* vol, SECTNUM nSect, struct bDirBlock *dir);
+ RETCODE adfWriteEntryBlock(struct Volume* vol, SECTNUM nSect, struct bEntryBlock *ent);
+ 
+-char* adfAccess2String(long acc);
++char* adfAccess2String(int32_t acc);
+ unsigned char adfIntlToUpper(unsigned char c);
+ int adfGetHashValue(unsigned char *name, BOOL intl);
+ void myToUpper( unsigned char *ostr, unsigned char *nstr, int,BOOL intl );
+ PREFIX RETCODE adfChangeDir(struct Volume* vol, char *name);
+ PREFIX RETCODE adfParentDir(struct Volume* vol);
+-PREFIX RETCODE adfSetEntryAccess(struct Volume*, SECTNUM, char*, long);
++PREFIX RETCODE adfSetEntryAccess(struct Volume*, SECTNUM, char*, int32_t);
+ PREFIX RETCODE adfSetEntryComment(struct Volume*, SECTNUM, char*, char*);
+-SECTNUM adfNameToEntryBlk(struct Volume *vol, long ht[], char* name, 
++SECTNUM adfNameToEntryBlk(struct Volume *vol, int32_t ht[], char* name, 
+     struct bEntryBlock *entry, SECTNUM *);
+ 
+ PREFIX void printEntry(struct Entry* entry);
+Index: unadf-0.7.11a/Lib/adf_disk.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_disk.c	2006-12-03 17:26:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_disk.c	2012-05-31 17:10:09.000000000 +0200
+@@ -42,7 +42,7 @@
+ 
+ extern struct Env adfEnv;
+ 
+-unsigned long bitMask[32] = { 
++uint32_t bitMask[32] = { 
+     0x1, 0x2, 0x4, 0x8,
+ 	0x10, 0x20, 0x40, 0x80,
+     0x100, 0x200, 0x400, 0x800,
+@@ -132,7 +132,7 @@
+ 		printf ("DIRCACHE ");
+ 	putchar('\n');
+ 
+-    printf("Free blocks = %ld\n", adfCountFreeBlocks(vol));
++    printf("Free blocks = %d\n", adfCountFreeBlocks(vol));
+     if (vol->readOnly)
+         printf("Read only\n");
+     else
+@@ -140,13 +140,13 @@
+  	
+     /* created */
+ 	adfDays2Date(root.coDays, &year, &month, &days);
+-    printf ("created %d/%02d/%02d %ld:%02ld:%02ld\n",days,month,year,
++    printf ("created %d/%02d/%02d %d:%02d:%02d\n",days,month,year,
+ 	    root.coMins/60,root.coMins%60,root.coTicks/50);	
+ 	adfDays2Date(root.days, &year, &month, &days);
+-    printf ("last access %d/%02d/%02d %ld:%02ld:%02ld,   ",days,month,year,
++    printf ("last access %d/%02d/%02d %d:%02d:%02d,   ",days,month,year,
+ 	    root.mins/60,root.mins%60,root.ticks/50);	
+ 	adfDays2Date(root.cDays, &year, &month, &days);
+-    printf ("%d/%02d/%02d %ld:%02ld:%02ld\n",days,month,year,
++    printf ("%d/%02d/%02d %d:%02d:%02d\n",days,month,year,
+ 	    root.cMins/60,root.cMins%60,root.cTicks/50);	
+ }
+ 
+@@ -159,7 +159,7 @@
+  */
+ struct Volume* adfMount( struct Device *dev, int nPart, BOOL readOnly )
+ {
+-    long nBlock;
++    int32_t nBlock;
+     struct bRootBlock root;
+ 	struct bBootBlock boot;
+ 	struct Volume* vol;
+@@ -173,7 +173,7 @@
+ 	vol->dev = dev;
+     vol->mounted = TRUE;
+ 
+-/*printf("first=%ld last=%ld root=%ld\n",vol->firstBlock,
++/*printf("first=%d last=%d root=%d\n",vol->firstBlock,
+  vol->lastBlock, vol->rootBlock);
+ */
+     if (adfReadBootBlock(vol, &boot)!=RC_OK) {
+@@ -235,7 +235,7 @@
+  *
+  * 
+  */
+-struct Volume* adfCreateVol( struct Device* dev, long start, long len, 
++struct Volume* adfCreateVol( struct Device* dev, int32_t start, int32_t len, 
+     char* volName, int volType )
+ {
+     struct bBootBlock boot;
+@@ -258,7 +258,7 @@
+     vol->firstBlock = (dev->heads * dev->sectors)*start;
+     vol->lastBlock = (vol->firstBlock + (dev->heads * dev->sectors)*len)-1;
+     vol->rootBlock = (vol->lastBlock - vol->firstBlock+1)/2;
+-/*printf("first=%ld last=%ld root=%ld\n",vol->firstBlock,
++/*printf("first=%d last=%d root=%d\n",vol->firstBlock,
+  vol->lastBlock, vol->rootBlock);
+ */
+     vol->curDirPtr = vol->rootBlock;
+@@ -347,7 +347,7 @@
+ 
+     if (adfEnv.useProgressBar)
+         (*adfEnv.progressBar)(100);
+-/*printf("free blocks %ld\n",adfCountFreeBlocks(vol));*/
++/*printf("free blocks %d\n",adfCountFreeBlocks(vol));*/
+ 
+     /* will be managed by adfMount() later */
+     adfFreeBitmap(vol);
+@@ -366,10 +366,10 @@
+  * read logical block
+  */
+ RETCODE
+-adfReadBlock(struct Volume* vol, long nSect, unsigned char* buf)
++adfReadBlock(struct Volume* vol, int32_t nSect, unsigned char* buf)
+ {
+   /*    char strBuf[80];*/
+-    long pSect;
++    int32_t pSect;
+     struct nativeFunctions *nFct;
+     RETCODE rc;
+ 
+@@ -384,21 +384,21 @@
+     if (adfEnv.useRWAccess)
+         (*adfEnv.rwhAccess)(pSect,nSect,FALSE);
+ 
+-/*printf("psect=%ld nsect=%ld\n",pSect,nSect);*/
+-/*    sprintf(strBuf,"ReadBlock : accessing logical block #%ld", nSect);	
++/*printf("psect=%d nsect=%d\n",pSect,nSect);*/
++/*    sprintf(strBuf,"ReadBlock : accessing logical block #%d", nSect);	
+     (*adfEnv.vFct)(strBuf);
+ */
+     if (pSect<vol->firstBlock || pSect>vol->lastBlock) {
+         (*adfEnv.wFct)("adfReadBlock : nSect out of range");
+         
+     }
+-/*printf("pSect R =%ld\n",pSect);*/
++/*printf("pSect R =%d\n",pSect);*/
+     nFct = adfEnv.nativeFct;
+     if (vol->dev->isNativeDev)
+         rc = (*nFct->adfNativeReadSector)(vol->dev, pSect, 512, buf);
+     else
+         rc = adfReadDumpSector(vol->dev, pSect, 512, buf);
+-/*printf("rc=%ld\n",rc);*/
++/*printf("rc=%d\n",rc);*/
+     if (rc!=RC_OK)
+         return RC_ERROR;
+     else
+@@ -410,9 +410,9 @@
+  * adfWriteBlock
+  *
+  */
+-RETCODE adfWriteBlock(struct Volume* vol, long nSect, unsigned char *buf)
++RETCODE adfWriteBlock(struct Volume* vol, int32_t nSect, unsigned char *buf)
+ {
+-    long pSect;
++    int32_t pSect;
+     struct nativeFunctions *nFct;
+     RETCODE rc;
+ 
+@@ -427,7 +427,7 @@
+     }
+ 
+     pSect = nSect+vol->firstBlock;
+-/*printf("write nsect=%ld psect=%ld\n",nSect,pSect);*/
++/*printf("write nsect=%d psect=%d\n",nSect,pSect);*/
+ 
+     if (adfEnv.useRWAccess)
+         (*adfEnv.rwhAccess)(pSect,nSect,TRUE);
+Index: unadf-0.7.11a/Lib/adf_disk.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_disk.h	2006-12-03 17:26:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_disk.h	2012-05-31 17:10:09.000000000 +0200
+@@ -38,14 +38,14 @@
+ PREFIX struct Volume* adfMount( struct Device *dev, int nPart, BOOL readOnly );
+ PREFIX void adfUnMount(struct Volume *vol);
+ PREFIX void adfVolumeInfo(struct Volume *vol);
+-struct Volume* adfCreateVol( struct Device* dev, long start, long len, 
++struct Volume* adfCreateVol( struct Device* dev, int32_t start, int32_t len, 
+     char* volName, int volType );
+ 
+-/*void adfReadBitmap(struct Volume* , long nBlock, struct bRootBlock* root);
++/*void adfReadBitmap(struct Volume* , int32_t nBlock, struct bRootBlock* root);
+ void adfUpdateBitmap(struct Volume*);
+ */
+-PREFIX RETCODE adfReadBlock(struct Volume* , long nSect, unsigned char* buf);
+-PREFIX RETCODE adfWriteBlock(struct Volume* , long nSect, unsigned char* buf);
++PREFIX RETCODE adfReadBlock(struct Volume* , int32_t nSect, unsigned char* buf);
++PREFIX RETCODE adfWriteBlock(struct Volume* , int32_t nSect, unsigned char* buf);
+ 
+ #endif /* _ADF_DISK_H */
+ 
+Index: unadf-0.7.11a/Lib/adf_dump.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_dump.c	2006-12-03 17:27:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_dump.c	2012-05-31 17:10:09.000000000 +0200
+@@ -44,7 +44,7 @@
+ RETCODE adfInitDumpDevice(struct Device* dev, char* name, BOOL ro)
+ {
+     struct nativeDevice* nDev;
+-    long size;
++    int32_t size;
+ 
+     nDev = (struct nativeDevice*)dev->nativeDev;
+ 
+@@ -92,14 +92,14 @@
+  * adfReadDumpSector
+  *
+  */
+-RETCODE adfReadDumpSector(struct Device *dev, long n, int size, unsigned char* buf)
++RETCODE adfReadDumpSector(struct Device *dev, int32_t n, int size, unsigned char* buf)
+ {
+     struct nativeDevice* nDev;
+     int r;
+ /*puts("adfReadDumpSector");*/
+     nDev = (struct nativeDevice*)dev->nativeDev;
+     r = fseek(nDev->fd, 512*n, SEEK_SET);
+-/*printf("nnn=%ld size=%d\n",n,size);*/
++/*printf("nnn=%d size=%d\n",n,size);*/
+     if (r==-1)
+         return RC_ERROR;
+ /*puts("123");*/
+@@ -117,7 +117,7 @@
+  * adfWriteDumpSector
+  *
+  */
+-RETCODE adfWriteDumpSector(struct Device *dev, long n, int size, unsigned char* buf)
++RETCODE adfWriteDumpSector(struct Device *dev, int32_t n, int size, unsigned char* buf)
+ {
+     struct nativeDevice* nDev;
+     int r;
+@@ -172,7 +172,7 @@
+         return RC_ERROR;
+     }
+ 
+-    dev->volList[0] = adfCreateVol( dev, 0L, (long)dev->cylinders, volName, volType );
++    dev->volList[0] = adfCreateVol( dev, 0L, (int32_t)dev->cylinders, volName, volType );
+     if (dev->volList[0]==NULL) {
+         free(dev->volList);
+         return RC_ERROR;
+@@ -191,12 +191,12 @@
+  * returns NULL if failed
+  */ 
+     struct Device*
+-adfCreateDumpDevice(char* filename, long cylinders, long heads, long sectors)
++adfCreateDumpDevice(char* filename, int32_t cylinders, int32_t heads, int32_t sectors)
+ {
+     struct Device* dev;
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+     struct nativeDevice* nDev;
+-/*    long i;*/
++/*    int32_t i;*/
+     int r;
+ 	
+     dev=(struct Device*)malloc(sizeof(struct Device));
+Index: unadf-0.7.11a/Lib/adf_dump.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_dump.h	2006-12-03 17:28:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_dump.h	2012-05-31 17:10:09.000000000 +0200
+@@ -26,12 +26,14 @@
+  *
+  */
+ 
++#include <stdint.h>
++
+ PREFIX     struct Device*
+-adfCreateDumpDevice(char* filename, long cyl, long heads, long sec);
++adfCreateDumpDevice(char* filename, int32_t cyl, int32_t heads, int32_t sec);
+ PREFIX RETCODE adfCreateHdFile(struct Device* dev, char* volName, int volType);
+ BOOL adfInitDumpDevice(struct Device* dev, char* name,BOOL);
+-BOOL adfReadDumpSector(struct Device *dev, long n, int size, unsigned char* buf);
+-BOOL adfWriteDumpSector(struct Device *dev, long n, int size, unsigned char* buf);
++BOOL adfReadDumpSector(struct Device *dev, int32_t n, int size, unsigned char* buf);
++BOOL adfWriteDumpSector(struct Device *dev, int32_t n, int size, unsigned char* buf);
+ void adfReleaseDumpDevice(struct Device *dev);
+ 
+ 
+Index: unadf-0.7.11a/Lib/adf_env.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_env.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_env.c	2012-05-31 17:10:09.000000000 +0200
+@@ -36,7 +36,7 @@
+ #include"Win32/defendian.h"
+ 
+ union u{
+-    long l;
++    int32_t l;
+     char c[4];
+     };
+ 
+@@ -46,7 +46,7 @@
+ {
+     /* display the physical sector, the logical block, and if the access is read or write */
+ 
+-    fprintf(stderr, "phy %ld / log %ld : %c\n", physical, logical, write ? 'W' : 'R');
++    fprintf(stderr, "phy %d / log %d : %c\n", physical, logical, write ? 'W' : 'R');
+ }
+ 
+ void progressBar(int perCentDone)
+@@ -71,16 +71,16 @@
+ {
+ /*    switch(changedType) {
+     case ST_FILE:
+-        fprintf(stderr,"Notification : sector %ld (FILE)\n",nSect);
++        fprintf(stderr,"Notification : sector %d (FILE)\n",nSect);
+         break;
+     case ST_DIR:
+-        fprintf(stderr,"Notification : sector %ld (DIR)\n",nSect);
++        fprintf(stderr,"Notification : sector %d (DIR)\n",nSect);
+         break;
+     case ST_ROOT:
+-        fprintf(stderr,"Notification : sector %ld (ROOT)\n",nSect);
++        fprintf(stderr,"Notification : sector %d (ROOT)\n",nSect);
+         break;
+     default:
+-        fprintf(stderr,"Notification : sector %ld (???)\n",nSect);
++        fprintf(stderr,"Notification : sector %d (???)\n",nSect);
+     }
+ */}
+ 
+@@ -95,10 +95,10 @@
+ 
+     /* internal checking */
+ 
+-    if (sizeof(short)!=2) 
+-        { fprintf(stderr,"Compilation error : sizeof(short)!=2\n"); exit(1); }
+-    if (sizeof(long)!=4) 
+-        { fprintf(stderr,"Compilation error : sizeof(short)!=2\n"); exit(1); }
++    if (sizeof(int16_t)!=2) 
++        { fprintf(stderr,"Compilation error : sizeof(int16_t)!=2\n"); exit(1); }
++    if (sizeof(int32_t)!=4) 
++        { fprintf(stderr,"Compilation error : sizeof(int16_t)!=2\n"); exit(1); }
+     if (sizeof(struct bEntryBlock)!=512)
+         { fprintf(stderr,"Internal error : sizeof(struct bEntryBlock)!=512\n"); exit(1); }
+     if (sizeof(struct bRootBlock)!=512)
+Index: unadf-0.7.11a/Lib/adf_file.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_file.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_file.c	2012-05-31 17:10:09.000000000 +0200
+@@ -74,13 +74,13 @@
+     }
+     if (file->writeMode) {
+         file->fileHdr->byteSize = file->pos;
+-/*printf("pos=%ld\n",file->pos);*/
++/*printf("pos=%d\n",file->pos);*/
+         adfTime2AmigaTime(adfGiveCurrentTime(),
+             &(file->fileHdr->days),&(file->fileHdr->mins),&(file->fileHdr->ticks) );
+         adfWriteFileHdrBlock(file->volume, file->fileHdr->headerKey, file->fileHdr);
+ 
+ 	    if (isDIRCACHE(file->volume->dosType)) {
+-/*printf("parent=%ld\n",file->fileHdr->parent);*/
++/*printf("parent=%d\n",file->fileHdr->parent);*/
+             adfReadEntryBlock(file->volume, file->fileHdr->parent, &parent);
+             adfUpdateCache(file->volume, &parent, (struct bEntryBlock*)file->fileHdr,FALSE);
+         }
+@@ -96,10 +96,10 @@
+ RETCODE adfGetFileBlocks(struct Volume* vol, struct bFileHeaderBlock* entry,
+     struct FileBlocks* fileBlocks)
+ {
+-    long n, m;
++    int32_t n, m;
+     SECTNUM nSect;
+     struct bFileExtBlock extBlock;
+-    long i;
++    int32_t i;
+ 
+     fileBlocks->header = entry->headerKey;
+     adfFileRealSize( entry->byteSize, vol->datablockSize, 
+@@ -170,9 +170,9 @@
+  * Compute number of datablocks and file extension blocks
+  *
+  */
+-long adfFileRealSize(unsigned long size, int blockSize, long *dataN, long *extN)
++int32_t adfFileRealSize(uint32_t size, int blockSize, int32_t *dataN, int32_t *extN)
+ {
+-    long data, ext;
++    int32_t data, ext;
+ 
+    /*--- number of data blocks ---*/
+     data = size / blockSize;
+@@ -203,9 +203,9 @@
+ RETCODE adfWriteFileHdrBlock(struct Volume *vol, SECTNUM nSect, struct bFileHeaderBlock* fhdr)
+ {
+     unsigned char buf[512];
+-    unsigned long newSum;
++    uint32_t newSum;
+     RETCODE rc = RC_OK;
+-/*printf("adfWriteFileHdrBlock %ld\n",nSect);*/
++/*printf("adfWriteFileHdrBlock %d\n",nSect);*/
+     fhdr->type = T_HEADER;
+     fhdr->dataSize = 0;
+     fhdr->secType = ST_FILE;
+@@ -216,7 +216,7 @@
+ #endif
+     newSum = adfNormalSum(buf,20,sizeof(struct bFileHeaderBlock));
+     swLong(buf+20, newSum);
+-/*    *(unsigned long*)(buf+20) = swapLong((unsigned char*)&newSum);*/
++/*    *(uint32_t*)(buf+20) = swapLong((unsigned char*)&newSum);*/
+ 
+     adfWriteBlock(vol, nSect, buf);
+ 
+@@ -228,10 +228,10 @@
+  * adfFileSeek
+  *
+  */
+-void adfFileSeek(struct File *file, unsigned long pos)
++void adfFileSeek(struct File *file, uint32_t pos)
+ {
+     SECTNUM extBlock, nSect;
+-    unsigned long nPos;
++    uint32_t nPos;
+     int i;
+     
+     nPos = min(pos, file->fileHdr->byteSize);
+@@ -366,9 +366,9 @@
+  * adfReadFile
+  *
+  */
+-long adfReadFile(struct File* file, long n, unsigned char *buffer)
++int32_t adfReadFile(struct File* file, int32_t n, unsigned char *buffer)
+ {
+-    long bytesRead;
++    int32_t bytesRead;
+     unsigned char *dataPtr, *bufPtr;
+ 	int blockSize, size;
+ 
+@@ -470,9 +470,9 @@
+  * adfWriteFile
+  *
+  */
+-long adfWriteFile(struct File *file, long n, unsigned char *buffer)
++int32_t adfWriteFile(struct File *file, int32_t n, unsigned char *buffer)
+ {
+-    long bytesWritten;
++    int32_t bytesWritten;
+     unsigned char *dataPtr, *bufPtr;
+     int size, blockSize;
+     struct bOFSDataBlock *dataB;
+@@ -536,7 +536,7 @@
+     if (file->nDataBlock<MAX_DATABLK) {
+         nSect = adfGet1FreeBlock(file->volume);
+         if (nSect==-1) return -1;
+-/*printf("adfCreateNextFileBlock fhdr %ld\n",nSect);*/
++/*printf("adfCreateNextFileBlock fhdr %d\n",nSect);*/
+         if (file->nDataBlock==0)
+             file->fileHdr->firstData = nSect;
+         file->fileHdr->dataBlocks[MAX_DATABLK-1-file->nDataBlock] = nSect;
+@@ -546,7 +546,7 @@
+         /* one more sector is needed for one file extension block */
+         if ((file->nDataBlock%MAX_DATABLK)==0) {
+             extSect = adfGet1FreeBlock(file->volume);
+-/*printf("extSect=%ld\n",extSect);*/
++/*printf("extSect=%d\n",extSect);*/
+             if (extSect==-1) return -1;
+ 
+             /* the future block is the first file extension block */
+@@ -576,13 +576,13 @@
+             file->currentExt->highSeq = 0L;
+             file->currentExt->extension = 0L;
+             file->posInExtBlk = 0L;
+-/*printf("extSect=%ld\n",extSect);*/
++/*printf("extSect=%d\n",extSect);*/
+         }
+         nSect = adfGet1FreeBlock(file->volume);
+         if (nSect==-1) 
+             return -1;
+         
+-/*printf("adfCreateNextFileBlock ext %ld\n",nSect);*/
++/*printf("adfCreateNextFileBlock ext %d\n",nSect);*/
+ 
+         file->currentExt->dataBlocks[MAX_DATABLK-1-file->posInExtBlk] = nSect;
+         file->currentExt->highSeq++;
+@@ -624,10 +624,10 @@
+  * adfPos2DataBlock
+  *
+  */
+-long adfPos2DataBlock(long pos, int blockSize, 
+-    int *posInExtBlk, int *posInDataBlk, long *curDataN )
++int32_t adfPos2DataBlock(int32_t pos, int blockSize, 
++    int *posInExtBlk, int *posInDataBlk, int32_t *curDataN )
+ {
+-    long extBlock;
++    int32_t extBlock;
+ 
+     *posInDataBlk = pos%blockSize;
+     *curDataN = pos/blockSize;
+@@ -666,7 +666,7 @@
+         swapEndian(data, SWBL_DATA);
+ #endif
+         dBlock = (struct bOFSDataBlock*)data;
+-/*printf("adfReadDataBlock %ld\n",nSect);*/
++/*printf("adfReadDataBlock %d\n",nSect);*/
+ 
+         if (dBlock->checkSum!=adfNormalSum(buf,20,sizeof(struct bOFSDataBlock)))
+             (*adfEnv.wFct)("adfReadDataBlock : invalid checksum");
+@@ -691,7 +691,7 @@
+ RETCODE adfWriteDataBlock(struct Volume *vol, SECTNUM nSect, void *data)
+ {
+     unsigned char buf[512];
+-    unsigned long newSum;
++    uint32_t newSum;
+     struct bOFSDataBlock *dataB;
+     RETCODE rc = RC_OK;
+ 
+@@ -705,13 +705,13 @@
+ #endif
+         newSum = adfNormalSum(buf,20,512);
+         swLong(buf+20,newSum);
+-/*        *(long*)(buf+20) = swapLong((unsigned char*)&newSum);*/
++/*        *(int32_t*)(buf+20) = swapLong((unsigned char*)&newSum);*/
+         adfWriteBlock(vol,nSect,buf);
+     }
+     else {
+         adfWriteBlock(vol,nSect,data);
+     }
+-/*printf("adfWriteDataBlock %ld\n",nSect);*/
++/*printf("adfWriteDataBlock %d\n",nSect);*/
+ 
+     return rc;
+ }
+@@ -758,7 +758,7 @@
+ RETCODE adfWriteFileExtBlock(struct Volume *vol, SECTNUM nSect, struct bFileExtBlock* fext)
+ {
+     unsigned char buf[512];
+-    unsigned long newSum;
++    uint32_t newSum;
+     RETCODE rc = RC_OK;
+ 
+     fext->type = T_LIST;
+@@ -772,7 +772,7 @@
+ #endif
+     newSum = adfNormalSum(buf,20,512);
+     swLong(buf+20,newSum);
+-/*    *(long*)(buf+20) = swapLong((unsigned char*)&newSum);*/
++/*    *(int32_t*)(buf+20) = swapLong((unsigned char*)&newSum);*/
+ 
+     adfWriteBlock(vol,nSect,buf);
+ 
+Index: unadf-0.7.11a/Lib/adf_file.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_file.h	2006-12-03 17:31:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_file.h	2012-05-31 17:10:09.000000000 +0200
+@@ -33,9 +33,9 @@
+ RETCODE adfGetFileBlocks(struct Volume* vol, struct bFileHeaderBlock* entry,
+     struct FileBlocks* );
+ RETCODE adfFreeFileBlocks(struct Volume* vol, struct bFileHeaderBlock *entry);
+-PREFIX long adfFileRealSize(unsigned long size, int blockSize, long *dataN, long *extN);
++PREFIX int32_t adfFileRealSize(uint32_t size, int blockSize, int32_t *dataN, int32_t *extN);
+ 
+-long adfPos2DataBlock(long pos, int blockSize, int *posInExtBlk, int *posInDataBlk, long *curDataN );
++int32_t adfPos2DataBlock(int32_t pos, int blockSize, int *posInExtBlk, int *posInDataBlk, int32_t *curDataN );
+ 
+ RETCODE adfWriteFileHdrBlock(struct Volume *vol, SECTNUM nSect, struct bFileHeaderBlock* fhdr);
+ 
+@@ -46,11 +46,11 @@
+ 
+ PREFIX struct File* adfOpenFile(struct Volume *vol, char* name, char *mode);
+ PREFIX void adfCloseFile(struct File *file);
+-PREFIX long adfReadFile(struct File* file, long n, unsigned char *buffer);
++PREFIX int32_t adfReadFile(struct File* file, int32_t n, unsigned char *buffer);
+ PREFIX BOOL adfEndOfFile(struct File* file);
+-PREFIX void adfFileSeek(struct File *file, unsigned long pos);		/* BV */
++PREFIX void adfFileSeek(struct File *file, uint32_t pos);		/* BV */
+ RETCODE adfReadNextFileBlock(struct File* file);
+-PREFIX long adfWriteFile(struct File *file, long n, unsigned char *buffer);
++PREFIX int32_t adfWriteFile(struct File *file, int32_t n, unsigned char *buffer);
+ SECTNUM adfCreateNextFileBlock(struct File* file);
+ PREFIX void adfFlushFile(struct File *file);
+ 
+Index: unadf-0.7.11a/Lib/adf_hd.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_hd.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_hd.c	2012-05-31 17:10:09.000000000 +0200
+@@ -81,9 +81,9 @@
+ {
+ 	int i;
+ 	
+-	printf("Cylinders   = %ld\n",dev->cylinders);
+-    printf("Heads       = %ld\n",dev->heads);
+-    printf("Sectors/Cyl = %ld\n\n",dev->sectors);
++	printf("Cylinders   = %d\n",dev->cylinders);
++    printf("Heads       = %d\n",dev->heads);
++    printf("Sectors/Cyl = %d\n\n",dev->sectors);
+ 	if (!dev->isNativeDev)
+         printf("Dump device\n\n");
+     else
+@@ -106,12 +106,12 @@
+ 
+     for(i=0; i<dev->nVol; i++) {
+         if (dev->volList[i]->volName)
+-            printf("%2d :  %7ld ->%7ld, \"%s\"", i,
++            printf("%2d :  %7d ->%7d, \"%s\"", i,
+ 			dev->volList[i]->firstBlock,
+ 			dev->volList[i]->lastBlock,
+ 			dev->volList[i]->volName);
+         else
+-            printf("%2d :  %7ld ->%7ld\n", i,
++            printf("%2d :  %7d ->%7d\n", i,
+ 			dev->volList[i]->firstBlock,
+ 			dev->volList[i]->lastBlock);
+         if (dev->volList[i]->mounted)
+@@ -150,7 +150,7 @@
+ {
+     struct Volume* vol;
+     unsigned char buf[512];
+-    long size;
++    int32_t size;
+     BOOL found;
+ 
+     dev->devType = DEVTYPE_HARDFILE;
+@@ -178,9 +178,9 @@
+     vol->firstBlock = 0;
+ 
+     size = dev->size + 512-(dev->size%512);
+-/*printf("size=%ld\n",size);*/
++/*printf("size=%d\n",size);*/
+     vol->rootBlock = (size/512)/2;
+-/*printf("root=%ld\n",vol->rootBlock);*/
++/*printf("root=%d\n",vol->rootBlock);*/
+     do {
+         adfReadDumpSector(dev, vol->rootBlock, 512, buf);
+         found = swapLong(buf)==T_HEADER && swapLong(buf+508)==ST_ROOT;
+@@ -211,7 +211,7 @@
+     struct bPARTblock part;
+     struct bFSHDblock fshd;
+ 	struct bLSEGblock lseg;
+-	long next;
++	int32_t next;
+     struct List *vList, *listRoot;
+     int i;
+     struct Volume* vol;
+@@ -631,7 +631,7 @@
+     dev->nVol = n;
+ /*
+ vol=dev->volList[0];
+-printf("0first=%ld last=%ld root=%ld\n",vol->firstBlock,
++printf("0first=%d last=%d root=%d\n",vol->firstBlock,
+  vol->lastBlock, vol->rootBlock);
+ */
+ 
+@@ -732,7 +732,7 @@
+ adfWriteRDSKblock(struct Device *dev, struct bRDSKblock* rdsk)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-    unsigned long newSum;
++    uint32_t newSum;
+     struct nativeFunctions *nFct;
+     RETCODE rc2, rc = RC_OK;
+ 
+@@ -744,7 +744,7 @@
+     memset(buf,0,LOGICAL_BLOCK_SIZE);
+ 
+     strncpy(rdsk->id,"RDSK",4);
+-    rdsk->size = sizeof(struct bRDSKblock)/sizeof(long);
++    rdsk->size = sizeof(struct bRDSKblock)/sizeof(int32_t);
+     rdsk->blockSize = LOGICAL_BLOCK_SIZE;
+     rdsk->badBlockList = -1;
+ 
+@@ -778,7 +778,7 @@
+  *
+  */
+     RETCODE
+-adfReadPARTblock( struct Device* dev, long nSect, struct bPARTblock* blk )
++adfReadPARTblock( struct Device* dev, int32_t nSect, struct bPARTblock* blk )
+ {
+     UCHAR buf[ sizeof(struct bPARTblock) ];
+     struct nativeFunctions *nFct;
+@@ -824,10 +824,10 @@
+  *
+  */
+     RETCODE
+-adfWritePARTblock(struct Device *dev, long nSect, struct bPARTblock* part)
++adfWritePARTblock(struct Device *dev, int32_t nSect, struct bPARTblock* part)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-    unsigned long newSum;
++    uint32_t newSum;
+     struct nativeFunctions *nFct;
+     RETCODE rc2, rc = RC_OK;
+ 	
+@@ -839,7 +839,7 @@
+     memset(buf,0,LOGICAL_BLOCK_SIZE);
+ 
+     strncpy(part->id,"PART",4);
+-    part->size = sizeof(struct bPARTblock)/sizeof(long);
++    part->size = sizeof(struct bPARTblock)/sizeof(int32_t);
+     part->blockSize = LOGICAL_BLOCK_SIZE;
+     part->vectorSize = 16;
+ 	part->blockSize = 128;
+@@ -871,7 +871,7 @@
+  *
+  */
+     RETCODE
+-adfReadFSHDblock( struct Device* dev, long nSect, struct bFSHDblock* blk)
++adfReadFSHDblock( struct Device* dev, int32_t nSect, struct bFSHDblock* blk)
+ {
+     UCHAR buf[sizeof(struct bFSHDblock)];
+     struct nativeFunctions *nFct;
+@@ -911,10 +911,10 @@
+  *
+  */
+     RETCODE
+-adfWriteFSHDblock(struct Device *dev, long nSect, struct bFSHDblock* fshd)
++adfWriteFSHDblock(struct Device *dev, int32_t nSect, struct bFSHDblock* fshd)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-    unsigned long newSum;
++    uint32_t newSum;
+     struct nativeFunctions *nFct;
+     RETCODE rc = RC_OK;
+ 
+@@ -926,7 +926,7 @@
+     memset(buf,0,LOGICAL_BLOCK_SIZE);
+ 
+     strncpy(fshd->id,"FSHD",4);
+-    fshd->size = sizeof(struct bFSHDblock)/sizeof(long);
++    fshd->size = sizeof(struct bFSHDblock)/sizeof(int32_t);
+ 
+     memcpy(buf, fshd, sizeof(struct bFSHDblock));
+ #ifdef LITT_ENDIAN
+@@ -954,7 +954,7 @@
+  *
+  */
+    RETCODE
+-adfReadLSEGblock(struct Device* dev, long nSect, struct bLSEGblock* blk)
++adfReadLSEGblock(struct Device* dev, int32_t nSect, struct bLSEGblock* blk)
+ {
+     UCHAR buf[sizeof(struct bLSEGblock)];
+     struct nativeFunctions *nFct;
+@@ -994,10 +994,10 @@
+  *
+  */
+     RETCODE
+-adfWriteLSEGblock(struct Device *dev, long nSect, struct bLSEGblock* lseg)
++adfWriteLSEGblock(struct Device *dev, int32_t nSect, struct bLSEGblock* lseg)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-    unsigned long newSum;
++    uint32_t newSum;
+     struct nativeFunctions *nFct;
+     RETCODE rc;
+ 
+@@ -1009,7 +1009,7 @@
+     memset(buf,0,LOGICAL_BLOCK_SIZE);
+ 
+     strncpy(lseg->id,"LSEG",4);
+-    lseg->size = sizeof(struct bLSEGblock)/sizeof(long);
++    lseg->size = sizeof(struct bLSEGblock)/sizeof(int32_t);
+ 
+     memcpy(buf, lseg, sizeof(struct bLSEGblock));
+ #ifdef LITT_ENDIAN
+Index: unadf-0.7.11a/Lib/adf_hd.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_hd.h	2006-12-03 17:33:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_hd.h	2012-05-31 17:10:09.000000000 +0200
+@@ -47,18 +47,18 @@
+ PREFIX RETCODE adfCreateHd(struct Device* dev, int n, struct Partition** partList );
+ PREFIX RETCODE adfCreateHdFile(struct Device* dev, char* volName, int volType);
+ 
+-struct Device* adfCreateDev(char* filename, long cylinders, long heads, long sectors);
++struct Device* adfCreateDev(char* filename, int32_t cylinders, int32_t heads, int32_t sectors);
+ 
+-RETCODE adfReadBlockDev( struct Device* dev, long nSect, long size, unsigned char* buf );
+-RETCODE adfWriteBlockDev(struct Device* dev, long nSect, long size, unsigned char* buf );
++RETCODE adfReadBlockDev( struct Device* dev, int32_t nSect, int32_t size, unsigned char* buf );
++RETCODE adfWriteBlockDev(struct Device* dev, int32_t nSect, int32_t size, unsigned char* buf );
+ RETCODE adfReadRDSKblock( struct Device* dev, struct bRDSKblock* blk );
+ RETCODE adfWriteRDSKblock(struct Device *dev, struct bRDSKblock* rdsk);
+-RETCODE adfReadPARTblock( struct Device* dev, long nSect, struct bPARTblock* blk );
+-RETCODE adfWritePARTblock(struct Device *dev, long nSect, struct bPARTblock* part);
+-RETCODE adfReadFSHDblock( struct Device* dev, long nSect, struct bFSHDblock* blk);
+-RETCODE adfWriteFSHDblock(struct Device *dev, long nSect, struct bFSHDblock* fshd);
+-RETCODE adfReadLSEGblock(struct Device* dev, long nSect, struct bLSEGblock* blk);
+-RETCODE adfWriteLSEGblock(struct Device *dev, long nSect, struct bLSEGblock* lseg);
++RETCODE adfReadPARTblock( struct Device* dev, int32_t nSect, struct bPARTblock* blk );
++RETCODE adfWritePARTblock(struct Device *dev, int32_t nSect, struct bPARTblock* part);
++RETCODE adfReadFSHDblock( struct Device* dev, int32_t nSect, struct bFSHDblock* blk);
++RETCODE adfWriteFSHDblock(struct Device *dev, int32_t nSect, struct bFSHDblock* fshd);
++RETCODE adfReadLSEGblock(struct Device* dev, int32_t nSect, struct bLSEGblock* blk);
++RETCODE adfWriteLSEGblock(struct Device *dev, int32_t nSect, struct bLSEGblock* lseg);
+ 
+ 
+ #endif /* _ADF_HD_H */
+Index: unadf-0.7.11a/Lib/adf_link.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_link.c	2006-12-03 17:33:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_link.c	2012-05-31 17:10:09.000000000 +0200
+@@ -60,7 +60,7 @@
+  *
+  */
+ RETCODE adfBlockPtr2EntryName(struct Volume *vol, SECTNUM nSect, SECTNUM lPar, 
+-	char **name, long *size)
++	char **name, int32_t *size)
+ {
+     struct bEntryBlock entryBlk;
+     struct Entry entry;
+Index: unadf-0.7.11a/Lib/adf_link.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_link.h	2006-12-03 17:33:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_link.h	2012-05-31 17:10:09.000000000 +0200
+@@ -27,9 +27,10 @@
+  */
+ 
+ #include"prefix.h"
++#include <stdint.h>
+ 
+ PREFIX RETCODE adfBlockPtr2EntryName(struct Volume *vol, SECTNUM nSect, SECTNUM lPar, 
+-	char **name, long *size);
++	char **name, int32_t *size);
+ 
+ 
+ #endif /* ADF_LINK_H */
+Index: unadf-0.7.11a/Lib/adf_raw.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_raw.c	2012-05-31 16:30:51.000000000 +0200
++++ unadf-0.7.11a/Lib/adf_raw.c	2012-05-31 17:10:09.000000000 +0200
+@@ -80,11 +80,11 @@
+         for(j=0; j<swapTable[type][i]; j++) {
+             switch( swapTable[type][i+1] ) {
+             case SW_LONG:
+-                *(unsigned long*)(buf+p)=Long(buf+p);
++                *(uint32_t*)(buf+p)=Long(buf+p);
+                 p+=4;
+                 break;
+             case SW_SHORT:
+-                *(unsigned short*)(buf+p)=Short(buf+p);
++                *(uint16_t*)(buf+p)=Short(buf+p);
+                 p+=2;
+                 break;
+             case SW_CHAR:
+@@ -112,7 +112,7 @@
+  * ENDIAN DEPENDENT
+  */
+ RETCODE
+-adfReadRootBlock(struct Volume* vol, long nSect, struct bRootBlock* root)
++adfReadRootBlock(struct Volume* vol, int32_t nSect, struct bRootBlock* root)
+ {
+ 	unsigned char buf[LOGICAL_BLOCK_SIZE];
+ 
+@@ -142,10 +142,10 @@
+  *
+  * 
+  */
+-RETCODE adfWriteRootBlock(struct Volume* vol, long nSect, struct bRootBlock* root)
++RETCODE adfWriteRootBlock(struct Volume* vol, int32_t nSect, struct bRootBlock* root)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE];
+-	unsigned long newSum;
++	uint32_t newSum;
+ 
+ 
+     root->type = T_HEADER;
+@@ -167,12 +167,12 @@
+ 
+ 	newSum = adfNormalSum(buf,20,LOGICAL_BLOCK_SIZE);
+     swLong(buf+20, newSum);
+-/*	*(unsigned long*)(buf+20) = swapLong((unsigned char*)&newSum);*/
++/*	*(uint32_t*)(buf+20) = swapLong((unsigned char*)&newSum);*/
+ 
+ /* 	dumpBlock(buf);*/
+ 	if (adfWriteBlock(vol, nSect, buf)!=RC_OK)
+         return RC_ERROR;
+-/*printf("adfWriteRootBlock %ld\n",nSect);*/
++/*printf("adfWriteRootBlock %d\n",nSect);*/
+     return RC_OK;
+ }
+ 
+@@ -221,7 +221,7 @@
+ adfWriteBootBlock(struct Volume* vol, struct bBootBlock* boot)
+ {
+     unsigned char buf[LOGICAL_BLOCK_SIZE*2];
+-	unsigned long newSum;
++	uint32_t newSum;
+ 
+     boot->dosType[0] = 'D';
+     boot->dosType[1] = 'O';
+@@ -235,7 +235,7 @@
+         newSum = adfBootSum(buf);
+ /*fprintf(stderr,"sum %x %x\n",newSum,adfBootSum2(buf));*/
+         swLong(buf+4,newSum);
+-/*        *(unsigned long*)(buf+4) = swapLong((unsigned char*)&newSum);*/
++/*        *(uint32_t*)(buf+4) = swapLong((unsigned char*)&newSum);*/
+     }
+ 
+ /*	dumpBlock(buf);
+@@ -257,10 +257,10 @@
+  * offset = checksum place (in bytes)
+  * bufLen = buffer length (in bytes)
+  */
+-    unsigned long
++    uint32_t
+ adfNormalSum( UCHAR* buf, int offset, int bufLen )
+ {
+-    long newsum;
++    int32_t newsum;
+     int i;
+ 
+     newsum=0L;
+@@ -276,10 +276,10 @@
+  * adfBitmapSum
+  *
+  */
+-	unsigned long 
++	uint32_t 
+ adfBitmapSum(unsigned char *buf)
+ {
+-	unsigned long newSum;
++	uint32_t newSum;
+ 	int i;
+ 	
+ 	newSum = 0L;
+@@ -293,10 +293,10 @@
+  * adfBootSum
+  *
+  */
+-    unsigned long 
++    uint32_t 
+ adfBootSum(unsigned char *buf)
+ {
+-    unsigned long d, newSum;
++    uint32_t d, newSum;
+     int i;
+ 	
+     newSum=0L;
+@@ -313,14 +313,14 @@
+     return(newSum);
+ }
+ 
+-    unsigned long 
++    uint32_t 
+ adfBootSum2(unsigned char *buf)
+ {
+-    unsigned long prevsum, newSum;
++    uint32_t prevsum, newSum;
+     int i;
+ 
+     prevsum = newSum=0L;
+-    for(i=0; i<1024/sizeof(unsigned long); i++) {
++    for(i=0; i<1024/sizeof(uint32_t); i++) {
+         if (i!=1) {
+             prevsum = newSum;
+             newSum += Long(buf+i*4);
+Index: unadf-0.7.11a/Lib/adf_raw.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_raw.h	2006-12-03 17:34:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_raw.h	2012-05-31 17:10:09.000000000 +0200
+@@ -53,13 +53,13 @@
+ #define SWBL_FSHD         10 
+ #define SWBL_LSEG         11
+ 
+-RETCODE adfReadRootBlock(struct Volume*, long nSect, struct bRootBlock* root);
+-RETCODE adfWriteRootBlock(struct Volume* vol, long nSect, struct bRootBlock* root);
++RETCODE adfReadRootBlock(struct Volume*, int32_t nSect, struct bRootBlock* root);
++RETCODE adfWriteRootBlock(struct Volume* vol, int32_t nSect, struct bRootBlock* root);
+ RETCODE adfReadBootBlock(struct Volume*, struct bBootBlock* boot);
+ RETCODE adfWriteBootBlock(struct Volume* vol, struct bBootBlock* boot);
+ 
+-unsigned long adfBootSum(unsigned char *buf);
+-unsigned long adfNormalSum( unsigned char *buf, int offset, int bufLen );
++uint32_t adfBootSum(unsigned char *buf);
++uint32_t adfNormalSum( unsigned char *buf, int offset, int bufLen );
+ 
+ void swapEndian( unsigned char *buf, int type );
+ 
+Index: unadf-0.7.11a/Lib/adf_salv.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_salv.c	2006-12-03 17:35:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_salv.c	2012-05-31 17:10:09.000000000 +0200
+@@ -73,7 +73,7 @@
+ struct List* adfGetDelEnt(struct Volume *vol)
+ {
+     struct GenBlock *block;
+-    long i;
++    int32_t i;
+     struct List *list, *head;
+     BOOL delEnt;
+ 
+@@ -226,7 +226,7 @@
+  */
+ RETCODE adfUndelFile(struct Volume* vol, SECTNUM pSect, SECTNUM nSect, struct bFileHeaderBlock* entry)
+ {
+-    long i;
++    int32_t i;
+     char name[MAXNAMELEN+1];
+     struct bEntryBlock parent;
+     RETCODE rc;
+@@ -312,11 +312,11 @@
+     int n;
+  
+     adfGetFileBlocks(vol,file,&fileBlocks);
+-/*printf("data %ld ext %ld\n",fileBlocks.nbData,fileBlocks.nbExtens);*/
++/*printf("data %d ext %d\n",fileBlocks.nbData,fileBlocks.nbExtens);*/
+     if (isOFS(vol->dosType)) {
+         /* checks OFS datablocks */
+         for(n=0; n<fileBlocks.nbData; n++) {
+-/*printf("%ld\n",fileBlocks.data[n]);*/
++/*printf("%d\n",fileBlocks.data[n]);*/
+             adfReadDataBlock(vol,fileBlocks.data[n],&dataBlock);
+             if (dataBlock.headerKey!=fileBlocks.header)
+                 (*adfEnv.wFct)("adfCheckFile : headerKey incorrect");
+Index: unadf-0.7.11a/Lib/adf_str.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_str.h	2006-12-03 17:36:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_str.h	2012-05-31 17:10:09.000000000 +0200
+@@ -53,7 +53,7 @@
+ 
+     BOOL mounted;
+ 
+-    long bitmapSize;             /* in blocks */
++    int32_t bitmapSize;             /* in blocks */
+     SECTNUM *bitmapBlocks;       /* bitmap blocks pointers */
+     struct bBitmapBlock **bitmapTable;
+     BOOL *bitmapBlocksChg;
+@@ -63,8 +63,8 @@
+ 
+ 
+ struct Partition {
+-    long startCyl;
+-    long lenCyl;
++    int32_t startCyl;
++    int32_t lenCyl;
+     char* volName;
+     int volType;
+ };
+@@ -79,14 +79,14 @@
+ struct Device {
+     int devType;               /* see below */
+     BOOL readOnly;
+-    long size;                 /* in bytes */
++    int32_t size;                 /* in bytes */
+ 
+     int nVol;                  /* partitions */
+     struct Volume** volList;  
+ 	
+-    long cylinders;            /* geometry */
+-    long heads;
+-    long sectors;
++    int32_t cylinders;            /* geometry */
++    int32_t heads;
++    int32_t sectors;
+ 
+     BOOL isNativeDev;
+     void *nativeDev;
+@@ -102,9 +102,9 @@
+     void *currentData;
+     struct bFileExtBlock* currentExt;
+ 
+-    long nDataBlock;
++    int32_t nDataBlock;
+     SECTNUM curDataPtr;
+-    unsigned long pos;
++    uint32_t pos;
+ 
+     int posInDataBlk;
+     int posInExtBlk;
+@@ -121,14 +121,14 @@
+     SECTNUM real;
+     SECTNUM parent;
+     char* comment;
+-    unsigned long size;
+-	long access;
++    uint32_t size;
++	int32_t access;
+     int year, month, days;
+     int hour, mins, secs;
+ };
+ 
+ struct CacheEntry{
+-    long header, size, protect;
++    int32_t header, size, protect;
+     short days, mins, ticks;
+     signed char type;
+     char nLen, cLen;
+@@ -194,37 +194,37 @@
+ 
+ struct FileBlocks{
+     SECTNUM header;
+-    long nbExtens;
++    int32_t nbExtens;
+     SECTNUM* extens;
+-    long nbData;
++    int32_t nbData;
+     SECTNUM* data;
+ };
+ 
+ struct bEntryBlock {
+-/*000*/	long	type;		/* T_HEADER == 2 */
+-/*004*/	long	headerKey;	/* current block number */
+-        long	r1[3];
+-/*014*/	unsigned long	checkSum;
+-/*018*/	long	hashTable[HT_SIZE];
+-        long	r2[2];
+-/*140*/	long	access;	/* bit0=del, 1=modif, 2=write, 3=read */
+-/*144*/	long	byteSize;
++/*000*/	int32_t	type;		/* T_HEADER == 2 */
++/*004*/	int32_t	headerKey;	/* current block number */
++        int32_t	r1[3];
++/*014*/	uint32_t	checkSum;
++/*018*/	int32_t	hashTable[HT_SIZE];
++        int32_t	r2[2];
++/*140*/	int32_t	access;	/* bit0=del, 1=modif, 2=write, 3=read */
++/*144*/	int32_t	byteSize;
+ /*148*/	char	commLen;
+ /*149*/	char	comment[MAXCMMTLEN+1];
+         char	r3[91-(MAXCMMTLEN+1)];
+-/*1a4*/	long	days;
+-/*1a8*/	long	mins;
+-/*1ac*/	long	ticks;
++/*1a4*/	int32_t	days;
++/*1a8*/	int32_t	mins;
++/*1ac*/	int32_t	ticks;
+ /*1b0*/	char	nameLen;
+ /*1b1*/	char	name[MAXNAMELEN+1];
+-        long	r4;
+-/*1d4*/	long	realEntry;
+-/*1d8*/	long	nextLink;
+-        long	r5[5];
+-/*1f0*/	long	nextSameHash;
+-/*1f4*/	long	parent;
+-/*1f8*/	long	extension;
+-/*1fc*/	long	secType;
++        int32_t	r4;
++/*1d4*/	int32_t	realEntry;
++/*1d8*/	int32_t	nextLink;
++        int32_t	r5[5];
++/*1f0*/	int32_t	nextSameHash;
++/*1f4*/	int32_t	parent;
++/*1f8*/	int32_t	extension;
++/*1fc*/	int32_t	secType;
+ 	};
+ 
+ 
+Index: unadf-0.7.11a/Lib/adf_util.c
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_util.c	2006-12-03 17:36:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_util.c	2012-05-31 17:10:09.000000000 +0200
+@@ -36,12 +36,12 @@
+ /*
+  * swLong
+  *
+- * write an unsigned long value (val) (in) 
++ * write an uint32_t value (val) (in) 
+  * to an unsigned char* buffer (buf) (out)
+  * 
+  * used in adfWrite----Block() functions
+  */
+-void swLong(unsigned char* buf, unsigned long val)
++void swLong(unsigned char* buf, uint32_t val)
+ {
+ 	buf[0]= (unsigned char)((val & 0xff000000) >>24UL);
+ 	buf[1]= (unsigned char)((val & 0x00ff0000) >>16UL);
+@@ -49,7 +49,7 @@
+ 	buf[3]= (unsigned char)(val & 0x000000ff);
+ }
+ 
+-void swShort(unsigned char* buf, unsigned short val)
++void swShort(unsigned char* buf, uint16_t val)
+ {
+ 	buf[0]= (val & 0xff00) >>8UL;
+ 	buf[1]= (val & 0x00ff) ;
+@@ -102,7 +102,7 @@
+  */
+ 
+ void 
+-adfDays2Date(long days, int *yy, int *mm, int *dd)
++adfDays2Date(int32_t days, int *yy, int *mm, int *dd)
+ {
+     int y,m;
+     int nd;
+@@ -186,7 +186,7 @@
+  * converts date and time (dt) into Amiga format : day, min, ticks
+  */
+     void
+-adfTime2AmigaTime(struct DateTime dt, long *day, long *min, long *ticks )
++adfTime2AmigaTime(struct DateTime dt, int32_t *day, int32_t *min, int32_t *ticks )
+ {
+     int jm[12]={ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+ 
+Index: unadf-0.7.11a/Lib/adf_util.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adf_util.h	2006-12-03 17:36:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adf_util.h	2012-05-31 17:10:09.000000000 +0200
+@@ -31,15 +31,15 @@
+ #include "adf_str.h"
+ 
+ 
+-void swLong(unsigned char* buf, unsigned long val);
+-void swShort(unsigned char* buf, unsigned short val);
++void swLong(unsigned char* buf, uint32_t val);
++void swShort(unsigned char* buf, uint16_t val);
+ 
+ PREFIX struct List* newCell(struct List* list, void* content);
+ PREFIX void freeList(struct List* list);
+-void adfDays2Date(long days, int *yy, int *mm, int *dd);
++void adfDays2Date(int32_t days, int *yy, int *mm, int *dd);
+ BOOL adfIsLeap(int y);
+     void
+-adfTime2AmigaTime(struct DateTime dt, long *day, long *min, long *ticks );
++adfTime2AmigaTime(struct DateTime dt, int32_t *day, int32_t *min, int32_t *ticks );
+     struct DateTime
+ adfGiveCurrentTime( void );
+ 
+Index: unadf-0.7.11a/Lib/adflib.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/adflib.h	2006-12-03 17:35:00.000000000 +0100
++++ unadf-0.7.11a/Lib/adflib.h	2012-05-31 17:10:09.000000000 +0200
+@@ -60,18 +60,18 @@
+ PREFIX void adfFreeDirList(struct List* list);
+ PREFIX void adfFreeEntry(struct Entry *);
+ PREFIX RETCODE adfRenameEntry(struct Volume *vol, SECTNUM, char *old,SECTNUM,char *pNew);	/* BV */
+-PREFIX RETCODE adfSetEntryAccess(struct Volume*, SECTNUM, char*, long);
++PREFIX RETCODE adfSetEntryAccess(struct Volume*, SECTNUM, char*, int32_t);
+ PREFIX RETCODE adfSetEntryComment(struct Volume*, SECTNUM, char*, char*);
+ 
+ /* file */
+-PREFIX long adfFileRealSize(unsigned long size, int blockSize, long *dataN, long *extN);
++PREFIX int32_t adfFileRealSize(uint32_t size, int blockSize, int32_t *dataN, int32_t *extN);
+ PREFIX struct File* adfOpenFile(struct Volume *vol, char* name, char *mode);
+ PREFIX void adfCloseFile(struct File *file);
+-PREFIX long adfReadFile(struct File* file, long n, unsigned char *buffer);
++PREFIX int32_t adfReadFile(struct File* file, int32_t n, unsigned char *buffer);
+ PREFIX BOOL adfEndOfFile(struct File* file);
+-PREFIX long adfWriteFile(struct File *file, long n, unsigned char *buffer);
++PREFIX int32_t adfWriteFile(struct File *file, int32_t n, unsigned char *buffer);
+ PREFIX void adfFlushFile(struct File *file);
+-PREFIX void adfFileSeek(struct File *file, unsigned long pos);
++PREFIX void adfFileSeek(struct File *file, uint32_t pos);
+ 
+ /* volume */
+ PREFIX RETCODE adfInstallBootBlock(struct Volume *vol,unsigned char*);
+@@ -88,7 +88,7 @@
+ PREFIX RETCODE adfCreateHdFile(struct Device* dev, char* volName, int volType);
+ 
+ /* dump device */
+-PREFIX struct Device* adfCreateDumpDevice(char* filename, long cyl, long heads, long sec);
++PREFIX struct Device* adfCreateDumpDevice(char* filename, int32_t cyl, int32_t heads, int32_t sec);
+ 
+ /* env */
+ PREFIX void adfEnvInitDefault();
+@@ -100,7 +100,7 @@
+ PREFIX void adfSetEnvFct( void(*e)(char*), void(*w)(char*), void(*v)(char*) );
+ 
+ /* link */
+-PREFIX RETCODE adfBlockPtr2EntryName(struct Volume *, SECTNUM, SECTNUM,char **, long *);
++PREFIX RETCODE adfBlockPtr2EntryName(struct Volume *, SECTNUM, SECTNUM,char **, int32_t *);
+ 
+ /* salv */
+ PREFIX struct List* adfGetDelEnt(struct Volume *vol);
+@@ -114,9 +114,9 @@
+ 
+ /* low level API */
+ 
+-PREFIX RETCODE adfReadBlock(struct Volume* , long nSect, unsigned char* buf);
+-PREFIX RETCODE adfWriteBlock(struct Volume* , long nSect, unsigned char* buf);
+-PREFIX long adfCountFreeBlocks(struct Volume* vol);
++PREFIX RETCODE adfReadBlock(struct Volume* , int32_t nSect, unsigned char* buf);
++PREFIX RETCODE adfWriteBlock(struct Volume* , int32_t nSect, unsigned char* buf);
++PREFIX int32_t adfCountFreeBlocks(struct Volume* vol);
+ 
+ 
+ #ifdef __cplusplus
+Index: unadf-0.7.11a/Lib/hd_blk.h
+===================================================================
+--- unadf-0.7.11a.orig/Lib/hd_blk.h	2006-12-03 18:45:00.000000000 +0100
++++ unadf-0.7.11a/Lib/hd_blk.h	2012-05-31 17:10:09.000000000 +0200
+@@ -35,58 +35,58 @@
+ 
+ struct bRDSKblock {
+ /*000*/	char	id[4];		/* RDSK */
+-/*004*/	long 	size; 		/* 64 longs */
++/*004*/	int32_t 	size; 		/* 64 int32_ts */
+ /*008*/	ULONG	checksum;
+-/*00c*/	long	hostID; 	/* 7 */
+-/*010*/ 	long 	blockSize; 	/* 512 bytes */
+-/*014*/ 	long 	flags; 		/* 0x17 */
+-/*018*/ 	long 	badBlockList;
+-/*01c*/ 	long 	partitionList;
+-/*020*/ 	long 	fileSysHdrList;
+-/*024*/ 	long 	driveInit;
+-/*028*/ 	long 	r1[6];		/* -1 */
+-/*040*/ 	long 	cylinders;
+-/*044*/ 	long 	sectors;
+-/*048*/ 	long 	heads;
+-/*04c*/ 	long 	interleave;
+-/*050*/ 	long 	parkingZone;
+-/*054*/	long 	r2[3]; 	 	/* 0 */
+-/*060*/	long 	writePreComp;
+-/*064*/	long 	reducedWrite;
+-/*068*/	long 	stepRate;
+-/*06c*/	long 	r3[5]; 		/* 0 */
+-/*080*/	long 	rdbBlockLo;
+-/*084*/ 	long 	rdbBlockHi;
+-/*088*/ 	long 	loCylinder;
+-/*08c*/ 	long 	hiCylinder;
+-/*090*/ 	long 	cylBlocks;
+-/*094*/ 	long 	autoParkSeconds;
+-/*098*/ 	long 	highRDSKBlock;
+-/*09c*/ 	long 	r4; 		/* 0 */
++/*00c*/	int32_t	hostID; 	/* 7 */
++/*010*/ 	int32_t 	blockSize; 	/* 512 bytes */
++/*014*/ 	int32_t 	flags; 		/* 0x17 */
++/*018*/ 	int32_t 	badBlockList;
++/*01c*/ 	int32_t 	partitionList;
++/*020*/ 	int32_t 	fileSysHdrList;
++/*024*/ 	int32_t 	driveInit;
++/*028*/ 	int32_t 	r1[6];		/* -1 */
++/*040*/ 	int32_t 	cylinders;
++/*044*/ 	int32_t 	sectors;
++/*048*/ 	int32_t 	heads;
++/*04c*/ 	int32_t 	interleave;
++/*050*/ 	int32_t 	parkingZone;
++/*054*/	int32_t 	r2[3]; 	 	/* 0 */
++/*060*/	int32_t 	writePreComp;
++/*064*/	int32_t 	reducedWrite;
++/*068*/	int32_t 	stepRate;
++/*06c*/	int32_t 	r3[5]; 		/* 0 */
++/*080*/	int32_t 	rdbBlockLo;
++/*084*/ 	int32_t 	rdbBlockHi;
++/*088*/ 	int32_t 	loCylinder;
++/*08c*/ 	int32_t 	hiCylinder;
++/*090*/ 	int32_t 	cylBlocks;
++/*094*/ 	int32_t 	autoParkSeconds;
++/*098*/ 	int32_t 	highRDSKBlock;
++/*09c*/ 	int32_t 	r4; 		/* 0 */
+ /*0a0*/ 	char 	diskVendor[8];
+ /*0a8*/ 	char 	diskProduct[16];
+ /*0b8*/ 	char 	diskRevision[4];
+ /*0bc*/	char 	controllerVendor[8];
+ /*0c4*/ 	char 	controllerProduct[16];
+ /*0d4*/	char 	controllerRevision[4];
+-/*0d8*/ 	long 	r5[10]; 	/* 0 */
++/*0d8*/ 	int32_t 	r5[10]; 	/* 0 */
+ /*100*/
+ };
+ 
+ 
+ struct bBADBentry {
+-/*000*/	long 	badBlock;
+-/*004*/	long 	goodBlock;
++/*000*/	int32_t 	badBlock;
++/*004*/	int32_t 	goodBlock;
+ };
+ 
+ 
+ struct bBADBblock {
+ /*000*/	char	id[4]; 		/* BADB */
+-/*004*/	long 	size; 		/* 128 longs */
++/*004*/	int32_t 	size; 		/* 128 int32_ts */
+ /*008*/	ULONG	checksum; 	
+-/*00c*/	long	hostID; 	/* 7 */
+-/*010*/ 	long 	next;
+-/*014*/ 	long 	r1;
++/*00c*/	int32_t	hostID; 	/* 7 */
++/*010*/ 	int32_t 	next;
++/*014*/ 	int32_t 	r1;
+ /*018*/ 	struct bBADBentry blockPairs[61];
+ };
+ 
+@@ -94,72 +94,72 @@
+ 
+ struct bPARTblock {
+ /*000*/	char	id[4]; 		/* PART */
+-/*004*/	long 	size; 		/* 64 longs */
++/*004*/	int32_t 	size; 		/* 64 int32_ts */
+ /*008*/	ULONG	checksum;
+-/*00c*/	long	hostID; 	/* 7 */
+-/*010*/ 	long 	next;
+-/*014*/ 	long 	flags;
+-/*018*/ 	long 	r1[2];
+-/*020*/ 	long 	devFlags;
++/*00c*/	int32_t	hostID; 	/* 7 */
++/*010*/ 	int32_t 	next;
++/*014*/ 	int32_t 	flags;
++/*018*/ 	int32_t 	r1[2];
++/*020*/ 	int32_t 	devFlags;
+ /*024*/ 	char 	nameLen;
+ /*025*/ 	char 	name[31];
+-/*044*/ 	long 	r2[15];
++/*044*/ 	int32_t 	r2[15];
+ 
+-/*080*/ 	long 	vectorSize; 	/* often 16 longs */
+-/*084*/ 	long 	blockSize; 	/* 128 longs */
+-/*088*/ 	long 	secOrg;
+-/*08c*/ 	long 	surfaces;
+-/*090*/ 	long 	sectorsPerBlock; /* == 1 */
+-/*094*/ 	long 	blocksPerTrack;
+-/*098*/ 	long 	dosReserved;
+-/*09c*/ 	long 	dosPreAlloc;
+-/*0a0*/ 	long 	interleave;
+-/*0a4*/ 	long 	lowCyl;
+-/*0a8*/ 	long 	highCyl;
+-/*0ac*/	long 	numBuffer;
+-/*0b0*/ 	long 	bufMemType;
+-/*0b4*/ 	long 	maxTransfer;
+-/*0b8*/ 	long 	mask;
+-/*0bc*/ 	long 	bootPri;
++/*080*/ 	int32_t 	vectorSize; 	/* often 16 int32_ts */
++/*084*/ 	int32_t 	blockSize; 	/* 128 int32_ts */
++/*088*/ 	int32_t 	secOrg;
++/*08c*/ 	int32_t 	surfaces;
++/*090*/ 	int32_t 	sectorsPerBlock; /* == 1 */
++/*094*/ 	int32_t 	blocksPerTrack;
++/*098*/ 	int32_t 	dosReserved;
++/*09c*/ 	int32_t 	dosPreAlloc;
++/*0a0*/ 	int32_t 	interleave;
++/*0a4*/ 	int32_t 	lowCyl;
++/*0a8*/ 	int32_t 	highCyl;
++/*0ac*/	int32_t 	numBuffer;
++/*0b0*/ 	int32_t 	bufMemType;
++/*0b4*/ 	int32_t 	maxTransfer;
++/*0b8*/ 	int32_t 	mask;
++/*0bc*/ 	int32_t 	bootPri;
+ /*0c0*/ 	char 	dosType[4];
+-/*0c4*/ 	long 	r3[15];
++/*0c4*/ 	int32_t 	r3[15];
+ };
+ 
+ 
+ struct bLSEGblock {
+ /*000*/	char	id[4]; 		/* LSEG */
+-/*004*/	long 	size; 		/* 128 longs */
++/*004*/	int32_t 	size; 		/* 128 int32_ts */
+ /*008*/	ULONG	checksum;
+-/*00c*/	long	hostID; 	/* 7 */
+-/*010*/ 	long 	next;
++/*00c*/	int32_t	hostID; 	/* 7 */
++/*010*/ 	int32_t 	next;
+ /*014*/ 	char 	loadData[123*4];
+ };
+ 
+ 
+ struct bFSHDblock {
+ /*000*/	char	id[4]; 		/* FSHD */
+-/*004*/	long 	size; 		/* 64 */
++/*004*/	int32_t 	size; 		/* 64 */
+ /*008*/	ULONG	checksum;
+-/*00c*/	long	hostID; 	/* 7 */
+-/*010*/ 	long 	next;
+-/*014*/ 	long 	flags;
+-/*018*/ 	long 	r1[2];
++/*00c*/	int32_t	hostID; 	/* 7 */
++/*010*/ 	int32_t 	next;
++/*014*/ 	int32_t 	flags;
++/*018*/ 	int32_t 	r1[2];
+ /*020*/ 	char 	dosType[4];
+-/*024*/ 	short 	majVersion;
+-/*026*/ 	short 	minVersion;
+-/*028*/ 	long 	patchFlags;
+-
+-/*02c*/ 	long 	type;
+-/*030*/ 	long 	task;
+-/*034*/ 	long 	lock;
+-/*038*/ 	long 	handler;
+-/*03c*/ 	long 	stackSize;
+-/*040*/ 	long 	priority;
+-/*044*/ 	long 	startup;
+-/*048*/ 	long 	segListBlock;
+-/*04c*/ 	long 	globalVec;
+-/*050*/ 	long 	r2[23];
+-/*0ac*/ 	long 	r3[21];
++/*024*/ 	int16_t 	majVersion;
++/*026*/ 	int16_t 	minVersion;
++/*028*/ 	int32_t 	patchFlags;
++
++/*02c*/ 	int32_t 	type;
++/*030*/ 	int32_t 	task;
++/*034*/ 	int32_t 	lock;
++/*038*/ 	int32_t 	handler;
++/*03c*/ 	int32_t 	stackSize;
++/*040*/ 	int32_t 	priority;
++/*044*/ 	int32_t 	startup;
++/*048*/ 	int32_t 	segListBlock;
++/*04c*/ 	int32_t 	globalVec;
++/*050*/ 	int32_t 	r2[23];
++/*0ac*/ 	int32_t 	r3[21];
+ };
+ 
+ 
+Index: unadf-0.7.11a/Lib/myconf
+===================================================================
+--- unadf-0.7.11a.orig/Lib/myconf	2006-12-03 17:19:00.000000000 +0100
++++ unadf-0.7.11a/Lib/myconf	2012-05-31 17:10:09.000000000 +0200
+@@ -3,9 +3,10 @@
+ cat >myctest.c <<END
+ 
+ #include<stdio.h>
++#include<stdint.h>
+ 
+ union u{
+-    long l;
++    int32_t l;
+     char c[4];
+     };
+ 
+@@ -13,9 +14,9 @@
+ {
+     union u val;
+ 
+-    printf("%d ",sizeof(long));
+-    printf("%d ",sizeof(short));
+-    printf("%d ",sizeof(int));
++    printf("%ld ",sizeof(int32_t));
++    printf("%ld ",sizeof(int16_t));
++    printf("%ld ",sizeof(int));
+     
+     val.l=1L;
+     if (val.c[3]==1)
+@@ -26,7 +27,7 @@
+ 
+ END
+ 
+-gcc myctest.c -o myctest
++gcc -std=gnu99 myctest.c -o myctest
+ rm myctest.c
+ 
+ if [ `./myctest |cut -d' ' -f 1` != 4 ]
+@@ -51,4 +52,10 @@
+     echo Big Endian machine detected
+ fi
+ 
+-rm myctest.exe myctest
++if [ -f myctest.exe ]; then
++	rm myctest.exe
++fi
++
++if [ -f myctest ]; then
++	rm myctest
++fi
+Index: unadf-0.7.11a/Lib/myconf.sh
+===================================================================
+--- unadf-0.7.11a.orig/Lib/myconf.sh	2006-12-03 17:18:00.000000000 +0100
++++ unadf-0.7.11a/Lib/myconf.sh	2012-05-31 17:10:09.000000000 +0200
+@@ -3,9 +3,10 @@
+ cat >myctest.c <<END
+ 
+ #include<stdio.h>
++#include<stdint.h>
+ 
+ union u{
+-    long l;
++    int32_t l;
+     char c[4];
+     };
+ 
+@@ -13,9 +14,9 @@
+ {
+     union u val;
+ 
+-    printf("%d ",sizeof(long));
+-    printf("%d ",sizeof(short));
+-    printf("%d ",sizeof(int));
++    printf("%ld ",sizeof(int32_t));
++    printf("%ld ",sizeof(int16_t));
++    printf("%ld ",sizeof(int));
+     
+     val.l=1L;
+     if (val.c[3]==1)
+@@ -26,7 +27,7 @@
+ 
+ END
+ 
+-gcc myctest.c -o myctest
++gcc -std=gnu99 myctest.c -o myctest
+ rm myctest.c
+ 
+ if [ `./myctest |cut -d' ' -f 1` != 4 ]
+@@ -51,4 +52,10 @@
+     echo Big Endian machine detected
+ fi
+ 
+-rm myctest.exe myctest
++if [ -f myctest.exe ]; then
++	rm myctest.exe
++fi
++
++if [ -f myctest ]; then
++	rm myctest
++fi
+Index: unadf-0.7.11a/Makefile
+===================================================================
+--- unadf-0.7.11a.orig/Makefile	2006-12-31 20:48:00.000000000 +0100
++++ unadf-0.7.11a/Makefile	2012-05-31 17:10:09.000000000 +0200
+@@ -13,7 +13,7 @@
+ RELEASE=1
+ INSTDIR=/usr/local/unadf
+ 
+-all: demo tests lib
++all: demo lib #tests
+ 
+ lib: $(LIBDIR)/$(LIBNAME)
+ 	cp $(LIBDIR)/$(LIBNAME) ./Bin/Linux/
+@@ -23,14 +23,14 @@
+ 
+ clean:
+ 	cd $(LIBDIR) && ($(MAKE) clean || true)
+-	cd $(TESTDIR) && ($(MAKE) clean || true)
++	#cd $(TESTDIR) && ($(MAKE) clean || true)
+ 	cd $(DEMODIR) && ($(MAKE) clean || true)
+ 	rm -rf PKG *~ unadf*.rpm
+ 	rm -f unadf-${VERSION}.spec
+ 
+ dep Lib/defendian.h:
+ 	cd $(LIBDIR) && ($(MAKE) dep || true)
+-	cd $(TESTDIR) && ($(MAKE) dep || true)
++	#cd $(TESTDIR) && ($(MAKE) dep || true)
+ 	cd $(DEMODIR) && ($(MAKE) dep || true)
+ 
+ zip:
+@@ -54,9 +54,9 @@
+ unadf-${VERSION}.spec: gen_spec.sh
+ 	./gen_spec.sh ${VERSION} ${RELEASE} unadf FilesToInstall >unadf-${VERSION}.spec
+ 
+-zipdump:
+-	(rm adfdump.zip) || true
+-	zip -9r dumps.zip Dumps Test
++#zipdump:
++#	(rm adfdump.zip) || true
++#	zip -9r dumps.zip Dumps Test
+ 
+ binw32:
+ 	(rm binw32.zip) || true
+@@ -80,3 +80,4 @@
+ 	cd $(TESTDIR) && ./bigdev.sh
+ 
+ 
++# DO NOT DELETE
