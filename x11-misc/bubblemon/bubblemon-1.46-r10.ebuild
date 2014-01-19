@@ -22,12 +22,13 @@ S=${WORKDIR}/${PN}-dockapp-${PV}
 src_unpack() {
 	unpack ${A}
 	cd "${S}"
+
 	epatch "${FILESDIR}"/${P}-gtk.patch
 	epatch  "${FILESDIR}"/${P}-no_display.patch
 }
 
 src_compile() {
-	emake GENTOO_CFLAGS="${CFLAGS}" || die "emake failed."
+	emake GENTOO_CFLAGS="${CFLAGS} -lX11" || die "emake failed."
 }
 
 src_install () {
