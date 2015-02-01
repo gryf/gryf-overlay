@@ -9,6 +9,7 @@ DESCRIPTION="The fast and light GNUstep window manager"
 HOMEPAGE="http://www.windowmaker.org/"
 SRC_URI="http://www.windowmaker.org/pub/source/release/WindowMaker-extra-0.1.tar.gz"
 EGIT_REPO_URI="git://repo.or.cz/wmaker-crm.git"
+EGIT_MASTER="next"
 
 SLOT="0"
 LICENSE="GPL-2"
