@@ -74,7 +74,7 @@ src_configure() {
 		--with-x \
 		--enable-usermenu \
 		--with-pixmapdir="${EPREFIX}"/usr/share/pixmaps \
-		--with-nlsdir="${EPREFIX}"/usr/share/locale \
+		--localedir="${EPREFIX}"/usr/share/locale \
 		${myconf}
 
 	cd ../WindowMaker-extra-0.1
