@@ -4,6 +4,8 @@
 
 EAPI=4
 
+inherit eutils
+
 MY_PV="${PV/_}"
 MY_P="${PN}-${MY_PV}"
 
@@ -24,5 +26,9 @@ DEPEND=">=media-libs/libsdl-1.2[joystick,opengl,X]
 	media-libs/freetype:2
 	lua? ( >=dev-lang/lua-5.1 )"
 RDEPEND="${DEPEND}"
+
+src_prepare() {
+	epatch "${FILESDIR}"/${P}-slot_no_increase.patch
+}
 
 S="${WORKDIR}/${MY_P}"

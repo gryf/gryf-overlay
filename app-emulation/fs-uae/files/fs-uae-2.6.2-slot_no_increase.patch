@@ -1,0 +1,11 @@
+--- fs-uae-2.6.2_orig/src/fs-uae/menu.c	2015-09-25 17:15:29.000000000 +0200
++++ fs-uae-2.6.2/src/fs-uae/menu.c	2016-03-13 12:31:45.503730004 +0100
+@@ -12,7 +12,7 @@
+ #include "fs-uae.h"
+ #include "config-common.h"
+ 
+-#define NUM_SAVE_SLOTS 9
++#define NUM_SAVE_SLOTS 17
+ /// TRANSLATORS: This is a menu entry and must not be too long: If you struggle
+ /// to get in short enough, just translate "No Device" instead.
+ #define NO_HOST_DEVICE _("No Host Device")
