@@ -5,8 +5,8 @@
 EAPI=6
 inherit eutils
 
-DESCRIPTION="a dockapp for monitoring cpu/gpu temperature"
-HOMEPAGE="https://github.com/gryf/wmtemp"
+DESCRIPTION="Real ALSA mixer dockapp for Window Maker"
+HOMEPAGE="http://github.com/gryf/wmamixer"
 SRC_URI="https://github.com/gryf/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
@@ -18,16 +18,8 @@ RDEPEND="x11-libs/libXext
 	x11-libs/libX11"
 DEPEND="${RDEPEND}"
 
-src_unpack() {
-	unpack ${A}
-	cd ${PN}
-}
-
-src_compile() {
-	make -C ${PN}
-}
-
 src_install() {
-	dobin ${PN}/${PN}
-	dodoc README.rst wmtemp_sample
+	dobin ${PN}
+	dodoc README CHANGES
 }
+
