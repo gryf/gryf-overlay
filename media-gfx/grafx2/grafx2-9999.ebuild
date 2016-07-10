@@ -8,7 +8,7 @@ inherit subversion
 
 DESCRIPTION="Bitmap paint program inspired by Deluxe Paint and Brilliance"
 HOMEPAGE="https://code.google.com/p/grafx2/"
-ESVN_REPO_URI="http://${PN}.googlecode.com/svn/trunk"
+ESVN_REPO_URI="svn://pulkomandy.tk/GrafX2/trunk"
 
 LICENSE="GNU GPL v2"
 SLOT="0"
