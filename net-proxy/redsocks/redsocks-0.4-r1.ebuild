@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=4
+EAPI=5
 
-inherit toolchain-funcs
+inherit toolchain-funcs user
 
 DESCRIPTION="Transparent redirector of any TCP connection to proxy"
 HOMEPAGE="http://darkk.net.ru/redsocks/"
@@ -19,6 +19,11 @@ RDEPEND="dev-libs/libevent
 	net-firewall/iptables"
 DEPEND="virtual/pkgconfig
 	${RDEPEND}"
+
+pkg_setup() {
+	enewgroup ${PN}
+	enewuser ${PN} -1 -1 -1 ${PN}
+}
 
 src_compile() {
 	emake
