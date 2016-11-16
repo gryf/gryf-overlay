@@ -1,0 +1,11 @@
+diff -Naur eselect-emacs-1.18/ctags.eselect eselect-emacs-1.18-mod/ctags.eselect
+--- eselect-emacs-1.18/ctags.eselect	2014-12-19 19:55:41.000000000 +0100
++++ eselect-emacs-1.18-mod/ctags.eselect	2016-11-16 17:41:56.911004154 +0100
+@@ -44,6 +44,7 @@
+ 
+ 	# Exuberant ctags
+ 	[[ -f ${EROOT}/usr/bin/exuberant-ctags ]] && echo exuberant-ctags
++	[[ -f ${EROOT}/usr/bin/universal-ctags ]] && echo universal-ctags
+ }
+ 
+ remove_symlinks() {
