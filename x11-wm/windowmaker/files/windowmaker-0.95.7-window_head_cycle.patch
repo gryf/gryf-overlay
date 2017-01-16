@@ -1,5 +1,5 @@
 diff --git a/src/actions.c b/src/actions.c
-index 5adfab4..5ac98c6 100644
+index 5adfab4..f6bb009 100644
 --- a/src/actions.c
 +++ b/src/actions.c
 @@ -354,7 +354,7 @@ void update_saved_geometry(WWindow *wwin)
@@ -33,7 +33,7 @@ index 5adfab4..5ac98c6 100644
  
  	/* Only save directions, not kbd or xinerama hints */
  	directions &= (MAX_HORIZONTAL | MAX_VERTICAL | MAX_LEFTHALF | MAX_RIGHTHALF | MAX_TOPHALF | MAX_BOTTOMHALF | MAX_MAXIMUS);
-@@ -497,20 +484,51 @@ void handleMaximize(WWindow *wwin, int directions)
+@@ -497,13 +484,38 @@ void handleMaximize(WWindow *wwin, int directions)
  	int requested = directions & (MAX_HORIZONTAL | MAX_VERTICAL | MAX_LEFTHALF | MAX_RIGHTHALF | MAX_TOPHALF | MAX_BOTTOMHALF | MAX_MAXIMUS);
  	int effective = requested ^ current;
  	int flags = directions & ~requested;
@@ -46,38 +46,35 @@ index 5adfab4..5ac98c6 100644
  				!(requested & MAX_MAXIMUS))
 -			wMaximizeWindow(wwin, MAX_MAXIMUS | flags);
 -		else
--			wUnmaximizeWindow(wwin);
 +			wMaximizeWindow(wwin, MAX_MAXIMUS | flags, head);
-+        else {
-+            if (requested & MAX_LEFTHALF && current & MAX_LEFTHALF) {
-+                p.x = wwin->frame_x - 100;
-+                p.y = 0;
++        else if (requested & MAX_LEFTHALF && current & MAX_LEFTHALF) {
++            p.x = wwin->frame_x - 100;
++            p.y = 0;
 +
-+                if (p.x > 0) {
-+                    head = wGetHeadForPoint(wwin->screen_ptr, p);
-+                    if (head != wGetHeadForWindow(wwin)) {
-+                        effective |= MAX_RIGHTHALF;
-+                        effective |= MAX_VERTICAL;
-+                        effective &= ~(MAX_HORIZONTAL | MAX_LEFTHALF);
-+                        wMaximizeWindow(wwin, effective | flags, head);
-+                    }
-+                }
-+            }
-+            else if (requested & MAX_RIGHTHALF && current & MAX_RIGHTHALF) {
-+                p.x = wwin->frame_x + wwin->frame->core->width + 100;
-+                p.y = 0;
-+                head = wGetHeadForPoint(wwin->screen_ptr, p);
-+                if (head != wGetHeadForWindow(wwin)) {
-+                    effective |= MAX_LEFTHALF;
-+					effective |= MAX_VERTICAL;
-+                    effective &= ~(MAX_HORIZONTAL | MAX_RIGHTHALF);
++            if (p.x > 0) {
++                head = wGetHeadForPointOrNegative(wwin->screen_ptr, p);
++                if (head != -1) {
++                    effective |= MAX_RIGHTHALF;
++                    effective |= MAX_VERTICAL;
++                    effective &= ~(MAX_HORIZONTAL | MAX_LEFTHALF);
 +                    wMaximizeWindow(wwin, effective | flags, head);
 +                }
 +            }
-+        }
++        } else if (requested & MAX_RIGHTHALF && current & MAX_RIGHTHALF) {
++            p.x = wwin->frame_x + wwin->frame->core->width + 100;
++            p.y = 0;
++            head = wGetHeadForPointOrNegative(wwin->screen_ptr, p);
++            if (head != -1) {
++                effective |= MAX_LEFTHALF;
++                effective |= MAX_VERTICAL;
++                effective &= ~(MAX_HORIZONTAL | MAX_RIGHTHALF);
++                wMaximizeWindow(wwin, effective | flags, head);
++            }
++        } else
+ 			wUnmaximizeWindow(wwin);
  	/* these alone mean vertical|horizontal toggle */
  	} else if ((effective == MAX_LEFTHALF) ||
- 			(effective == MAX_RIGHTHALF) ||
+@@ -511,6 +523,10 @@ void handleMaximize(WWindow *wwin, int directions)
  			(effective == MAX_TOPHALF) ||
  			(effective == MAX_BOTTOMHALF))
  		wUnmaximizeWindow(wwin);
@@ -88,7 +85,7 @@ index 5adfab4..5ac98c6 100644
  	else {
  		if ((requested == (MAX_HORIZONTAL | MAX_VERTICAL)) ||
  				(requested == MAX_MAXIMUS))
-@@ -552,7 +570,7 @@ void handleMaximize(WWindow *wwin, int directions)
+@@ -552,7 +568,7 @@ void handleMaximize(WWindow *wwin, int directions)
  				effective &= ~(MAX_TOPHALF | MAX_BOTTOMHALF);
  			effective &= ~MAX_MAXIMUS;
  		}
@@ -202,3 +199,48 @@ index 9b56f96..96ba984 100644
  			}
  		}
  		updateStateHint(wwin, False, False);
+diff --git a/src/xinerama.c b/src/xinerama.c
+index 3d26139..4acbc3e 100644
+--- a/src/xinerama.c
++++ b/src/xinerama.c
+@@ -236,7 +236,7 @@ int wGetHeadForWindow(WWindow * wwin)
+ 	return wGetHeadForRect(wwin->screen_ptr, rect);
+ }
+ 
+-int wGetHeadForPoint(WScreen * scr, WMPoint point)
++int wGetHeadForPointOrNegative(WScreen * scr, WMPoint point)
+ {
+ 	int i;
+ 
+@@ -247,7 +247,17 @@ int wGetHeadForPoint(WScreen * scr, WMPoint point)
+ 		    (unsigned)(point.y - rect->pos.y) < rect->size.height)
+ 			return i;
+ 	}
+-	return scr->xine_info.primary_head;
++	return -1;
++}
++
++int wGetHeadForPoint(WScreen * scr, WMPoint point)
++{
++	int head = wGetHeadForPointOrNegative(scr, point);
++
++    if (head < 0)
++        return scr->xine_info.primary_head;
++
++	return head;
+ }
+ 
+ int wGetHeadForPointerLocation(WScreen * scr)
+diff --git a/src/xinerama.h b/src/xinerama.h
+index fd1d469..88a3580 100644
+--- a/src/xinerama.h
++++ b/src/xinerama.h
+@@ -41,6 +41,8 @@ int wGetHeadForRect(WScreen *scr, WMRect rect);
+ 
+ int wGetHeadForWindow(WWindow *wwin);
+ 
++int wGetHeadForPointOrNegative(WScreen * scr, WMPoint point);
++
+ int wGetHeadForPoint(WScreen *scr, WMPoint point);
+ 
+ int wGetHeadForPointerLocation(WScreen *scr);
