@@ -5,11 +5,11 @@
 EAPI=5
 inherit autotools eutils git-2
 
-DESCRIPTION="The fast and light GNUstep window manager - devbelopment ebuild"
+DESCRIPTION="The fast and light GNUstep window manager - gryf's personal ebuild"
 HOMEPAGE="http://www.windowmaker.org/"
 SRC_URI="http://www.windowmaker.org/pub/source/release/WindowMaker-extra-0.1.tar.gz"
 EGIT_REPO_URI="https://github.com/gryf/wmaker"
-EGIT_MASTER="maximize"
+EGIT_MASTER="mynext"
 
 SLOT="0"
 LICENSE="GPL-2"
