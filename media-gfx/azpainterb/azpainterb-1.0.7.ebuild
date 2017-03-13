@@ -6,7 +6,7 @@ EAPI=5
 
 DESCRIPTION="Full Color Paint tool"
 HOMEPAGE="http://azsky2.html.xdomain.jp/linux/azpainterb/index.html"
-SRC_URI="https://osdn.jp/frs/redir.php?m=cznic&f=%2F${PN}%2F66065%2F${P}.tar.bz2"
+SRC_URI="https://osdn.net/frs/redir.php?m=onet&f=%2F${PN}%2F67265%2F${P}.tar.bz2"
 
 LICENSE="GPL-3"
 SLOT="0"
