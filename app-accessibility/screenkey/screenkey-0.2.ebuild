@@ -2,9 +2,11 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=3
+EAPI=5
 
-inherit distutils
+PYTHON_COMPAT=( python2_7 )
+
+inherit python-r1
 
 DESCRIPTION="A screencast tool to display keys"
 HOMEPAGE="http://launchpad.net/screenkey"
