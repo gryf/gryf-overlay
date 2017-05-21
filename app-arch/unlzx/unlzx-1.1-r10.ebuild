@@ -1,7 +1,8 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-inherit toolchain-funcs
+EAPI=6
+inherit eutils toolchain-funcs
 
 DESCRIPTION="Unarchiver for Amiga LZX archives"
 SRC_URI="http://aminet.net/misc/unix/${PN}.c.gz http://aminet.net/misc/unix/${PN}.c.readme"
@@ -15,7 +16,8 @@ KEYWORDS="alpha amd64 ~hppa ppc sparc x86 ~amd64-linux ~x86-linux ~ppc-macos"
 src_unpack() {
 	mkdir "${S}"
 	gzip -dc "${DISTDIR}"/${PN}.c.gz > "${S}"/unlzx.c
-	cp "${DISTDIR}"/${PN}.c.gz.readme  "${S}"/${PN}.c.gz.readme
+	cp "${DISTDIR}"/${PN}.c.readme  "${S}"/${PN}.c.readme
+	epatch "${FILESDIR}"/unlzx-1.1-fix-compiler-warnings.patch
 }
 
 src_compile() {
@@ -24,5 +26,5 @@ src_compile() {
 
 src_install() {
 	dobin unlzx
-	dodoc unlzx.c.gz.readme
+	dodoc unlzx.c.readme
 }

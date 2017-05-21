@@ -1,0 +1,50 @@
+--- unlzx-1.1/unlzx_orig.c	2017-05-21 12:28:19.000000000 +0200
++++ unlzx-1.1/unlzx.c	2017-05-21 12:34:37.475524675 +0200
+@@ -20,6 +20,9 @@
+ 
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
+ 
+ /* ---------------------------------------------------------------------- */
+ 
+@@ -1090,13 +1093,13 @@
+           total_files++;
+           merge_size += unpack_size;
+ 
+-          printf("%8ld ", unpack_size);
++          printf("%8u ", unpack_size);
+           if(archive_header[12] & 1)
+            printf("     n/a ");
+           else
+-           printf("%8ld ", pack_size);
+-          printf("%02ld:%02ld:%02ld ", hour, minute, second);
+-          printf("%2ld-%s-%4ld ", day, month_str[month], year);
++           printf("%8u ", pack_size);
++          printf("%02u:%02u:%02u ", hour, minute, second);
++          printf("%2u-%s-%4u ", day, month_str[month], year);
+           printf("%c%c%c%c%c%c%c%c ",
+                  (attributes & 32) ? 'h' : '-',
+                  (attributes & 64) ? 's' : '-',
+@@ -1111,7 +1114,7 @@
+            printf(": \"%s\"\n", header_comment);
+           if((archive_header[12] & 1) && pack_size)
+           {
+-           printf("%8ld %8ld Merged\n", merge_size, pack_size);
++           printf("%8u %8u Merged\n", merge_size, pack_size);
+           }
+ 
+           if(pack_size) /* seek past the packed data */
+@@ -1148,8 +1151,8 @@
+    else
+    {
+     printf("-------- -------- -------- ----------- -------- ----\n");
+-    printf("%8ld %8ld ", total_unpack, total_pack);
+-    printf("%ld file%s\n", total_files, ((total_files == 1) ? "" : "s"));
++    printf("%8u %8u ", total_unpack, total_pack);
++    printf("%u file%s\n", total_files, ((total_files == 1) ? "" : "s"));
+ 
+     result = 0; /* normal termination */
+    }
