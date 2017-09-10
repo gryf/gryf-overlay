@@ -4,9 +4,11 @@
 
 EAPI=5
 
+inherit vcs-snapshot
+
 DESCRIPTION="A pixelart-oriented painting program"
-HOMEPAGE="http://code.google.com/p/grafx2/"
-SRC_URI="http://grafx2.googlecode.com/files/${P}-src.tgz"
+HOMEPAGE="http://pulkomandy.tk/projects/GrafX2"
+SRC_URI="https://gitlab.com/GrafX2/${PN}/repository/archive.tar.gz?ref=v${PV} -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -21,23 +23,23 @@ DEPEND="media-libs/libsdl
 	lua? ( >=dev-lang/lua-5.1.0 )"
 RDEPEND=""
 
-src_prepare() {
-	cd ${WORKDIR}/${PN}/src/
-	sed -i s/lua5\.1/lua/g Makefile
+src_unpack() {
+	vcs-snapshot_src_unpack
 }
+
 src_compile() {
 	use ttf || MYCNF="NOTTF=1"
 	use lua || MYCNF="${MYCNF} NOLUA=1"
-	cd ${WORKDIR}/${PN}/src/
+	cd ${WORKDIR}/${P}/src/
 	emake ${MYCNF} || die "emake failed"
 }
 
 src_install() {
-	cd ${WORKDIR}/${PN}/src/
+	cd ${WORKDIR}/${P}/src/
 	emake DESTDIR="${D}" PREFIX="/usr" install || die "Install failed"
 }
 
 pkg_postinst() {
 	elog "Please report bugs upstream:"
-	elog " http://code.google.com/p/grafx2"
+	elog "http://pulkomandy.tk/projects/GrafX2"
 }
