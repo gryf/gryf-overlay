@@ -25,6 +25,7 @@ RDEPEND="${DEPEND}"
 
 src_compile() {
 	cd src
+	sed -i 's/-liconv//' Makefile 
 	make || die
 }
 
