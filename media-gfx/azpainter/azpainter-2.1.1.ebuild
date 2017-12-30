@@ -1,12 +1,11 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI=5
+EAPI=6
 
 DESCRIPTION="Full Color Paint tool"
-HOMEPAGE="http://azsky2.html.xdomain.jp/linux/azpainterb/index.html"
-SRC_URI="https://osdn.jp/frs/redir.php?m=cznic&f=%2F${PN}%2F66065%2F${P}.tar.bz2"
+HOMEPAGE="https://osdn.net/projects/azpainter/"
+SRC_URI="https://osdn.net/projects/azpainter/downloads/68339/${P}.tar.xz"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -18,5 +17,7 @@ DEPEND="x11-libs/libX11
 	media-libs/fontconfig
 	media-libs/freetype
 	x11-libs/libXi
-	virtual/jpeg"
+	virtual/jpeg
+	media-libs/libpng
+	sys-libs/zlib"
 RDEPEND="${DEPEND}"
