@@ -2,13 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=4
+EAPI=6
 
-inherit subversion
+inherit git-r3
 
 DESCRIPTION="Bitmap paint program inspired by Deluxe Paint and Brilliance"
 HOMEPAGE="https://code.google.com/p/grafx2/"
-ESVN_REPO_URI="svn://pulkomandy.tk/GrafX2/trunk"
+EGIT_REPO_URI="https://gitlab.com/GrafX2/grafX2.git"
 
 LICENSE="GNU GPL v2"
 SLOT="0"
@@ -24,8 +24,6 @@ DEPEND=">=media-libs/libsdl-1.2
 RDEPEND="${DEPEND}"
 
 src_compile() {
-	cd src
-	sed -i 's/-liconv//' Makefile 
 	make || die
 }
 
