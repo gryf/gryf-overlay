@@ -23,13 +23,13 @@ REQUIRED_USE="|| ( arcade mess )"
 #  MESS build only			-arcade +mess	(mess)
 # games-emulation/sdlmametools is dropped and enabled instead by the 'tools' useflag
 RDEPEND="!games-emulation/sdlmametools
-	!games-emulation/sdlmess
 	dev-db/sqlite:3
 	dev-libs/expat
 	media-libs/fontconfig
 	media-libs/flac
 	media-libs/libsdl2[joystick,opengl?,sound,video,X]
 	media-libs/portaudio
+	dev-python/sphinx
 	media-libs/sdl2-ttf
 	sys-libs/zlib
 	virtual/jpeg:0
