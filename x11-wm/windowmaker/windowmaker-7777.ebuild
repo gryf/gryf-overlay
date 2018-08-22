@@ -13,7 +13,7 @@ EGIT_BRANCH="mynext"
 SLOT="0"
 LICENSE="GPL-2"
 IUSE="gif imagemagick jpeg modelock nls png tiff webp xinerama +xpm xrandr"
-KEYWORDS="amd64 ~x86"
+KEYWORDS="~amd64 ~x86"
 
 DEPEND="media-libs/fontconfig
 	>=x11-libs/libXft-2.1.0
