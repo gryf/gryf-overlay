@@ -12,7 +12,7 @@ EGIT_REPO_URI="git://github.com/hrydgard/${PN}.git"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS="~amd64"
 IUSE="qt5 +sdl"
 REQUIRED_USE="
 	?? ( sdl )
