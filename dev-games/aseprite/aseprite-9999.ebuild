@@ -14,7 +14,7 @@ CMAKE_BUILD_TYPE="Release"
 
 LICENSE="https://github.com/aseprite/aseprite/blob/master/EULA.txt"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS=""
 IUSE="static debug kde gtk3 test +bundled-allegro webp"
 
 DEPEND="dev-util/cmake
