@@ -1,18 +1,13 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=6
+EAPI=7
 
 inherit java-pkg-2
 
 DESCRIPTION="Cross assembler for 6510 code"
 HOMEPAGE="http://www.theweb.dk/KickAssembler/Main.php"
-if [[ ${PV} == "9999" ]]; then
-	SRC_URI="http://www.theweb.dk/KickAssembler/${PN}.zip"
-else
-	SRC_URI="http://www.theweb.dk/KickAssembler/${PN}${PV}.zip"
-fi
+SRC_URI="http://www.theweb.dk/KickAssembler/${PN}${PV}.zip"
 
 LICENSE=""
 SLOT="0"
