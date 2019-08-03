@@ -10,13 +10,14 @@ DESCRIPTION="Cross assembler for 6510 code"
 HOMEPAGE="http://www.theweb.dk/KickAssembler/Main.php"
 if [[ ${PV} == "9999" ]]; then
 	SRC_URI="http://www.theweb.dk/KickAssembler/${PN}.zip"
+	KEYWORDS=""
 else
 	SRC_URI="http://www.theweb.dk/KickAssembler/${PN}${PV}.zip"
+	KEYWORDS="~amd64 ~x86"
 fi
 
 LICENSE=""
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND=">=virtual/jre-1.8"
