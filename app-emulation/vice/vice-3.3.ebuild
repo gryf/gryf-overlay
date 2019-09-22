@@ -24,8 +24,8 @@ RDEPEND="
 	virtual/opengl
 	alsa? ( media-libs/alsa-lib )
 	ethernet? (
-	    >=net-libs/libpcap-0.9.8
-	    >=net-libs/libnet-1.1.2.1:1.1
+		>=net-libs/libpcap-0.9.8
+		>=net-libs/libnet-1.1.2.1:1.1
 	)
 	ffmpeg? (
 		libav? ( media-video/libav:= )
@@ -63,7 +63,7 @@ RDEPEND="
 	zlib? ( sys-libs/zlib )
 "
 DEPEND="${RDEPEND}
-	dev-lang/xa64
+	dev-lang/xa65
 	media-libs/fontconfig
 	x11-apps/bdftopcf
 	x11-apps/mkfontdir
