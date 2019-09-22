@@ -154,6 +154,8 @@ src_configure() {
 }
 
 src_install() {
+	# remove vice.pdf, since it is empty, and is not generated.
+	rm doc/vice.pdf
 	default
 	dodoc FEEDBACK
 }
