@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit rpm desktop
+inherit rpm desktop xdg-utils
 
 DESCRIPTION="Online meetings, video conferencing, and screen sharing for teams of any size"
 HOMEPAGE="https://www.bluejeans.com"
@@ -18,10 +18,13 @@ DEPEND="sys-libs/libudev-compat"
 RDEPEND="${DEPEND}"
 BDEPEND=""
 
+RESTRICT=strip
+
 S="${WORKDIR}"
 
 src_unpack() {
 	rpm_src_unpack ${A}
+	sed -i '/Version=/d' opt/bluejeans/bluejeans.desktop
 }
 
 src_install() {
@@ -40,4 +43,14 @@ src_install() {
 	dosym /usr/lib/libudev.so /opt/${PN}/libudev.so.0
 
 	domenu opt/${PN}/${PN}.desktop
+}
+
+pkg_postinst() {
+	xdg_icon_cache_update
+	xdg_desktop_database_update
+}
+
+pkg_postrm() {
+	xdg_icon_cache_update
+	xdg_desktop_database_update
 }
