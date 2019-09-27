@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit rpm
+inherit rpm desktop
 
 DESCRIPTION="Online meetings, video conferencing, and screen sharing for teams of any size"
 HOMEPAGE="https://www.bluejeans.com"
