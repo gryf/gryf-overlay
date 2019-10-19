@@ -1,9 +1,9 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 PYTHON_COMPAT=( python2_7 )
-inherit eutils python-any-r1 toolchain-funcs qmake-utils games
+inherit desktop eutils python-any-r1 toolchain-funcs qmake-utils xdg-utils
 
 MY_PV="${PV/.}"
 
@@ -14,7 +14,7 @@ SRC_URI="https://github.com/mamedev/mame/releases/download/mame${MY_PV}/mame${MY
 LICENSE="GPL-2+ BSD-2 MIT CC0-1.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="alsa +arcade +mess opengl openmp tools"
+IUSE="alsa +arcade debug desktop +mess opengl openmp tools"
 REQUIRED_USE="|| ( arcade mess )"
 
 # MESS (games-emulation/sdlmess) has been merged into MAME upstream since mame-0.162 (see below)
@@ -23,28 +23,30 @@ REQUIRED_USE="|| ( arcade mess )"
 #  MESS build only			-arcade +mess	(mess)
 # games-emulation/sdlmametools is dropped and enabled instead by the 'tools' useflag
 RDEPEND="!games-emulation/sdlmametools
+	!games-emulation/sdlmess
 	dev-db/sqlite:3
 	dev-libs/expat
 	media-libs/fontconfig
 	media-libs/flac
 	media-libs/libsdl2[joystick,opengl?,sound,video,X]
 	media-libs/portaudio
-	dev-python/sphinx
 	media-libs/sdl2-ttf
 	sys-libs/zlib
 	virtual/jpeg:0
 	virtual/opengl
 	alsa? ( media-libs/alsa-lib
 		media-libs/portmidi )
+	debug? ( dev-qt/qtcore:5
+		dev-qt/qtgui:5
+		dev-qt/qtwidgets:5 )
 	x11-libs/libX11
 	x11-libs/libXinerama
 	${PYTHON_DEPS}"
 DEPEND="${RDEPEND}
-	${PYTHON_DEPS}
 	app-arch/unzip
 	virtual/pkgconfig
-	x11-proto/xineramaproto"
-
+	x11-base/xorg-proto"
+BDEPEND="${PYTHON_DEPS}"
 S=${WORKDIR}
 
 # Function to disable a makefile option
@@ -58,19 +60,18 @@ enable_feature() {
 }
 
 pkg_setup() {
-	games_pkg_setup
 	python-any-r1_pkg_setup
 }
 
 src_unpack() {
 	default
-	unzip ./mame.zip 2>&1 >/dev/null
+	unzip -qo -U ./mame.zip
 	rm -f mame.zip || die
 }
 
 src_prepare() {
-	#epatch \
-	#	"${FILESDIR}"/${P}-cxx14.patch
+	PATCHES=( ${FILESDIR}"/${PN}-0.184-qt.patch" )
+	default_src_prepare
 	# Disable using bundled libraries
 	enable_feature USE_SYSTEM_LIB_EXPAT
 	enable_feature USE_SYSTEM_LIB_FLAC
@@ -86,6 +87,7 @@ src_prepare() {
 	enable_feature VERBOSE
 
 	use amd64 && enable_feature PTR64
+	use debug && enable_feature DEBUG
 	use tools && enable_feature TOOLS
 	disable_feature NO_X11 # bgfx needs X
 	use openmp && enable_feature OPENMP
@@ -104,6 +106,7 @@ src_prepare() {
 
 src_compile() {
 	local targetargs
+	local qtdebug=$(usex debug 1 0)
 
 	use arcade && ! use mess && targetargs="SUBTARGET=arcade"
 	! use arcade && use mess && targetargs="SUBTARGET=mess"
@@ -115,6 +118,7 @@ src_compile() {
 		OVERRIDE_CC=$(tc-getCC) \
 		OVERRIDE_CXX=$(tc-getCXX) \
 		OVERRIDE_LD=$(tc-getCXX) \
+		QT_SELECT=qt5 \
 		QT_HOME="$(qt5_get_libdir)/qt5" \
 		ARCH= \
 			emake "$@" \
@@ -123,21 +127,22 @@ src_compile() {
 	my_emake -j1 generate
 
 	my_emake ${targetargs} \
-		SDL_INI_PATH="\$\$\$\$HOME/.sdlmame;${GAMES_SYSCONFDIR}/${PN}" \
+		SDL_INI_PATH="\$\$\$\$HOME/.sdlmame;/etc/${PN}" \
+		USE_QTDEBUG=${qtdebug}
 
-	if use tools ; then
-		my_emake -j1 TARGET=ldplayer
-	fi
+	#if use tools ; then
+	#	my_emake -j1 TARGET=ldplayer USE_QTDEBUG=${qtdebug}
+	#fi
 }
 
 src_install() {
 	local MAMEBIN
-	local suffix="$(use amd64 && echo 64)"
+	local suffix="$(use amd64 && echo 64)$(use debug && echo d)"
 	local f
 
 	function mess_install() {
-		dosym ${MAMEBIN} "${GAMES_BINDIR}"/mess${suffix}
-		dosym ${MAMEBIN} "${GAMES_BINDIR}"/sdlmess
+		dosym ${MAMEBIN} "/usr/bin/mess${suffix}"
+		dosym ${MAMEBIN} "/usr/bin/sdlmess"
 		newman docs/man/mess.6 sdlmess.6
 		doman docs/man/mess.6
 	}
@@ -154,10 +159,10 @@ src_install() {
 		MAMEBIN="mess${suffix}"
 		mess_install
 	fi
-	dogamesbin ${MAMEBIN}
-	dosym ${MAMEBIN} "${GAMES_BINDIR}/${PN}"
+	dobin ${MAMEBIN}
+	dosym ${MAMEBIN} "/usr/bin/${PN}"
 
-	insinto "${GAMES_DATADIR}/${PN}"
+	insinto "/usr/share/${PN}"
 	doins -r keymaps $(use mess && echo hash)
 
 	# Create default mame.ini and inject Gentoo settings into it
@@ -166,12 +171,12 @@ src_install() {
 	# -- Paths --
 	for f in {rom,hash,sample,art,font,crosshair} ; do
 		sed -i \
-			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;${GAMES_DATADIR}/${PN}/\2:" \
+			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;/usr/share/${PN}/\2:" \
 			"${T}/mame.ini" || die
 	done
 	for f in {ctrlr,cheat} ; do
 		sed -i \
-			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;${GAMES_SYSCONFDIR}/${PN}/\2;${GAMES_DATADIR}/${PN}/\2:" \
+			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;/etc/${PN}/\2;/usr/share/${PN}/\2:" \
 			"${T}/mame.ini" || die
 	done
 	# -- Directories
@@ -186,40 +191,45 @@ src_install() {
 		"${T}/mame.ini" || die
 	for f in keymaps/km*.map ; do
 		sed -i \
-			-e "/^keymap_file/a \#keymap_file \t\t${GAMES_DATADIR}/${PN}/keymaps/${f##*/}" \
+			-e "/^keymap_file/a \#keymap_file \t\t/usr/share/${PN}/keymaps/${f##*/}" \
 			"${T}/mame.ini" || die
 	done
-	insinto "${GAMES_SYSCONFDIR}/${PN}"
+	insinto "/etc/${PN}"
 	doins "${T}/mame.ini"
 
-	insinto "${GAMES_SYSCONFDIR}/${PN}"
+	insinto "/etc/${PN}"
 	doins "${FILESDIR}/vector.ini"
 
-	cd docs
-	make html
-	cd ..
-	dodoc -r docs/build/html/*
+	#dodoc docs/{config,mame,newvideo}.txt
 	keepdir \
-		"${GAMES_DATADIR}/${PN}"/{ctrlr,cheat,roms,samples,artwork,crosshair} \
-		"${GAMES_SYSCONFDIR}/${PN}"/{ctrlr,cheat}
+		"/usr/share/${PN}"/{ctrlr,cheat,roms,samples,artwork,crosshair} \
+		"/etc/${PN}"/{ctrlr,cheat}
 
 	if use tools ; then
 		for f in castool chdman floptool imgtool jedutil ldresample ldverify romcmp ; do
-			newgamesbin ${f} ${PN}-${f}
+			newbin ${f} ${PN}-${f}
 			newman docs/man/${f}.1 ${PN}-${f}.1
 		done
-		newgamesbin ldplayer${suffix} ${PN}-ldplayer
-		newman docs/man/ldplayer.1 ${PN}-ldplayer.1
+		#newbin ldplayer${suffix} ${PN}-ldplayer
+		#newman docs/man/ldplayer.1 ${PN}-ldplayer.1
 	fi
-
-	prepgamesdirs
+	if use desktop; then
+		local mydesktopfields=(
+			"sdlmame"
+			"MAME"
+			"mame"
+			"Application;Game;Emulation"
+		)
+		make_desktop_entry ${mydesktopfields[@]}
+		doicon "${FILESDIR}/mame.png"
+	fi
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	xdg_desktop_database_update
 
 	elog "It is strongly recommended to change either the system-wide"
-	elog "  ${GAMES_SYSCONFDIR}/${PN}/mame.ini or use a per-user setup at ~/.${PN}/mame.ini"
+	elog "  /etc/${PN}/mame.ini or use a per-user setup at ~/.${PN}/mame.ini"
 	elog
 	if use opengl ; then
 		elog "You built ${PN} with opengl support and should set"
@@ -227,4 +237,8 @@ pkg_postinst() {
 		elog
 		elog "For more info see http://wiki.mamedev.org"
 	fi
+}
+
+pkg_postrm(){
+	xdg_desktop_database_update
 }
