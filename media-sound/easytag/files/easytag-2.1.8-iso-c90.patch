@@ -1,0 +1,53 @@
+diff -ur easytag-2.1.8/src/misc.c easytag-2.1.8_patched/src/misc.c
+--- easytag-2.1.8/src/misc.c	2013-02-05 23:42:37.000000000 +0100
++++ easytag-2.1.8_patched/src/misc.c	2019-10-19 14:51:12.006783244 +0200
+@@ -463,7 +463,7 @@
+ {
+     const gchar *year;
+     gchar *tmp, *tmp1;
+-    gchar current_year[5];
++    gchar current_year[12];
+     time_t t;
+     struct tm t0;
+ 
+diff -ur easytag-2.1.8/src/wavpack_tag.c easytag-2.1.8_patched/src/wavpack_tag.c
+--- easytag-2.1.8/src/wavpack_tag.c	2013-02-05 23:42:37.000000000 +0100
++++ easytag-2.1.8_patched/src/wavpack_tag.c	2019-10-19 14:51:02.606783007 +0200
+@@ -82,8 +82,6 @@
+  */
+ gboolean Wavpack_Tag_Read_File_Tag (gchar *filename, File_Tag *FileTag)
+ {
+-    if (!filename || !FileTag)
+-        return FALSE;
+ 
+     WavpackContext *wpc;
+     gchar *field, *field2;
+@@ -91,6 +89,9 @@
+ 
+     int open_flags = OPEN_TAGS;
+ 
++    if (!filename || !FileTag)
++        return FALSE;
++
+     wpc = WavpackOpenFileInput(filename, NULL, open_flags, 0);
+ 
+     if ( wpc == NULL ) {
+@@ -271,8 +272,6 @@
+ 
+ gboolean Wavpack_Tag_Write_File_Tag (ET_File *ETFile)
+ {
+-    if (!ETFile || !ETFile->FileTag)
+-        return FALSE;
+ 
+     WavpackContext *wpc;
+ 
+@@ -282,6 +281,9 @@
+ 
+     int open_flags = OPEN_EDIT_TAGS;
+ 
++    if (!ETFile || !ETFile->FileTag)
++        return FALSE;
++
+     wpc = WavpackOpenFileInput(filename, NULL, open_flags, 0);
+ 
+     if ( wpc == NULL ) {

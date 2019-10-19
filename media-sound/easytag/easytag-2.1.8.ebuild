@@ -34,10 +34,12 @@ DEPEND="${RDEPEND}
 	nls? ( sys-devel/gettext )"
 
 src_prepare() {
+	default
 	epatch "${FILESDIR}"/${P}-desktop.patch
 	epatch "${FILESDIR}"/${P}-werror.patch
 	epatch "${FILESDIR}"/${P}-taglib.patch
 	epatch "${FILESDIR}"/${P}-docs.patch
+	epatch "${FILESDIR}"/${P}-iso-c90.patch
 	eautoreconf
 }
 
