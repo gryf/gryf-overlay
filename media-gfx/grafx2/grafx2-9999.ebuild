@@ -39,26 +39,25 @@ src_compile() {
 
 src_install() {
 	make DESTDIR="${D}" install || die
-	dodoc doc/*
-	dobin bin/grafx2-sdl
+	dodoc doc/{COMPILING.txt,gpl-2.0.txt,PF_fonts.txt,quickstart.rtf,README.txt}
+	dodoc doc/original_docs/*
+	mv bin/grafx2-sdl bin/grafx2
+	dobin bin/grafx2
 
 	insinto /usr/share/${PN}/fonts
 	doins share/grafx2/fonts/*.{png,gif,ttf}
 
 	if use lua; then
-		insinto /usr/share/${PN}/scripts
-		doins share/grafx2/scripts/*.lua
-		for dn in brush demo libs palette picture; do
-			insinto /usr/share/${PN}/scripts/samples_2.4/${dn}
-			doins share/grafx2/scripts/samples_2.4/${dn}/*.lua
+		for dirname in $(find share/grafx2/scripts -type d -print);
+		do
+			insinto /usr/${dirname}
+			doins ${dirname}/*.lua
+
 		done
-		insinto /usr/share/${PN}/scripts/samples_2.4/demo/brush
-		doins share/grafx2/scripts/samples_2.4/demo/brush/*.lua
 	fi
 
 	insinto /usr/share/${PN}/skins
 	doins share/grafx2/skins/*.{png,gif}
 	insinto /usr/share/${PN}
 	doins share/grafx2/*.{png,gif,ini}
-
 }
