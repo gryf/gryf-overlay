@@ -6,9 +6,12 @@ EAPI=6
 
 inherit git-r3
 
+RECOIL_P="recoil-4.3.2"
+
 DESCRIPTION="Bitmap paint program inspired by Deluxe Paint and Brilliance"
-HOMEPAGE="https://code.google.com/p/grafx2/"
-EGIT_REPO_URI="https://gitlab.com/GrafX2/grafX2.git"
+HOMEPAGE="http://grafx2.chez.com/"
+SRC_URI="mirror://sourceforge/recoil/${RECOIL_P}.tar.gz"
+EGIT_REPO_URI="https://gitlab.com/GrafX2/grafX2.git/"
 
 LICENSE="GNU GPL v2"
 SLOT="0"
@@ -23,14 +26,21 @@ DEPEND=">=media-libs/libsdl-1.2
 	lua? ( >=dev-lang/lua-5.1 )"
 RDEPEND="${DEPEND}"
 
+src_unpack() {
+	git-r3_src_unpack
+	default
+	mv "${WORKDIR}"/${RECOIL_P} "${S}/3rdparty"
+}
+
 src_compile() {
+	cd src
 	make || die
 }
 
 src_install() {
 	make DESTDIR="${D}" install || die
 	dodoc doc/*
-	dobin bin/grafx2
+	dobin bin/grafx2-sdl
 
 	insinto /usr/share/${PN}/fonts
 	doins share/grafx2/fonts/*.{png,gif,ttf}
@@ -52,4 +62,3 @@ src_install() {
 	doins share/grafx2/*.{png,gif,ini}
 
 }
-
