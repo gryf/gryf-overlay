@@ -32,6 +32,7 @@ PATCHES=(
 
 src_prepare() {
 	default
+	sed -i -e 's|_UNQUOTED(ABILIB, "lib"|_UNQUOTED(ABILIB, "'$(get_libdir)'"|' configure.in
 	mv configure.{in,ac} || die
 	eautoreconf
 }
