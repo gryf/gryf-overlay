@@ -1,49 +1,52 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-pda/jpilot/jpilot-1.8.1.ebuild,v 1.4 2014/03/01 22:17:19 mgorny Exp $
 
-EAPI=4
-inherit autotools eutils
+EAPI=6
+
+inherit autotools
 
 DESCRIPTION="Desktop Organizer Software for the Palm Pilot"
 HOMEPAGE="http://www.jpilot.org/"
-SRC_URI="http://www.jpilot.org/${P}.tar.gz"
+SRC_URI="http://jpilot.org/tarballs/${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~x86"
+KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~ppc64 ~x86"
 IUSE="nls"
 
-RDEPEND=">=app-pda/pilot-link-0.12.5
-	dev-libs/libgcrypt:0
-	>=x11-libs/gtk+-2.18.9:2"
+RDEPEND="
+	app-pda/pilot-link
+	dev-libs/libgcrypt:0=
+	x11-libs/gtk+:2"
 DEPEND="${RDEPEND}
-	nls? ( dev-util/intltool
-		sys-devel/gettext )
+	nls? (
+		dev-util/intltool
+		sys-devel/gettext
+	)
 	virtual/pkgconfig"
 
-src_prepare() {
-	sed -i \
-		-e '/^Icon/s:jpilot.xpm:/usr/share/pixmaps/jpilot/jpilot-icon1.xpm:' \
-		jpilot.desktop || die
+PATCHES=(
+	"${FILESDIR}"/${PN}-1.8.2-qa-desktop-file.patch
+	"${FILESDIR}"/${PN}-1.8.2-fix-paths.patch
+)
 
+src_prepare() {
+	default
+	mv configure.{in,ac} || die
 	eautoreconf
 }
 
 src_configure() {
-	econf \
-		$(use_enable nls)
+	if use amd64; then
+		export ABILIB="lib64"
+	fi
+	econf $(use_enable nls)
 }
 
 src_install() {
-	emake \
-		DESTDIR="${D}" \
-		icondir="/usr/share/pixmaps/${PN}" \
-		miscdir="/usr/share/doc/${PF}" \
-		install
+	default
+	docompress -x /usr/share/doc/${PF}/icons
 
-	rm -f "${D}"/usr/share/doc/${PF}/{COPYING,INSTALL} \
-		"${D}"/usr/share/pixmaps/${PN}/README
-
-	find "${D}" -name '*.la' -exec rm -f {} +
+	# .la files for plugins are useless
+	find "${D}" -name '*.la' -delete || die
 }
