@@ -38,9 +38,6 @@ src_prepare() {
 }
 
 src_configure() {
-	if use amd64; then
-		export ABILIB="lib64"
-	fi
 	econf $(use_enable nls)
 }
 
