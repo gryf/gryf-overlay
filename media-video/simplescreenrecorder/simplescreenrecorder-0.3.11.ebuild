@@ -16,6 +16,7 @@ PKGNAME="ssr"
 if [[ ${PV} = 9999 ]] ; then
 	EGIT_REPO_URI="https://github.com/MaartenBaert/${PKGNAME}.git"
 	EGIT_BOOTSTRAP=""
+	KEYWORDS=""
 else
 	SRC_URI="https://github.com/MaartenBaert/${PKGNAME}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 	KEYWORDS="amd64 ~x86"
