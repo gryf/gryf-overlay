@@ -18,10 +18,11 @@ KEYWORDS="~amd64 ~x86"
 DEPEND="media-libs/fontconfig
 	>=x11-libs/libXft-2.1.0
 	x11-libs/libXmu
+	x11-libs/libXpm
 	x11-libs/libXt
 	x11-libs/libXv
 	gif? ( >=media-libs/giflib-4.1.0-r3 )
-	imagemagick? ( media-gfx/imagemagick:0= )
+	imagemagick? ( >=media-gfx/imagemagick-7:0= )
 	jpeg? ( virtual/jpeg:0= )
 	png? ( media-libs/libpng:0= )
 	tiff? ( media-libs/tiff:0 )
@@ -39,6 +40,9 @@ src_unpack() {
 }
 
 src_prepare() {
+	local git_revision=$(git log --pretty=format:'%h' -n 1)
+	sed -i -e "s/\(AC_INIT(\[WindowMaker\],\[[^]]*\)\]/\1, rev.${git_revision}\]/" configure.ac || die
+
 	# Fix some paths
 	for file in WindowMaker/*menu* util/wmgenmenu.c; do
 		if [[ -r $file ]] ; then
@@ -48,9 +52,7 @@ src_prepare() {
 		fi;
 	done;
 
-	if has_version '>=media-gfx/imagemagick-7.0.1.0' ; then
-		eapply "${FILESDIR}/${PN}-0.95.8-imagemagick7.patch"
-	fi
+
 
 	default
 	eautoreconf
@@ -97,7 +99,7 @@ src_install() {
 	emake DESTDIR="${D}" install
 
 	dodoc AUTHORS BUGFORM BUGS ChangeLog INSTALL* FAQ* \
-		  README* NEWS TODO
+		README* NEWS TODO
 
 	# WindowMaker Extra
 	cd ../WindowMaker-extra-0.1
@@ -112,4 +114,6 @@ src_install() {
 	doexe wmaker
 
 	insinto /usr/share/xsessions
+	doins "${FILESDIR}"/wmaker.desktop
+	make_desktop_entry /usr/bin/wmaker
 }
