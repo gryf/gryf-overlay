@@ -12,7 +12,7 @@ SRC_URI="https://github.com/DeaDBeeF-Player/${PN}/archive/${PV}.tar.gz -> ${P}.t
 LICENSE="GPL-2 LGPL-2.1"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="aac alsa cdda converter cover dts ffmpeg flac gtk3 +hotkeys mp3 musepack nls notify nullout opus oss pulseaudio shellexec sid +supereq threads wavepack wma vorbis"
+IUSE="aac alsa cdda converter cover dts ffmpeg flac gtk3 +hotkeys mp3 musepack nls notify nullout opus oss pulseaudio shellexec sid +supereq threads wavpack wma vorbis"
 
 REQUIRED_USE="
 	|| ( alsa oss pulseaudio nullout )
@@ -43,6 +43,7 @@ DEPEND="
 	opus? ( media-libs/opusfile	)
 	pulseaudio? ( media-sound/pulseaudio )
 	vorbis? ( media-libs/libvorbis )
+	wavpack? ( media-sound/wavpack:0 )
 "
 
 RDEPEND="${DEPEND}"
@@ -144,7 +145,7 @@ src_configure () {
 		"$(use_enable shellexec)"
 		"$(use_enable shellexec shellexecui)"
 		"$(use_enable sid)"
-		"$(use_enable wavepack)"
+		"$(use_enable wavpack)"
 		"$(use_enable wma)"
 
 		"--enable-vfs-curl"
