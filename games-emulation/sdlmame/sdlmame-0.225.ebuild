@@ -9,7 +9,9 @@ MY_PV="${PV/.}"
 
 DESCRIPTION="Multiple Arcade Machine Emulator + Multi Emulator Super System (MESS)"
 HOMEPAGE="http://mamedev.org/"
-SRC_URI="https://github.com/mamedev/mame/archive/mame${MY_PV}.tar.gz -> mame-${PV}.tar.gz"
+SRC_URI="https://github.com/mamedev/mame/archive/mame${MY_PV}.tar.gz -> mame-${PV}.tar.gz
+	https://icon-icons.com/downloadimage.php?id=20820&root=159/PNG/256/&file=mame_22338.png -> sdlmame.png
+"
 
 LICENSE="GPL-2+ BSD-2 MIT CC0-1.0"
 SLOT="0"
@@ -204,6 +206,9 @@ src_install() {
 		#newbin ldplayer${suffix} ${PN}-ldplayer
 		#newman docs/man/ldplayer.1 ${PN}-ldplayer.1
 	fi
+
+	newicon "${DISTDIR}/${PN}.png" "${PN}".png
+
 }
 
 pkg_postinst() {
