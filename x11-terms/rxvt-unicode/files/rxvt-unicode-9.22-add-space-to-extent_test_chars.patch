@@ -1,0 +1,12 @@
+diff -ur rxvt-unicode-9.22-a/src/rxvtfont.C rxvt-unicode-9.22-b/src/rxvtfont.C
+--- rxvt-unicode-9.22-a/src/rxvtfont.C	2021-01-26 13:41:32.889882053 +0100
++++ rxvt-unicode-9.22-b/src/rxvtfont.C	2021-01-26 13:43:25.909883427 +0100
+@@ -155,7 +155,7 @@
+ // these characters are used to guess the font height and width
+ // pango uses a similar algorithm and doesn't trust the font either.
+ static uint16_t extent_test_chars[] = {
+-  '0', '1', '8', 'a', 'd', 'x', 'm', 'y', 'g', 'W', 'X', '\'', '_',
++  ' ', '0', '1', '8', 'a', 'd', 'x', 'm', 'y', 'g', 'W', 'X', '\'', '_',
+   0x00cd, 0x00d5, 0x0114, 0x0177, 0x0643,	// ÍÕĔŷﻙ
+   0x304c, 0x672c,				// が本
+ };

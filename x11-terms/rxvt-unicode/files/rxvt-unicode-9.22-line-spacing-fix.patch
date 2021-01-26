@@ -1,0 +1,51 @@
+diff -ur rxvt-unicode-9.22-a/src/rxvtfont.C rxvt-unicode-9.22-b/src/rxvtfont.C
+--- rxvt-unicode-9.22-a/src/rxvtfont.C	2021-01-26 13:38:12.669879617 +0100
++++ rxvt-unicode-9.22-b/src/rxvtfont.C	2021-01-26 13:39:13.257880354 +0100
+@@ -1239,11 +1239,22 @@
+ 
+       FT_Face face = XftLockFace (f);
+ 
++/*
++ * use ascent, descent and height from XftFont *f instead of FT_Face face.
++ * this somehow reproduces the behaviour of the line height as seen on xterm.
++
+       ascent  = (face->size->metrics.ascender + 63) >> 6;
+       descent = (-face->size->metrics.descender + 63) >> 6;
+       height  = max (ascent + descent, (face->size->metrics.height + 63) >> 6);
+       width   = 0;
+ 
++ */
++
++      ascent  = f->ascent;
++      descent = f->descent;
++      height  = max (ascent + descent, f->height);
++      width   = 0;
++
+       bool scalable = face->face_flags & FT_FACE_FLAG_SCALABLE;
+ 
+       XftUnlockFace (f);
+diff -ur rxvt-unicode-9.22-a/src/rxvtfont.C.orig rxvt-unicode-9.22-b/src/rxvtfont.C.orig
+--- rxvt-unicode-9.22-a/src/rxvtfont.C.orig	2015-09-07 16:49:33.000000000 +0200
++++ rxvt-unicode-9.22-b/src/rxvtfont.C.orig	2021-01-26 13:38:12.669879617 +0100
+@@ -1267,12 +1267,21 @@
+           XGlyphInfo g;
+           XftTextExtents16 (disp, f, &ch, 1, &g);
+ 
++/*  
++ * bukind: don't use g.width as a width of a character!
++ * instead use g.xOff, see e.g.: http://keithp.com/~keithp/render/Xft.tutorial
++
+           g.width -= g.x;
+ 
+           int wcw = WCWIDTH (ch);
+           if (wcw > 0) g.width = (g.width + wcw - 1) / wcw;
+ 
+           if (width    < g.width       ) width    = g.width;
++ */
++          int wcw = WCWIDTH (ch);
++          if (wcw > 1) g.xOff = g.xOff / wcw;
++          if (width < g.xOff) width = g.xOff;
++
+           if (height   < g.height      ) height   = g.height;
+           if (glheight < g.height - g.y) glheight = g.height - g.y;
+         }
