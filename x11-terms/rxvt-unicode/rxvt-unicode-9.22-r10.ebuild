@@ -37,11 +37,11 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.06-case-insensitive-fs.patch
 	"${FILESDIR}"/${PN}-9.21-xsubpp.patch
 	"${FILESDIR}"/${PN}-9.22-sgr-mouse-mode-flag.patch
+	"${WORKDIR}"/${COLOUR_PATCH_NAME}
 	"${FILESDIR}"/${PN}-9.22-font-width-fix.patch
 	"${FILESDIR}"/${PN}-9.22-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.22-enable-wide-glyphs.patch
 	"${FILESDIR}"/${PN}-9.22-add-space-to-extent_test_chars.patch
-	"${WORKDIR}"/${COLOUR_PATCH_NAME}
 )
 DOCS=(
 	Changes
