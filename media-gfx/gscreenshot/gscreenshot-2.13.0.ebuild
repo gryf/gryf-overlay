@@ -3,13 +3,10 @@
 # $Id$
 
 EAPI=7
-
-PYTHON_COMPAT=( python{2_7,3_5,3_6} )
-PYTHON_SINGLE_TARGET="python2_7"
-
+PYTHON_COMPAT=( python3_{8..9} )
 inherit distutils-r1
 
-DESCRIPTION="Python screenshot GTK program"
+DESCRIPTION="A simple GUI frontend for the scrot, imlib2, or ImageMagick screenshooters"
 HOMEPAGE="https://github.com/thenaterhood/gscreenshot"
 SRC_URI="https://github.com/thenaterhood/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
@@ -18,16 +15,13 @@ SLOT="0"
 KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 IUSE=""
 
-DEPEND="dev-python/setuptools
+DEPEND="
 	dev-python/pillow
-	dev-python/pygobject"
+	dev-python/pygobject
+	dev-python/setuptools
+	media-gfx/scrot
+	x11-misc/xclip"
 
-RDEPEND="${DEPEND}
-	media-gfx/scrot"
+RDEPEND="${DEPEND}"
 
 DOCS=( README.md )
-
-python_test() {
-	nosetests -w "${BUILD_DIR}"/lib \
-	|| die "Tests fail with ${EPYTHON}"
-}
