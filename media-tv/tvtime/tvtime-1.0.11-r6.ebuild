@@ -1,6 +1,8 @@
 # Copyright 1999-2021 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+# ebuild has been based on Debian package and patches.
+
 EAPI=7
 
 inherit autotools eutils git-r3
@@ -12,7 +14,7 @@ EGIT_COMMIT="v${PV}"
 
 SLOT="0"
 LICENSE="GPL-2"
-KEYWORDS="~amd64-linux ~arm-linux ~x86-linux"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~sparc-solaris"
 IUSE="nls static xinerama"
 
 RDEPEND="dev-libs/icu
