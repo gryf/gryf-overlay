@@ -54,3 +54,11 @@ src_configure() {
 		$(use_with xinerama) \
 		|| die "econf failed"
 }
+
+pkg_postinst() {
+	xdg_icon_cache_update
+}
+
+pkg_postrm() {
+	xdg_icon_cache_update
+}
