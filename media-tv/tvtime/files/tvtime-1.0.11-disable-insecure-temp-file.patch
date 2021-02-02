@@ -1,0 +1,25 @@
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -202,17 +202,11 @@
+         }
+     }
+ 
+-    /* If we can't use our /tmp directory, put the fifo in $HOME. */
+-    if( !mkdir_and_force_owner( fifodir, uid, getgid() ) ) {
+-        if( asprintf( &fifo, "%s/.tvtime/tvtimefifo-%s",
+-                      getenv( "HOME" ), hostname ) < 0 ) {
+-            fifo = 0;
+-        }
+-    } else {
+-        if( asprintf( &fifo, "%s/tvtimefifo-%s", fifodir, hostname ) < 0 ) {
+-            fifo = 0;
+-        }
+-    }
++    /* put the fifo in $HOME */
++	  if( asprintf( &fifo, "%s/.tvtime/tvtimefifo-%s",
++		        getenv( "HOME" ), hostname ) < 0 ) {
++	      fifo = 0;
++	  }
+     free( hostname );
+     free( fifodir );
+     return fifo;

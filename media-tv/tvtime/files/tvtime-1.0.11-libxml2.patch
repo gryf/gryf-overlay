@@ -1,0 +1,53 @@
+Description: Use pkg-config instead of xml2-config
+Author: Adrian Bunk <bunk@debian.org>
+Bug-Debian: https://bugs.debian.org/949507
+
+--- tvtime-1.0.11.orig/configure.ac
++++ tvtime-1.0.11/configure.ac
+@@ -77,16 +77,7 @@ dnl ------------------------------------
+ dnl libxml2
+ dnl ---------------------------------------------
+ dnl Test for libxml2
+-AC_PATH_PROG(LIBXML2_CONFIG,xml2-config,no)
+-if test "$LIBXML2_CONFIG" = "no" ; then
+-	AC_MSG_ERROR(libxml2 needed and xml2-config not found)
+-else
+-	XML2_LIBS="`$LIBXML2_CONFIG --libs`"
+-	XML2_FLAG="`$LIBXML2_CONFIG --cflags`"
+-	AC_DEFINE(HAVE_LIBXML2,,[LIBXML2 support])
+-fi
+-AC_SUBST(XML2_LIBS)
+-AC_SUBST(XML2_FLAG)
++PKG_CHECK_MODULES(XML2, libxml-2.0)
+ 
+ dnl ---------------------------------------------
+ dnl libasound2
+--- tvtime-1.0.11.orig/src/Makefile.am
++++ tvtime-1.0.11/src/Makefile.am
+@@ -78,22 +78,22 @@ bin_PROGRAMS = tvtime tvtime-command tvt
+ 
+ tvtime_SOURCES = $(COMMON_SRCS) $(OUTPUT_SRCS) $(PLUGIN_SRCS) tvtime.c
+ tvtime_CFLAGS = $(TTF_CFLAGS) $(PNG_CFLAGS) $(OPT_CFLAGS) \
+-	$(PLUGIN_CFLAGS) $(X11_CFLAGS) $(XML2_FLAG) $(ALSA_CFLAGS) \
++	$(PLUGIN_CFLAGS) $(X11_CFLAGS) $(XML2_CFLAGS) $(ALSA_CFLAGS) \
+ 	$(FONT_CFLAGS) $(AM_CFLAGS)
+ tvtime_LDFLAGS  = $(TTF_LIBS) $(ZLIB_LIBS) $(PNG_LIBS) \
+ 	$(X11_LIBS) $(XML2_LIBS) $(ALSA_LIBS) -lm
+ 
+ tvtime_command_SOURCES = utils.h utils.c tvtimeconf.h tvtimeconf.c \
+ 	tvtime-command.c
+-tvtime_command_CFLAGS = $(OPT_CFLAGS) $(XML2_FLAG) $(AM_CFLAGS)
++tvtime_command_CFLAGS = $(OPT_CFLAGS) $(XML2_CFLAGS) $(AM_CFLAGS)
+ tvtime_command_LDFLAGS  = $(ZLIB_LIBS) $(XML2_LIBS)
+ tvtime_configure_SOURCES = utils.h utils.c tvtimeconf.h tvtimeconf.c \
+ 	tvtime-configure.c
+-tvtime_configure_CFLAGS = $(OPT_CFLAGS) $(XML2_FLAG) $(AM_CFLAGS)
++tvtime_configure_CFLAGS = $(OPT_CFLAGS) $(XML2_CFLAGS) $(AM_CFLAGS)
+ tvtime_configure_LDFLAGS  = $(ZLIB_LIBS) $(XML2_LIBS)
+ tvtime_scanner_SOURCES = utils.h utils.c videoinput.h videoinput.c \
+ 	tvtimeconf.h tvtimeconf.c station.h station.c tvtime-scanner.c \
+ 	get_media_devices.c get_media_devices.h
+-tvtime_scanner_CFLAGS = $(OPT_CFLAGS) $(XML2_FLAG) $(ALSA_CFLAGS) $(AM_CFLAGS)
++tvtime_scanner_CFLAGS = $(OPT_CFLAGS) $(XML2_CFLAGS) $(ALSA_CFLAGS) $(AM_CFLAGS)
+ tvtime_scanner_LDFLAGS  = $(ZLIB_LIBS) $(XML2_LIBS) $(ALSA_LIBS)
+ 

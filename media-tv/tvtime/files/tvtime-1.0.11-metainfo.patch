@@ -1,0 +1,12 @@
+diff -ur tvtime-orig/docs/Makefile.am tvtime/docs/Makefile.am
+--- tvtime-orig/docs/Makefile.am	2021-02-02 19:37:13.096223652 +0100
++++ tvtime/docs/Makefile.am	2021-02-02 19:38:42.888221598 +0100
+@@ -34,7 +34,7 @@
+ # http://www.freedesktop.org/standards/desktop-entry-spec/
+ desktopdatadir = $(datadir)/applications
+ dist_desktopdata_DATA = tvtime.desktop
+-appdatadir = $(datadir)/appdata
++appdatadir = $(datadir)/metainfo
+ dist_appdata_DATA = tvtime.appdata.xml
+ 
+ # We use $(datadir)/icons/hicolor as our theme from the freedesktop spec

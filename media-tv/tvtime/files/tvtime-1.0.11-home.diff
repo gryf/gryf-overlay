@@ -1,0 +1,65 @@
+--- a/src/tvtime-command.c
++++ b/src/tvtime-command.c
+@@ -39,6 +39,9 @@
+ 
+ int main( int argc, char **argv )
+ {
++    if( ! getenv( "HOME" ) ) { fprintf( stderr, "this program needs HOME\n" ); exit( 1 ); }
++    if( strlen( getenv( "HOME" ) ) > 230 ) { fprintf( stderr, "HOME is too long\n" ); exit( 1 ); }
++
+     int nc = tvtime_num_commands();
+     config_t *cfg;
+     FILE *fifo;
+--- a/src/tvtime-configure.c
++++ b/src/tvtime-configure.c
+@@ -19,6 +19,8 @@
+ #include <stdio.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #ifdef HAVE_CONFIG_H
+@@ -35,6 +37,9 @@
+ 
+ int main( int argc, char **argv )
+ {
++    if( ! getenv( "HOME" ) ) { fprintf( stderr, "this program needs HOME\n" ); exit( 1 ); }
++    if( strlen( getenv( "HOME" ) ) > 230 ) { fprintf( stderr, "HOME is too long\n" ); exit( 1 ); }
++
+     config_t *cfg;
+ 
+     /*
+--- a/src/tvtime-scanner.c
++++ b/src/tvtime-scanner.c
+@@ -24,6 +24,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <string.h>
++#include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #ifdef HAVE_CONFIG_H
+@@ -47,6 +48,9 @@
+ 
+ int main( int argc, char **argv )
+ {
++    if( ! getenv( "HOME" ) ) { fprintf( stderr, "this program needs HOME\n" ); exit( 1 ); }
++    if( strlen( getenv( "HOME" ) ) > 230 ) { fprintf( stderr, "HOME is too long\n" ); exit( 1 ); }
++
+     config_t *cfg;
+     station_mgr_t *stationmgr = 0;
+     videoinput_t *vidin;
+--- a/src/tvtime.c
++++ b/src/tvtime.c
+@@ -2624,6 +2624,9 @@
+ 
+ int main( int argc, char **argv )
+ {
++    if( ! getenv( "HOME" ) ) { fprintf( stderr, "this program needs HOME\n" ); exit( 1 ); }
++    if( strlen( getenv( "HOME" ) ) > 230 ) { fprintf( stderr, "HOME is too long\n" ); exit( 1 ); }
++
+     rtctimer_t *rtctimer = 0;
+     int read_stdin = 1;
+     int result = 0;
