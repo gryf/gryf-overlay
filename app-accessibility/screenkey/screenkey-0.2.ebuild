@@ -14,7 +14,7 @@ SRC_URI="http://launchpad.net/screenkey/0.2/0.2.0/+download/${P}.tar.gz"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~x86"
+KEYWORDS="~x86 ~amd64"
 IUSE=""
 
 DEPEND="dev-python/pygtk:2

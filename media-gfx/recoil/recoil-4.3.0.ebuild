@@ -5,7 +5,7 @@ EAPI=6
 
 inherit eutils
 
-DESCRIPTION="Viewer of pictures in native formats of vintage computers (Amiga, Atari, C64 and so on)"
+DESCRIPTION="Viewer of pictures in native formats of vintage computers (Amiga, Atari, C64)"
 HOMEPAGE="http://recoil.sf.net"
 SRC_URI="mirror://sourceforge/project/${PN}/${PN}/${PV}/${P}.tar.gz"
 

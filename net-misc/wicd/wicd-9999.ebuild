@@ -4,7 +4,7 @@
 EAPI=6
 
 PYTHON_COMPAT=( python3_{7,8} )
-PYTHON_REQ_USE="ncurses?,xml"
+PYTHON_REQ_USE="ncurses,xml"
 
 inherit eutils distutils-r1 linux-info readme.gentoo-r1 systemd git-r3
 
@@ -12,12 +12,13 @@ DESCRIPTION="A lightweight wired and wireless network manager for Linux"
 HOMEPAGE="https://launchpad.net/wicd"
 #EGIT_REPO_URI='https://git.launchpad.net/wicd'
 #EGIT_COMMIT='63812468bec3ee94c2dd6c8268f9e7b341273be5'
-EGIT_REPO_URI='https://github.com/gryf/wicd'
+#EGIT_REPO_URI='https://github.com/gryf/wicd'
+EGIT_REPO_URI='file:///home/gryf/Devel/Python/wicd'
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~arm ~mips ~ppc ~ppc64 ~x86"
-IUSE="doc libnotify ncurses nls +pm-utils"
+IUSE="doc nls +pm-utils"
 
 DEPEND="nls? ( dev-python/Babel[${PYTHON_USEDEP}] )"
 RDEPEND="${PYTHON_DEPS}
@@ -33,11 +34,8 @@ RDEPEND="${PYTHON_DEPS}
 		sys-apps/net-tools
 		sys-apps/ethtool
 	)
-	libnotify? ( dev-python/notify-python[${PYTHON_USEDEP}] )
-	ncurses? (
-		dev-python/urwid[${PYTHON_USEDEP}]
-		dev-python/pygobject:2[${PYTHON_USEDEP}]
-	)
+	dev-python/urwid[${PYTHON_USEDEP}]
+	dev-python/pygobject:3[${PYTHON_USEDEP}]
 	pm-utils? ( sys-power/pm-utils )
 	"
 
@@ -69,8 +67,6 @@ src_prepare() {
 
 src_configure() {
 	local myconf
-	use libnotify || myconf="${myconf} --no-use-notifications"
-	use ncurses || myconf="${myconf} --no-install-ncurses"
 	use pm-utils || myconf="${myconf} --no-install-pmutils"
 	python_setup
 	"${EPYTHON}" ./setup.py configure --no-install-docs \
@@ -85,7 +81,7 @@ src_install() {
 	keepdir /etc/wicd/scripts/{postconnect,disconnect,preconnect}
 	keepdir /var/log/wicd
 	use nls || rm -rv "${D}"/usr/share/locale
-	systemd_dounit "${S}/other/wicd.service"
+	systemd_dounit "${S}/data/systemd/wicd.service"
 
 	readme.gentoo_create_doc
 }

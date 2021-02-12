@@ -13,10 +13,10 @@ SRC_URI="http://download.freedesktop.org/${PN}/1.x/1.3.x/${P}.tar.gz"
 
 LICENSE="LGPL"
 SLOT="0"
-KEYWORDS="ia64 x86"
+KEYWORDS="~ia64 ~x86"
 IUSE="localization goptionparse newroles"
-DEPEND="gnome-extra/at-spi 
-	    >=dev-libs/glib-2.2.0 
+DEPEND="gnome-extra/at-spi
+	    >=dev-libs/glib-2.2.0
 		gnome-extra/libgail-gnome
 		gnome-base/gail
 		dev-lang/python

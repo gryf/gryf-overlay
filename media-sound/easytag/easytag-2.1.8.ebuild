@@ -9,7 +9,7 @@ HOMEPAGE="https://projects.gnome.org/easytag/"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 hppa ppc ppc64 ~sparc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~x86-solaris"
+KEYWORDS="~amd64 ~x86"
 IUSE="flac mp3 mp4 nls speex vorbis wavpack"
 
 RDEPEND=">=x11-libs/gtk+-2.24:2

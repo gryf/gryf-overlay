@@ -11,7 +11,7 @@ HOMEPAGE="http://aminet.net/package/misc/unix/unlzx.c"
 SLOT="0"
 LICENSE="freedist"
 IUSE=""
-KEYWORDS="alpha amd64 ~hppa ppc sparc x86 ~amd64-linux ~x86-linux ~ppc-macos"
+KEYWORDS="~alpha ~amd64 ~hppa ~ppc ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos"
 
 src_unpack() {
 	mkdir "${S}"

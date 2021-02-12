@@ -10,7 +10,7 @@ SRC_URI="http://javascriptlint.com/download/${P}-src.tar.gz"
 LICENSE="GPL"
 
 IUSE=""
-KEYWORDS="x86 amd64"
+KEYWORDS="~x86 ~amd64"
 SLOT="0"
 
 DEPEND=""
