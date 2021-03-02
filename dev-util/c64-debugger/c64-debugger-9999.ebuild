@@ -11,7 +11,7 @@ EGIT_REPO_URI="https://git.code.sf.net/p/c64-debugger/code"
 
 LICENSE=""
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS=""
 IUSE=""
 
 DEPEND="

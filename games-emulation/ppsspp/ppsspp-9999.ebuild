@@ -15,7 +15,7 @@ fi
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS=""
 IUSE="qt5 +sdl"
 REQUIRED_USE="
 	?? ( sdl )

@@ -8,7 +8,7 @@ inherit java-pkg-2
 DESCRIPTION="Cross assembler for 6510 code"
 HOMEPAGE="http://www.theweb.dk/KickAssembler/Main.php"
 SRC_URI="http://www.theweb.dk/KickAssembler/${PN}.zip"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS=""
 
 LICENSE=""
 SLOT="0"
