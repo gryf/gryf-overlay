@@ -13,4 +13,5 @@ src_prepare() {
 	if use slashed-zero; then
 		epatch "${FILESDIR}/slashed-zero.patch"
 	fi
+	eapply_user
 }
