@@ -55,6 +55,8 @@ src_configure() {
 		$(use_enable flac) \
 		$(use_enable mp4) \
 		$(use_enable wavpack)
+	# workaround for gcc10
+	sed -i -e 's/\(^CFLAGS = .*\)/\1 -fcommon/' Makefile || die
 }
 
 pkg_postinst() { xdg_desktop_database_update; }
