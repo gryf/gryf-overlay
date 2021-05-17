@@ -42,6 +42,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.22-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.22-enable-wide-glyphs.patch
 	"${FILESDIR}"/${PN}-9.22-add-space-to-extent_test_chars.patch
+	"${FILESDIR}"/${PN}-9.22-disable-graphics-query.patch
 )
 DOCS=(
 	Changes
