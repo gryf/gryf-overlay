@@ -1,7 +1,6 @@
-diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
---- unadf-0.7.11a.orig/Demo/unadf.c	2013-05-12 17:59:51.214905177 +0200
-+++ unadf-0.7.11a/Demo/unadf.c	2013-05-12 17:50:06.843420519 +0200
-@@ -58,6 +58,7 @@
+--- adflib-0.7.12_a/examples/unadf.c	2021-07-09 17:38:47.980770205 +0200
++++ adflib-0.7.12_b/examples/unadf.c	2021-07-09 17:54:32.548793259 +0200
+@@ -65,6 +65,7 @@
      puts("    -r : lists directory tree contents");
      puts("    -c : use dircache data (must be used with -l)");
      puts("    -s : display entries logical block pointer (must be used with -l)");
@@ -9,17 +8,32 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
      putchar('\n');
      puts("    -v n : mount volume #n instead of default #0 volume");
      putchar('\n');
-@@ -65,7 +66,8 @@
+@@ -72,7 +73,8 @@
      puts("    -d dir : extract to 'dir' directory");
  }
  
 -void printEnt(struct Volume *vol, struct Entry* entry, char *path, BOOL sect)
-+void printEnt(struct Volume *vol, struct Entry* entry, char *path, BOOL sect, 
++void printEnt(struct Volume *vol, struct Entry* entry, char *path, BOOL sect,
 +        BOOL comment)
  {
      /* do not print the links entries, ADFlib do not support them yet properly */
      if (entry->type==ST_LFILE || entry->type==ST_LDIR || entry->type==ST_LSOFT)
-@@ -89,7 +91,7 @@
+@@ -81,12 +83,12 @@
+     if (entry->type==ST_DIR)
+         printf("         ");
+     else
+-        printf("%7ld  ",entry->size);
++        printf("%7d  ",entry->size);
+ 
+ 	printf("%4d/%02d/%02d  %2d:%02d:%02d ",entry->year, entry->month, entry->days,
+         entry->hour, entry->mins, entry->secs);
+     if (sect)
+-        printf(" %06ld ",entry->sector);
++        printf(" %06d ",entry->sector);
+ 
+     if (strlen(path)>0)
+         printf(" %s/",path);
+@@ -96,7 +98,7 @@
          printf("%s/",entry->name);
      else
          printf("%s",entry->name);
@@ -28,7 +42,7 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
          printf(", %s",entry->comment);
      putchar('\n');
  
-@@ -199,13 +201,14 @@
+@@ -203,13 +205,14 @@
  }
  
  
@@ -45,7 +59,7 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
          if (tree->subdir!=NULL) {
              entry = (struct Entry*)tree->content;
              if (strlen(path)>0) {
-@@ -215,11 +218,11 @@
+@@ -219,11 +222,11 @@
                      return;
                  }
                  sprintf(buf,"%s/%s", path, entry->name);
@@ -59,7 +73,25 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
          }
          tree = tree->next;
      }
-@@ -370,12 +373,10 @@
+@@ -247,7 +250,7 @@
+         printf("???"); break;
+     }
+ 
+-    printf(". Cylinders = %ld, Heads = %ld, Sectors = %ld",dev->cylinders,dev->heads,dev->sectors);
++    printf(". Cylinders = %d, Heads = %d, Sectors = %d",dev->cylinders,dev->heads,dev->sectors);
+ 
+     printf(". Volumes = %d\n",dev->nVol);
+ }
+@@ -277,7 +280,7 @@
+     if (vol->volName!=NULL)
+         printf(" \"%s\"", vol->volName);
+ 
+-    printf(" between sectors [%ld-%ld].",vol->firstBlock, vol->lastBlock);
++    printf(" between sectors [%d-%d].",vol->firstBlock, vol->lastBlock);
+ 
+     printf(" %s ",isFFS(vol->dosType) ? "FFS" : "OFS");
+     if (isINTL(vol->dosType))
+@@ -373,7 +376,7 @@
  int main(int argc, char* argv[])
  {
      int i, j;
@@ -67,33 +99,27 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
 +    BOOL rflag, lflag, xflag, cflag, vflag, sflag, dflag, pflag, qflag, mflag;
      struct List* files, *rtfiles;
      char *devname, *dirname;
--    char strbuf[80];
-     unsigned char *extbuf;
--    int vInd, dInd, fInd, aInd;
-     BOOL nextArg;
- 
-     struct Device *dev;
-@@ -389,8 +390,7 @@
+     char strbuf[80];
+@@ -392,7 +395,7 @@
          exit(0);
      }
  
 -    rflag = lflag = cflag = vflag = sflag = dflag = pflag = qflag = FALSE;
--    vInd = dInd = fInd = aInd = -1;
 +    rflag = lflag = cflag = vflag = sflag = dflag = pflag = qflag = mflag = FALSE;
+     vInd = dInd = fInd = aInd = -1;
      xflag = TRUE;
      dirname = NULL;
-     devname = NULL;
-@@ -430,6 +430,9 @@
+@@ -433,6 +436,9 @@
                  case 's': 
                      sflag = TRUE;
                      break;
-+                case 'm': 
++                case 'm':
 +                    mflag = TRUE;
 +                    break;
                  case 'c': 
                      cflag = TRUE;
                      break;
-@@ -522,13 +525,13 @@
+@@ -526,13 +532,13 @@
          if (!rflag) {
              cell = list = adfGetDirEnt(vol,vol->curDirPtr);
              while(cell) {
@@ -109,14 +135,3 @@ diff -ur unadf-0.7.11a.orig/Demo/unadf.c unadf-0.7.11a/Demo/unadf.c
              adfFreeDirList(list);
          }
      }else if (xflag) {
-diff -ur unadf-0.7.11a.orig/Demo/unadf.usage unadf-0.7.11a/Demo/unadf.usage
---- unadf-0.7.11a.orig/Demo/unadf.usage	2006-12-03 15:27:00.000000000 +0100
-+++ unadf-0.7.11a/Demo/unadf.usage	2013-05-12 17:40:23.116966854 +0200
-@@ -3,6 +3,7 @@
-     -r : lists directory tree contents
-     -c : use dircache data (must be used with -l)
-     -s : display entries logical block pointer (must be used with -l)
-+    -m : display file comments, if exists (must be used with -l)
- 
-     -v n : mount volume #n instead of default #0 volume
- 
