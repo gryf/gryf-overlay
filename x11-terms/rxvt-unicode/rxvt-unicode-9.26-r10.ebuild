@@ -15,8 +15,22 @@ SRC_URI="http://dist.schmorp.de/rxvt-unicode/Attic/${P}.tar.bz2
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~sparc-solaris"
-IUSE="-24-bit-color 256-color blink fading-colors +font-styles gdk-pixbuf iso14755 +mousewheel
-	+perl smart-resize startup-notification unicode3 +utmp +wide-glyphs +wtmp xft"
+# NOTE(gryf): this ebuild differ from official one by using 3rd party patches,
+# and configuration options, which are absent in official ebuild, but are
+# accepted by configure script:
+# enabled options as a use flags:
+#   - smart-resize
+# 3rd party patches (by flags):
+#   - font-width - use xOff instead of width attribute for a glyph.
+#   - line-spacing - use ascent, descent and height from XftFont *f instead of 
+#     FT_Face face.
+#   - use-space - add space for characters to figure out width and height of 
+#     chars
+#   - wide-glyphs - add support for wide glyphs
+IUSE="-24-bit-color 256-color blink fading-colors +font-styles -font-width
+	gdk-pixbuf iso14755 -line-spacing +mousewheel +perl -smart-resize
+	-use-space startup-notification unicode3 +utmp -wide-glyphs +wtmp
+	xft"
 
 RDEPEND=">=sys-libs/ncurses-5.7-r6:=
 	media-libs/fontconfig
@@ -36,10 +50,6 @@ BDEPEND="virtual/pkgconfig"
 PATCHES=(
 	"${FILESDIR}"/${PN}-9.06-case-insensitive-fs.patch
 	"${FILESDIR}"/${PN}-9.21-xsubpp.patch
-	"${FILESDIR}"/${PN}-9.22-font-width-fix.patch
-	"${FILESDIR}"/${PN}-9.22-line-spacing-fix.patch
-	"${FILESDIR}"/${PN}-9.26-enable-wide-glyphs.patch
-	"${FILESDIR}"/${PN}-9.22-add-space-to-extent_test_chars.patch
 )
 DOCS=(
 	Changes
@@ -58,6 +68,20 @@ src_prepare() {
 		eapply "${WORKDIR}"/${COLOUR_PATCH_NAME}
 	fi
 
+	# custom patches
+	if use font-width; then
+		eapply "${FILESDIR}"/${PN}-9.22-font-width-fix.patch
+	fi
+	if use line-spacing; then
+		eapply "${FILESDIR}"/${PN}-9.22-line-spacing-fix.patch
+	fi
+	if use wide-glyphs; then
+		eapply "${FILESDIR}"/${PN}-9.26-enable-wide-glyphs.patch
+	fi
+	if use use-space; then
+		eapply "${FILESDIR}"/${PN}-9.22-add-space-to-extent_test_chars.patch
+	fi
+
 	# kill the rxvt-unicode terminfo file - #192083
 	sed -i -e "/rxvt-unicode.terminfo/d" doc/Makefile.in || die "sed failed"
 
@@ -69,7 +93,6 @@ src_configure() {
 	# --enable-everything goes first: the order of the arguments matters
 	local myconf=(
 		--enable-everything
-		$(use_enable 24-bit-color)
 		$(use_enable 256-color)
 		$(use_enable blink text-blink)
 		$(use_enable fading-colors fading)
@@ -78,14 +101,20 @@ src_configure() {
 		$(use_enable iso14755)
 		$(use_enable mousewheel)
 		$(use_enable perl)
-		$(use_enable smart-resize) \
+		$(use_enable smart-resize)
 		$(use_enable startup-notification)
 		$(use_enable unicode3)
 		$(use_enable utmp)
-		$(use_enable wide-glyphs) \
+		$(use_enable wide-glyphs)
 		$(use_enable wtmp)
 		$(use_enable xft)
 	)
+	if use 24-bit-color; then
+		myconf+=( --enable-24-bit-color )
+	fi
+	if use wide-glyphs; then
+		myconf+=( --enable-wide-glyphs )
+	fi
 	econf "${myconf[@]}"
 }
 
