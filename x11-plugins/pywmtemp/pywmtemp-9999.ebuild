@@ -19,6 +19,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 RDEPEND="
+	dev-python/psutil
 	dev-python/wmdocklib
 "
 DEPEND="${RDEPEND}"
