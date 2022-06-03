@@ -16,7 +16,7 @@ EGIT_BRANCH="master"
 
 LICENSE="LGPL"
 SLOT="0"
-KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ppc ppc64 ~riscv ~s390 ~sparc x86 ~amd64-linux ~x86-linux"
+KEYWORDS="~amd64"
 
 RDEPEND="
 	>=x11-libs/libX11-1.7.5
