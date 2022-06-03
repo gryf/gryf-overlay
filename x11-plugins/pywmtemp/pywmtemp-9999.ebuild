@@ -20,6 +20,7 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	dev-python/psutil
+	dev-python/pyyaml
 	dev-python/wmdocklib
 "
 DEPEND="${RDEPEND}"
