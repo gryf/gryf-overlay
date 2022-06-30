@@ -5,7 +5,7 @@ EAPI=7
 
 inherit desktop linux-info unpacker xdg
 
-DESCRIPTION="a Native alternative Linux Launcher for Epic Games"
+DESCRIPTION="a Native alternative Linux Launcher for Epic Games and GOG"
 HOMEPAGE="https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher"
 SRC_URI="https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/v${PV}/${PN}-${PV}.tar.xz"
 
