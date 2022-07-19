@@ -1,8 +1,4 @@
-# Copyright 1999-2016 Gentoo Foundation
-# Distributed under the terms of the GNU General Public License v2
-# $Id$
-
-EAPI=5
+EAPI=7
 
 inherit eutils
 
@@ -15,15 +11,11 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-RDEPEND="!<app-eselect/eselect-emacs-1.18
-	>=app-admin/eselect-1.2.3"
+RDEPEND="!<app-eselect/eselect-emacs-1.19
+	>=app-admin/eselect-1.4.20"
 
 S="${WORKDIR}/${MY_P}"
-
-src_prepare() {
-	epatch "${FILESDIR}"/${P}_add-universal-ctags.patch 
-	eapply_user
-}
+PATCHES=( "${FILESDIR}"/${P}_add-universal-ctags.patch )
 
 src_install() {
 	insinto /usr/share/eselect/modules
