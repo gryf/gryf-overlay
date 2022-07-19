@@ -2,10 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="5"
+EAPI="8"
 
 DESCRIPTION="A tool for reengineering 3rd party, closed, binary Android apps"
-HOMEPAGE="http://code.google.com/p/android-apktool/"
+HOMEPAGE="https://ibotpeaches.github.io/Apktool"
 SRC_URI="https://github.com/iBotPeaches/Apktool/releases/download/v${PV}/apktool_${PV}.jar"
 
 LICENSE="GPL-3"
