@@ -17,14 +17,9 @@ IUSE=""
 
 RDEPEND="app-eselect/eselect-ctags"
 
-src_prepare() {
-	[[ ${PV} == "9999" ]] && ./autogen.sh
-	eautoreconf
-}
-
 src_configure() {
+	[[ ${PV} == "9999" ]] && ./autogen.sh
 	econf \
-		--disable-readlib \
 		--disable-etags \
 		--program-prefix=universal- \
 		--enable-tmpdir=/tmp
