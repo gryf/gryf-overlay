@@ -3,9 +3,9 @@
 
 # ebuild has been based on Debian package and patches.
 
-EAPI=7
+EAPI=8
 
-inherit autotools eutils git-r3
+inherit autotools git-r3
 
 DESCRIPTION="High quality television application for use with video capture cards"
 HOMEPAGE="https://git.linuxtv.org/tvtime.git/about/"
