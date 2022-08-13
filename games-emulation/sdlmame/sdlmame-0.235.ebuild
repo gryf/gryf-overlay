@@ -1,9 +1,9 @@
 # Copyright 2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 PYTHON_COMPAT=( python2_7 python3_{8..11} )
-inherit desktop eutils python-any-r1 toolchain-funcs qmake-utils xdg-utils
+inherit desktop python-any-r1 toolchain-funcs qmake-utils xdg-utils
 
 MY_PV="${PV/.}"
 
