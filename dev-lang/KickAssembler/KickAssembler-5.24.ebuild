@@ -1,18 +1,21 @@
 # Copyright 2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit java-pkg-2
 
 DESCRIPTION="Cross assembler for 6510 code"
 HOMEPAGE="http://www.theweb.dk/KickAssembler/Main.php"
-SRC_URI="http://www.theweb.dk/KickAssembler/${PN}${PV}.zip -> ${P}.zip"
+# This is unchanged archive downloaded from homepage. For some reason IIS 
+# which is used for hosting rejects direct download for tools like curl/wget, 
+# hence the mirror on my web server.
+SRC_URI="https://vimja.pl/filez/${PN}${PV}.zip"
 
+KEYWORDS="~amd64 ~x86"
 
 LICENSE=""
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND=">=virtual/jre-1.8"
@@ -25,7 +28,6 @@ S=${WORKDIR}
 src_install() {
 	java-pkg_jarinto /opt/${PN}
 	java-pkg_newjar ${THENAME}.jar ${THENAME}.jar
-	java-pkg_newjar ${THENAME}3To4Converter.jar ${THENAME}3To4Converter.jar
 	java-pkg_dolauncher \
 		${PN} \
 		--jar /opt/${PN}/${THENAME}.jar \
