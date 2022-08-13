@@ -1,6 +1,4 @@
-EAPI=7
-
-inherit eutils
+EAPI=8
 
 DESCRIPTION="Read AmigaGuide hybertext documents on console"
 SRC_URI="http://aminet.net/misc/unix/AGReader.tar.bz2"
