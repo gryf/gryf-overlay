@@ -2,8 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="6"
-inherit eutils flag-o-matic
+EAPI="8"
+inherit flag-o-matic
 
 DESCRIPTION="A handy personal organizer"
 HOMEPAGE="http://clayo.org/osmo/"
