@@ -1,8 +1,8 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
-inherit autotools eutils git-r3
+EAPI=8
+inherit autotools git-r3
 
 DESCRIPTION="The fast and light GNUstep window manager - gryf's personal ebuild"
 HOMEPAGE="http://www.windowmaker.org/"
@@ -25,13 +25,13 @@ DEPEND="media-libs/fontconfig
 	gif? ( >=media-libs/giflib-4.1.0-r3 )
 	imagemagick? ( >=media-gfx/imagemagick-7:0= )
 	jpeg? ( virtual/jpeg:0= )
+	nls? ( >=sys-devel/gettext-0.10.39 )
 	png? ( media-libs/libpng:0= )
 	tiff? ( media-libs/tiff:0 )
 	webp? ( media-libs/libwebp )
 	xinerama? ( x11-libs/libXinerama )
 	xrandr? ( x11-libs/libXrandr )"
-RDEPEND="${DEPEND}
-	nls? ( >=sys-devel/gettext-0.10.39 )"
+RDEPEND="${DEPEND}"
 
 src_unpack() {
 	# wm-extras
@@ -50,8 +50,8 @@ src_prepare() {
 			sed -i -e "s:/usr/local/GNUstep/Applications/WPrefs.app:${EPREFIX}/usr/bin/:g;" "$file" || die
 			sed -i -e "s:/usr/local/share/WindowMaker:${EPREFIX}/usr/share/WindowMaker:g;" "$file" || die
 			sed -i -e "s:/opt/share/WindowMaker:${EPREFIX}/usr/share/WindowMaker:g;" "$file" || die
-		fi;
-	done;
+		fi
+	done
 
 	default
 	eautoreconf
@@ -112,4 +112,6 @@ src_install() {
 	insinto /usr/share/xsessions
 	doins "${FILESDIR}"/wmaker.desktop
 	make_desktop_entry /usr/bin/wmaker
+
+	find "${ED}" -type f -name '*.la' -delete || die
 }
