@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 #
 # NOTE(gryf): this ebuild differ from official one by using 3rd party patches,
@@ -22,7 +22,7 @@ COLOUR_PATCH_NAME="${PN}-9.29_24-bit-color_aur-9.26-20210712.patch"
 DESCRIPTION="rxvt clone with xft and unicode support"
 HOMEPAGE="http://software.schmorp.de/pkg/rxvt-unicode.html"
 SRC_URI="http://dist.schmorp.de/rxvt-unicode/Attic/${P}.tar.bz2
-	https://dev.gentoo.org/~marecki/dists/${PN}/${COLOUR_PATCH_NAME}.xz"
+	https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -38,7 +38,6 @@ RDEPEND=">=sys-libs/ncurses-5.7-r6:=
 	x11-libs/libXrender
 	x11-libs/libXt
 	gdk-pixbuf? ( x11-libs/gdk-pixbuf )
-	kernel_Darwin? ( dev-perl/Mac-Pasteboard )
 	perl? ( dev-lang/perl:= )
 	startup-notification? ( x11-libs/startup-notification )
 	xft? ( x11-libs/libXft )"
