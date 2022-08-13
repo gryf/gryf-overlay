@@ -2,8 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI=6
-inherit eutils
+EAPI=8
 
 DESCRIPTION="a dockapp for monitoring cpu/gpu temperature"
 HOMEPAGE="https://github.com/gryf/wmtemp"
