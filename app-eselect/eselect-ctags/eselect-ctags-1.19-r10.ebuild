@@ -1,6 +1,4 @@
-EAPI=7
-
-inherit eutils
+EAPI=8
 
 MY_P="eselect-emacs-${PV}"
 DESCRIPTION="Manages ctags implementations"
