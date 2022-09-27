@@ -1,4 +1,4 @@
-gryf_overlay
+gryf-overlay
 ============
 
 There is a bunch of ebuilds, which I'd like to keep - some of them are taken
