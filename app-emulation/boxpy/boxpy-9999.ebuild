@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{8..11} )
 
-inherit git-r3
+inherit git-r3 bash-completion-r1
 
 DESCRIPTION="Run Ubuntu or Fedora cloud image on top of VirtualBox using commandline tool"
 HOMEPAGE="https://github.com/gryf/boxpy"
@@ -16,6 +16,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 RDEPEND="
+	app-emulation/virtualbox
 	dev-python/pyyaml
 	dev-python/requests
 	app-cdr/cdrtools
@@ -26,4 +27,7 @@ DEPEND="${RDEPEND}"
 
 src_install() {
 	newbin box.py boxpy
+	cd "${S}"
+	./box.py completion bash > boxpy_completion
+	newbashcomp boxpy_completion boxpy
 }
