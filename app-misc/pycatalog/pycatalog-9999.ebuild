@@ -19,7 +19,7 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	dev-python/exifread
-	dev-python/mutagen
 	dev-python/sqlalchemy
+	media-libs/mutagen
 "
 DEPEND="${RDEPEND}"
