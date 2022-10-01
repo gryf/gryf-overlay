@@ -5,10 +5,9 @@ EAPI=8
 
 inherit bash-completion-r1
 
-DESCRIPTION="Conformance test suite for OpenShift"
+DESCRIPTION="OpenShift command line client"
 HOMEPAGE="https://github.com/openshift/origin https://www.openshift.org/"
 SRC_URI="https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${PV}/openshift-client-linux.tar.gz -> ${P}.tar.gz"
-
 
 LICENSE="Apache-2.0"
 SLOT="0"
