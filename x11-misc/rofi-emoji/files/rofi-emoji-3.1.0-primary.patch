@@ -1,0 +1,42 @@
+diff -ur rofi-emoji_orig/clipboard-adapter.sh rofi-emoji/clipboard-adapter.sh
+--- rofi-emoji_orig/clipboard-adapter.sh	2022-10-08 09:43:38.033895494 +0200
++++ rofi-emoji/clipboard-adapter.sh	2022-10-08 10:06:06.297588512 +0200
+@@ -54,6 +54,7 @@
+     ;;
+   copy)
+     perform_copy
++    perform_primary
+     ;;
+   insert)
+     # Also copy when doing insert to give users a fallback in case automatic
+@@ -103,6 +104,30 @@
+     ;;
+   "")
+     show_error "Could not find any tool to handle copying. Please install a clipboard handler."
++    exit 1
++    ;;
++  *)
++    show_error "$tool has no implementation for copying yet"
++    exit 2
++    ;;
++  esac
++}
++
++perform_primary() {
++  tool=$(find_copy_tool)
++
++  case "$tool" in
++  xsel)
++    xsel --primary --input
++    ;;
++  xclip)
++    xclip -selection primary -in
++    ;;
++  wl-copy)
++    wl-copy --primary
++    ;;
++  "")
++    show_error "Could not find any tool to handle copying. Please install a clipboard handler."
+     exit 1
+     ;;
+   *)
