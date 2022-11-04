@@ -15,8 +15,7 @@ IUSE=""
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-DEPEND=">=virtual/jre-1.8
-	>=dev-java/jnlp-api-6.0"
+DEPEND=">=virtual/jre-1.8"
 
 RDEPEND=""
 
