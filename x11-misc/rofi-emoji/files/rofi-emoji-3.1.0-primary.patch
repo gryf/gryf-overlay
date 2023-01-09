@@ -27,7 +27,7 @@ diff -ur rofi-emoji_orig/clipboard-adapter.sh rofi-emoji/clipboard-adapter.sh
 +
 +  case "$tool" in
 +  xsel)
-+    xsel --primary --input
++    xsel --clipboard --output|xsel --primary --input
 +    ;;
 +  xclip)
 +    xclip -selection primary -in
