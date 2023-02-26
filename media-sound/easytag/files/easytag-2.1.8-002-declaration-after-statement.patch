@@ -1,18 +1,6 @@
-diff -ur easytag-2.1.8/src/misc.c easytag-2.1.8_patched/src/misc.c
---- easytag-2.1.8/src/misc.c	2013-02-05 23:42:37.000000000 +0100
-+++ easytag-2.1.8_patched/src/misc.c	2019-10-19 14:51:12.006783244 +0200
-@@ -463,7 +463,7 @@
- {
-     const gchar *year;
-     gchar *tmp, *tmp1;
--    gchar current_year[5];
-+    gchar current_year[12];
-     time_t t;
-     struct tm t0;
- 
-diff -ur easytag-2.1.8/src/wavpack_tag.c easytag-2.1.8_patched/src/wavpack_tag.c
---- easytag-2.1.8/src/wavpack_tag.c	2013-02-05 23:42:37.000000000 +0100
-+++ easytag-2.1.8_patched/src/wavpack_tag.c	2019-10-19 14:51:02.606783007 +0200
+diff -ur a/src/wavpack_tag.c b/src/wavpack_tag.c
+--- a/src/wavpack_tag.c	2023-02-26 17:09:51.951580194 +0100
++++ b/src/wavpack_tag.c	2023-02-26 17:10:41.316617543 +0100
 @@ -82,8 +82,6 @@
   */
  gboolean Wavpack_Tag_Read_File_Tag (gchar *filename, File_Tag *FileTag)

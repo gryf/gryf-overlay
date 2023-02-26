@@ -1,5 +1,6 @@
---- Makefile.am
-+++ Makefile.am
+diff -ur a/Makefile.am b/Makefile.am
+--- a/Makefile.am	2023-02-26 16:56:34.458821825 +0100
++++ b/Makefile.am	2023-02-26 16:56:46.391072567 +0100
 @@ -197,11 +197,6 @@
  	$(AM_V_at)$(POST_UNINSTALL)
  	test -n "$(DESTDIR)" || $(UPDATE_ICON_CACHE) "$(iconthemedir)"

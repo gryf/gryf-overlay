@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-inherit autotools gnome.org xdg-utils
+inherit autotools gnome.org xdg-utils autotools
 
 DESCRIPTION="GTK+ utility for editing MP2, MP3, MP4, FLAC, Ogg and other media tags"
 HOMEPAGE="https://wiki.gnome.org/Apps/EasyTAG"
@@ -33,19 +33,18 @@ DEPEND="${RDEPEND}
 	virtual/pkgconfig
 	nls? ( sys-devel/gettext )"
 
-src_prepare() {
-	default
-	epatch "${FILESDIR}"/${P}-desktop.patch
-	epatch "${FILESDIR}"/${P}-werror.patch
-	epatch "${FILESDIR}"/${P}-taglib.patch
-	epatch "${FILESDIR}"/${P}-docs.patch
-	epatch "${FILESDIR}"/${P}-iso-c90.patch
-	eautoreconf
-}
+PATCHES=(
+	"${FILESDIR}"/${P}-001-format-overflow.patch
+	"${FILESDIR}"/${P}-002-declaration-after-statement.patch
+	"${FILESDIR}"/${P}-003-desktop.patch
+	"${FILESDIR}"/${P}-004-docs.patch
+	"${FILESDIR}"/${P}-005-taglib.patch
+)
 
 DOCS=( AUTHORS ChangeLog HACKING NEWS README THANKS TODO )
 
 src_configure() {
+	eautoreconf
 	econf \
 		$(use_enable nls) \
 		$(use_enable mp3) \
@@ -55,7 +54,7 @@ src_configure() {
 		$(use_enable flac) \
 		$(use_enable mp4) \
 		$(use_enable wavpack)
-	# workaround for gcc10
+	# workaround for gcc>10
 	sed -i -e 's/\(^CFLAGS = .*\)/\1 -fcommon/' Makefile || die
 }
 

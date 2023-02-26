@@ -1,5 +1,6 @@
---- easytag.desktop.in
-+++ easytag.desktop.in
+diff -ur a/easytag.desktop.in b/easytag.desktop.in
+--- a/easytag.desktop.in	2013-01-16 10:02:13.000000000 +0100
++++ b/easytag.desktop.in	2023-02-26 16:55:03.448909358 +0100
 @@ -6,7 +6,7 @@
  Type=Application
  Icon=easytag
