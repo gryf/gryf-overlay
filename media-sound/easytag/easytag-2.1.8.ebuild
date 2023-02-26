@@ -1,11 +1,11 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
-inherit eutils autotools gnome.org xdg-utils
+EAPI=8
+inherit autotools gnome.org xdg-utils
 
 DESCRIPTION="GTK+ utility for editing MP2, MP3, MP4, FLAC, Ogg and other media tags"
-HOMEPAGE="https://projects.gnome.org/easytag/"
+HOMEPAGE="https://wiki.gnome.org/Apps/EasyTAG"
 
 LICENSE="GPL-2"
 SLOT="0"
