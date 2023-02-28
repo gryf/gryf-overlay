@@ -1,16 +1,8 @@
-diff -ur font-misc-misc-1.1.2/10x20.bdf font-misc-misc-1.1.2_orig/10x20.bdf
---- font-misc-misc-1.1.2/10x20.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/10x20.bdf	2011-11-09 18:45:59.000000000 +0100
-@@ -26,7 +26,7 @@
- X_HEIGHT 8
- CAP_HEIGHT 13
- COPYRIGHT "Public domain font.  Share and enjoy."
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 5205
- STARTCHAR char0
-@@ -502,9 +502,9 @@
+diff --git a/10x20.bdf b/10x20.bdf
+index c6a26a0..e7c02c8 100644
+--- a/10x20.bdf
++++ b/10x20.bdf
+@@ -502,9 +502,9 @@ BITMAP
  3300
  3300
  6180
@@ -23,21 +15,11 @@ diff -ur font-misc-misc-1.1.2/10x20.bdf font-misc-misc-1.1.2_orig/10x20.bdf
  6180
  3300
  3300
-diff -ur font-misc-misc-1.1.2/12x13ja.bdf font-misc-misc-1.1.2_orig/12x13ja.bdf
---- font-misc-misc-1.1.2/12x13ja.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/12x13ja.bdf	2011-11-09 18:46:16.000000000 +0100
-@@ -29,9 +29,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 7
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 19208
- STARTCHAR char0
-@@ -385,9 +385,9 @@
+diff --git a/12x13ja.bdf b/12x13ja.bdf
+index cd33cab..20c4e20 100644
+--- a/12x13ja.bdf
++++ b/12x13ja.bdf
+@@ -385,9 +385,9 @@ BITMAP
  0E00
  3180
  60C0
@@ -50,19 +32,11 @@ diff -ur font-misc-misc-1.1.2/12x13ja.bdf font-misc-misc-1.1.2_orig/12x13ja.bdf
  60C0
  3180
  0E00
-diff -ur font-misc-misc-1.1.2/18x18ja.bdf font-misc-misc-1.1.2_orig/18x18ja.bdf
---- font-misc-misc-1.1.2/18x18ja.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/18x18ja.bdf	2011-11-09 18:46:52.000000000 +0100
-@@ -29,7 +29,7 @@
- AVERAGE_WIDTH 180
- CHARSET_REGISTRY "ISO10646"
- CHARSET_ENCODING "1"
--_XMBDFED_INFO "Edited with xmbdfed 4.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 19168
- STARTCHAR char0
-@@ -469,12 +469,12 @@
+diff --git a/18x18ja.bdf b/18x18ja.bdf
+index 3644514..a5f4528 100644
+--- a/18x18ja.bdf
++++ b/18x18ja.bdf
+@@ -469,12 +469,12 @@ BITMAP
  021000
  040800
  040800
@@ -81,19 +55,11 @@ diff -ur font-misc-misc-1.1.2/18x18ja.bdf font-misc-misc-1.1.2_orig/18x18ja.bdf
  040800
  040800
  021000
-diff -ur font-misc-misc-1.1.2/18x18ko.bdf font-misc-misc-1.1.2_orig/18x18ko.bdf
---- font-misc-misc-1.1.2/18x18ko.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/18x18ko.bdf	2011-11-09 18:47:10.000000000 +0100
-@@ -33,7 +33,7 @@
- AVERAGE_WIDTH 180
- CHARSET_REGISTRY "ISO10646"
- CHARSET_ENCODING "1"
--_XMBDFED_INFO "Edited with xmbdfed 4.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 27990
- STARTCHAR char0
-@@ -474,10 +474,10 @@
+diff --git a/18x18ko.bdf b/18x18ko.bdf
+index c79dbf3..987ee65 100644
+--- a/18x18ko.bdf
++++ b/18x18ko.bdf
+@@ -474,10 +474,10 @@ BITMAP
  040800
  040800
  0C0C00
@@ -108,21 +74,11 @@ diff -ur font-misc-misc-1.1.2/18x18ko.bdf font-misc-misc-1.1.2_orig/18x18ko.bdf
  0C0C00
  040800
  040800
-diff -ur font-misc-misc-1.1.2/5x7.bdf font-misc-misc-1.1.2_orig/5x7.bdf
---- font-misc-misc-1.1.2/5x7.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/5x7.bdf	2011-11-09 18:47:44.000000000 +0100
-@@ -25,9 +25,9 @@
- DESTINATION 1
- DEFAULT_CHAR 0
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 6
- X_HEIGHT 4
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1848
- STARTCHAR char0
-@@ -274,12 +274,12 @@
+diff --git a/5x7.bdf b/5x7.bdf
+index 06cde34..0683371 100644
+--- a/5x7.bdf
++++ b/5x7.bdf
+@@ -274,12 +274,12 @@ SWIDTH 685 0
  DWIDTH 5 0
  BBX 5 7 0 -1
  BITMAP
@@ -141,21 +97,11 @@ diff -ur font-misc-misc-1.1.2/5x7.bdf font-misc-misc-1.1.2_orig/5x7.bdf
  00
  ENDCHAR
  STARTCHAR one
-diff -ur font-misc-misc-1.1.2/5x8.bdf font-misc-misc-1.1.2_orig/5x8.bdf
---- font-misc-misc-1.1.2/5x8.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/5x8.bdf	2011-11-09 18:47:55.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_ASCENT 7
- COPYRIGHT "Public domain font.  Share and enjoy."
- DEFAULT_CHAR 0
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 6
- X_HEIGHT 4
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1426
- STARTCHAR char0
-@@ -291,12 +291,12 @@
+diff --git a/5x8.bdf b/5x8.bdf
+index 50637b4..4149fa7 100644
+--- a/5x8.bdf
++++ b/5x8.bdf
+@@ -291,12 +291,12 @@ DWIDTH 5 0
  BBX 5 8 0 -1
  BITMAP
  00
@@ -174,21 +120,11 @@ diff -ur font-misc-misc-1.1.2/5x8.bdf font-misc-misc-1.1.2_orig/5x8.bdf
  00
  ENDCHAR
  STARTCHAR one
-diff -ur font-misc-misc-1.1.2/6x10.bdf font-misc-misc-1.1.2_orig/6x10.bdf
---- font-misc-misc-1.1.2/6x10.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x10.bdf	2011-11-09 18:48:31.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- DEFAULT_CHAR 0
- COPYRIGHT "Public domain terminal emulator font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 7
- X_HEIGHT 5
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1597
- STARTCHAR char0
-@@ -328,7 +328,7 @@
+diff --git a/6x10.bdf b/6x10.bdf
+index c03715f..723c969 100644
+--- a/6x10.bdf
++++ b/6x10.bdf
+@@ -328,7 +328,7 @@ BITMAP
  20
  50
  88
@@ -197,19 +133,11 @@ diff -ur font-misc-misc-1.1.2/6x10.bdf font-misc-misc-1.1.2_orig/6x10.bdf
  88
  50
  20
-diff -ur font-misc-misc-1.1.2/6x12.bdf font-misc-misc-1.1.2_orig/6x12.bdf
---- font-misc-misc-1.1.2/6x12.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x12.bdf	2011-11-09 18:48:40.000000000 +0100
-@@ -26,7 +26,7 @@
- COPYRIGHT "Public domain terminal emulator font.  Share and enjoy."
- CAP_HEIGHT 7
- X_HEIGHT 5
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 4531
- STARTCHAR char0
-@@ -363,8 +363,8 @@
+diff --git a/6x12.bdf b/6x12.bdf
+index 3fbf113..5907922 100644
+--- a/6x12.bdf
++++ b/6x12.bdf
+@@ -363,8 +363,8 @@ BITMAP
  00
  30
  48
@@ -220,44 +148,11 @@ diff -ur font-misc-misc-1.1.2/6x12.bdf font-misc-misc-1.1.2_orig/6x12.bdf
  48
  48
  30
-diff -ur font-misc-misc-1.1.2/6x13B.bdf font-misc-misc-1.1.2_orig/6x13B.bdf
---- font-misc-misc-1.1.2/6x13B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x13B.bdf	2011-11-09 18:48:57.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1282
- STARTCHAR char0
-@@ -380,8 +380,8 @@
- 30
- 78
- CC
--CC
--CC
-+DC
-+EC
- CC
- CC
- 78
-diff -ur font-misc-misc-1.1.2/6x13.bdf font-misc-misc-1.1.2_orig/6x13.bdf
---- font-misc-misc-1.1.2/6x13.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x13.bdf	2011-11-09 18:48:50.000000000 +0100
-@@ -26,7 +26,7 @@
- COPYRIGHT "Public domain font.  Share and enjoy."
- CAP_HEIGHT 9
- X_HEIGHT 6
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 4121
- STARTCHAR char0
-@@ -380,9 +380,9 @@
+diff --git a/6x13.bdf b/6x13.bdf
+index 921a15e..76c3866 100644
+--- a/6x13.bdf
++++ b/6x13.bdf
+@@ -380,9 +380,9 @@ BITMAP
  20
  50
  88
@@ -270,21 +165,26 @@ diff -ur font-misc-misc-1.1.2/6x13.bdf font-misc-misc-1.1.2_orig/6x13.bdf
  88
  50
  20
-diff -ur font-misc-misc-1.1.2/6x13O.bdf font-misc-misc-1.1.2_orig/6x13O.bdf
---- font-misc-misc-1.1.2/6x13O.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x13O.bdf	2011-11-09 18:49:36.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.3."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 770
- STARTCHAR char0
-@@ -380,9 +380,9 @@
+diff --git a/6x13B.bdf b/6x13B.bdf
+index a01b80e..dc7cb62 100644
+--- a/6x13B.bdf
++++ b/6x13B.bdf
+@@ -380,8 +380,8 @@ BITMAP
+ 30
+ 78
+ CC
+-CC
+-CC
++DC
++EC
+ CC
+ CC
+ 78
+diff --git a/6x13O.bdf b/6x13O.bdf
+index 59d4fd3..f6b7830 100644
+--- a/6x13O.bdf
++++ b/6x13O.bdf
+@@ -380,9 +380,9 @@ BITMAP
  10
  28
  44
@@ -297,21 +197,11 @@ diff -ur font-misc-misc-1.1.2/6x13O.bdf font-misc-misc-1.1.2_orig/6x13O.bdf
  88
  50
  20
-diff -ur font-misc-misc-1.1.2/6x9.bdf font-misc-misc-1.1.2_orig/6x9.bdf
---- font-misc-misc-1.1.2/6x9.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/6x9.bdf	2011-11-09 18:49:42.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- DEFAULT_CHAR 0
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 6
- X_HEIGHT 4
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1296
- STARTCHAR char0
-@@ -310,8 +310,8 @@
+diff --git a/6x9.bdf b/6x9.bdf
+index 4ae8eae..e1a6476 100644
+--- a/6x9.bdf
++++ b/6x9.bdf
+@@ -310,8 +310,8 @@ BITMAP
  00
  30
  48
@@ -322,44 +212,11 @@ diff -ur font-misc-misc-1.1.2/6x9.bdf font-misc-misc-1.1.2_orig/6x9.bdf
  48
  30
  00
-diff -ur font-misc-misc-1.1.2/7x13B.bdf font-misc-misc-1.1.2_orig/7x13B.bdf
---- font-misc-misc-1.1.2/7x13B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/7x13B.bdf	2011-11-09 18:49:57.000000000 +0100
-@@ -25,9 +25,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1003
- STARTCHAR char0
-@@ -381,8 +381,8 @@
- 30
- 48
- CC
--CC
--CC
-+DC
-+EC
- CC
- CC
- 48
-diff -ur font-misc-misc-1.1.2/7x13.bdf font-misc-misc-1.1.2_orig/7x13.bdf
---- font-misc-misc-1.1.2/7x13.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/7x13.bdf	2011-11-09 18:49:50.000000000 +0100
-@@ -27,7 +27,7 @@
- FONT_ASCENT 11
- CAP_HEIGHT 9
- X_HEIGHT 6
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 3226
- STARTCHAR char0
-@@ -381,9 +381,9 @@
+diff --git a/7x13.bdf b/7x13.bdf
+index 07db3c6..55864c8 100644
+--- a/7x13.bdf
++++ b/7x13.bdf
+@@ -381,9 +381,9 @@ BITMAP
  30
  48
  84
@@ -372,21 +229,26 @@ diff -ur font-misc-misc-1.1.2/7x13.bdf font-misc-misc-1.1.2_orig/7x13.bdf
  84
  48
  30
-diff -ur font-misc-misc-1.1.2/7x13O.bdf font-misc-misc-1.1.2_orig/7x13O.bdf
---- font-misc-misc-1.1.2/7x13O.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/7x13O.bdf	2011-11-09 18:50:33.000000000 +0100
-@@ -25,9 +25,9 @@
- DEFAULT_CHAR 0
- FONT_DESCENT 2
- FONT_ASCENT 11
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 831
- STARTCHAR char0
-@@ -381,9 +381,9 @@
+diff --git a/7x13B.bdf b/7x13B.bdf
+index 2ef2a38..9ab351c 100644
+--- a/7x13B.bdf
++++ b/7x13B.bdf
+@@ -381,8 +381,8 @@ BITMAP
+ 30
+ 48
+ CC
+-CC
+-CC
++DC
++EC
+ CC
+ CC
+ 48
+diff --git a/7x13O.bdf b/7x13O.bdf
+index 4deec2e..b6e7825 100644
+--- a/7x13O.bdf
++++ b/7x13O.bdf
+@@ -381,9 +381,9 @@ BITMAP
  18
  24
  42
@@ -399,50 +261,11 @@ diff -ur font-misc-misc-1.1.2/7x13O.bdf font-misc-misc-1.1.2_orig/7x13O.bdf
  84
  48
  30
-diff -ur font-misc-misc-1.1.2/7x14B.bdf font-misc-misc-1.1.2_orig/7x14B.bdf
---- font-misc-misc-1.1.2/7x14B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/7x14B.bdf	2011-11-09 18:51:05.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 12
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 10
- X_HEIGHT 7
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1009
- STARTCHAR char0
-@@ -397,10 +397,10 @@
- 78
- CC
- CC
--CC
--CC
--CC
--CC
-+DC
-+DC
-+EC
-+EC
- CC
- CC
- 78
-diff -ur font-misc-misc-1.1.2/7x14.bdf font-misc-misc-1.1.2_orig/7x14.bdf
---- font-misc-misc-1.1.2/7x14.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/7x14.bdf	2011-11-09 18:50:53.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 12
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 10
- X_HEIGHT 7
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 2576
- STARTCHAR char0
-@@ -397,10 +397,10 @@
+diff --git a/7x14.bdf b/7x14.bdf
+index 5611c23..1ce528b 100644
+--- a/7x14.bdf
++++ b/7x14.bdf
+@@ -397,10 +397,10 @@ BITMAP
  30
  48
  84
@@ -457,21 +280,47 @@ diff -ur font-misc-misc-1.1.2/7x14.bdf font-misc-misc-1.1.2_orig/7x14.bdf
  84
  48
  30
-diff -ur font-misc-misc-1.1.2/8x13B.bdf font-misc-misc-1.1.2_orig/8x13B.bdf
---- font-misc-misc-1.1.2/8x13B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/8x13B.bdf	2011-11-09 18:51:26.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 10
- X_HEIGHT 7
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1141
- STARTCHAR char0
-@@ -379,10 +379,10 @@
+diff --git a/7x14B.bdf b/7x14B.bdf
+index d71994e..c3661c4 100644
+--- a/7x14B.bdf
++++ b/7x14B.bdf
+@@ -397,10 +397,10 @@ BITMAP
+ 78
+ CC
+ CC
+-CC
+-CC
+-CC
+-CC
++DC
++DC
++EC
++EC
+ CC
+ CC
+ 78
+diff --git a/8x13.bdf b/8x13.bdf
+index a95b718..f9136b0 100644
+--- a/8x13.bdf
++++ b/8x13.bdf
+@@ -380,9 +380,9 @@ BITMAP
+ 18
+ 24
+ 42
+-42
+-42
+-42
++46
++5A
++62
+ 42
+ 24
+ 18
+diff --git a/8x13B.bdf b/8x13B.bdf
+index 0416c25..4a99d6e 100644
+--- a/8x13B.bdf
++++ b/8x13B.bdf
+@@ -379,10 +379,10 @@ BITMAP
  38
  6C
  C6
@@ -486,48 +335,11 @@ diff -ur font-misc-misc-1.1.2/8x13B.bdf font-misc-misc-1.1.2_orig/8x13B.bdf
  C6
  6C
  38
-diff -ur font-misc-misc-1.1.2/8x13.bdf font-misc-misc-1.1.2_orig/8x13.bdf
---- font-misc-misc-1.1.2/8x13.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/8x13.bdf	2011-11-09 18:51:14.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 3703
- STARTCHAR char0
-@@ -380,9 +380,9 @@
- 18
- 24
- 42
--42
--42
--42
-+46
-+5A
-+62
- 42
- 24
- 18
-diff -ur font-misc-misc-1.1.2/8x13O.bdf font-misc-misc-1.1.2_orig/8x13O.bdf
---- font-misc-misc-1.1.2/8x13O.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/8x13O.bdf	2011-11-09 18:51:39.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 2
- FONT_ASCENT 11
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 9
- X_HEIGHT 6
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1295
- STARTCHAR char0
-@@ -380,9 +380,9 @@
+diff --git a/8x13O.bdf b/8x13O.bdf
+index 5715f2c..a8167f3 100644
+--- a/8x13O.bdf
++++ b/8x13O.bdf
+@@ -380,9 +380,9 @@ BITMAP
  18
  24
  42
@@ -540,21 +352,30 @@ diff -ur font-misc-misc-1.1.2/8x13O.bdf font-misc-misc-1.1.2_orig/8x13O.bdf
  84
  48
  30
-diff -ur font-misc-misc-1.1.2/9x15B.bdf font-misc-misc-1.1.2_orig/9x15B.bdf
---- font-misc-misc-1.1.2/9x15B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/9x15B.bdf	2011-11-09 18:52:47.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 3
- FONT_ASCENT 12
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- X_HEIGHT 7
- CAP_HEIGHT 10
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 1688
- STARTCHAR char0
-@@ -414,10 +414,10 @@
+diff --git a/9x15.bdf b/9x15.bdf
+index 68d9709..4b44b1c 100644
+--- a/9x15.bdf
++++ b/9x15.bdf
+@@ -414,10 +414,10 @@ BITMAP
+ 1C00
+ 2200
+ 4100
+-4100
+-4100
+-4100
+-4100
++4300
++4D00
++5100
++6100
+ 4100
+ 2200
+ 1C00
+diff --git a/9x15B.bdf b/9x15B.bdf
+index 2fa9a09..2b3d951 100644
+--- a/9x15B.bdf
++++ b/9x15B.bdf
+@@ -414,10 +414,10 @@ BITMAP
  1800
  3C00
  6600
@@ -569,19 +390,11 @@ diff -ur font-misc-misc-1.1.2/9x15B.bdf font-misc-misc-1.1.2_orig/9x15B.bdf
  6600
  3C00
  1800
-diff -ur font-misc-misc-1.1.2/9x15.bdf font-misc-misc-1.1.2_orig/9x15.bdf
---- font-misc-misc-1.1.2/9x15.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/9x15.bdf	2011-11-09 18:52:28.000000000 +0100
-@@ -26,7 +26,7 @@
- COPYRIGHT "Public domain font.  Share and enjoy."
- CAP_HEIGHT 10
- X_HEIGHT 7
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 4777
- STARTCHAR char0
-@@ -414,10 +414,10 @@
+diff --git a/9x18.bdf b/9x18.bdf
+index f64c33f..9d65f38 100644
+--- a/9x18.bdf
++++ b/9x18.bdf
+@@ -467,10 +467,10 @@ BITMAP
  1C00
  2200
  4100
@@ -596,21 +409,11 @@ diff -ur font-misc-misc-1.1.2/9x15.bdf font-misc-misc-1.1.2_orig/9x15.bdf
  4100
  2200
  1C00
-diff -ur font-misc-misc-1.1.2/9x18B.bdf font-misc-misc-1.1.2_orig/9x18B.bdf
---- font-misc-misc-1.1.2/9x18B.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/9x18B.bdf	2011-11-09 18:53:19.000000000 +0100
-@@ -24,9 +24,9 @@
- FONT_DESCENT 4
- FONT_ASCENT 14
- COPYRIGHT "Public domain font.  Share and enjoy."
--_XMBDFED_INFO "Edited with xmbdfed 4.5."
- CAP_HEIGHT 10
- X_HEIGHT 7
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 762
- STARTCHAR char0
-@@ -467,10 +467,10 @@
+diff --git a/9x18B.bdf b/9x18B.bdf
+index 6087c71..1786f31 100644
+--- a/9x18B.bdf
++++ b/9x18B.bdf
+@@ -467,10 +467,10 @@ BITMAP
  1C00
  3600
  6300
@@ -624,31 +427,4 @@ diff -ur font-misc-misc-1.1.2/9x18B.bdf font-misc-misc-1.1.2_orig/9x18B.bdf
 +7300
  6300
  3600
- 1C00
-diff -ur font-misc-misc-1.1.2/9x18.bdf font-misc-misc-1.1.2_orig/9x18.bdf
---- font-misc-misc-1.1.2/9x18.bdf	2009-09-01 10:29:52.000000000 +0200
-+++ font-misc-misc-1.1.2_orig/9x18.bdf	2011-11-09 18:53:05.000000000 +0100
-@@ -26,7 +26,7 @@
- COPYRIGHT "Public domain font.  Share and enjoy."
- CAP_HEIGHT 10
- X_HEIGHT 7
--_GBDFED_INFO "Edited with gbdfed 1.3."
-+_GBDFED_INFO "Edited with gbdfed 1.6."
- ENDPROPERTIES
- CHARS 4766
- STARTCHAR char0
-@@ -467,10 +467,10 @@
- 1C00
- 2200
- 4100
--4100
--4100
--4100
--4100
-+4300
-+4D00
-+5100
-+6100
- 4100
- 2200
  1C00
