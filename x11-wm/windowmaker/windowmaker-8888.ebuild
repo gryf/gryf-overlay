@@ -44,6 +44,8 @@ src_unpack() {
 	git-r3_src_unpack
 }
 
+PATCHES=( )
+
 src_prepare() {
 	# Add info about commit in About window
 	local git_revision=$(git log --pretty=format:'%h' -n 1)
@@ -59,7 +61,7 @@ src_prepare() {
 	done
 
 	if use term; then
-		epatch "${FILESDIR}"/wmaker-ignore-max-for-terminals.patch
+		PATCHES+=( "${FILESDIR}/wmaker-ignore-max-for-terminals.patch" )
 	fi
 
 	default
