@@ -1,9 +1,9 @@
 diff --git a/src/window.c b/src/window.c
-index 70e1f962..2acc4e3c 100644
+index 1f16f458..a9bad2f6 100644
 --- a/src/window.c
 +++ b/src/window.c
-@@ -1911,10 +1911,9 @@ void wWindowConstrainSize(WWindow *wwin, unsigned int *nwidth, unsigned int *nhe
- 	}
+@@ -1902,10 +1902,8 @@ void wWindowConstrainSize(WWindow *wwin, unsigned int *nwidth, unsigned int *nhe
+ 	int baseH = 0;
  
  	if (wwin->normal_hints) {
 -		if (!wwin->flags.maximized) {
@@ -12,11 +12,10 @@ index 70e1f962..2acc4e3c 100644
 -		}
 +		winc = wwin->normal_hints->width_inc;
 +		hinc = wwin->normal_hints->height_inc;
-+
- 		minW = wwin->normal_hints->min_width;
- 		minH = wwin->normal_hints->min_height;
- 		maxW = wwin->normal_hints->max_width;
-@@ -1981,17 +1980,15 @@ void wWindowConstrainSize(WWindow *wwin, unsigned int *nwidth, unsigned int *nhe
+ 		if (wwin->normal_hints->min_width > minW)
+ 			minW = wwin->normal_hints->min_width;
+ 		if (wwin->normal_hints->min_height > minH)
+@@ -1980,17 +1978,15 @@ void wWindowConstrainSize(WWindow *wwin, unsigned int *nwidth, unsigned int *nhe
  		}
  	}
  
@@ -33,11 +32,12 @@ index 70e1f962..2acc4e3c 100644
 -		if (baseH != 0)
 -			height = (((height - baseH) / hinc) * hinc) + baseH;
 -		else
+-			height = (((height - minH) / hinc) * hinc) + minH;
+-	}
 +	if (baseH != 0)
 +		height = (((height - baseH) / hinc) * hinc) + baseH;
 +	else
- 			height = (((height - minH) / hinc) * hinc) + minH;
--	}
++		height = (((height - minH) / hinc) * hinc) + minH;
  
  	/* broken stupid apps may cause preposterous values for these.. */
  	if (width > 0)
