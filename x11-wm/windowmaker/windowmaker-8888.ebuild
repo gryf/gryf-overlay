@@ -50,6 +50,9 @@ src_prepare() {
 	# Add info about commit in About window
 	local git_revision=$(git log --pretty=format:'%h' -n 1)
 	sed -i -e "s/\(AC_INIT(\[WindowMaker\],\[[^]]*\)\]/\1, rev.${git_revision}\]/" configure.ac || die
+	# Align version string to the right (I have very small fonts set in 
+	# config)
+	sed -i -e "s/panel->versionL, WMScaleX(30)/panel->versionL, WMScaleX(88)/" src/dialog.c || die
 
 	# Fix some paths
 	for file in WindowMaker/*menu* util/wmgenmenu.c; do
