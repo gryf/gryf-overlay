@@ -1,8 +1,8 @@
 diff --git a/src/defaults.c b/src/defaults.c
-index 2f68539c..d5f82428 100644
+index f5cbf46f..77401c6d 100644
 --- a/src/defaults.c
 +++ b/src/defaults.c
-@@ -365,7 +365,7 @@ WDefaultEntry optionList[] = {
+@@ -366,7 +366,7 @@ WDefaultEntry optionList[] = {
  	    &wPreferences.icon_yard, getEnum, setIconPosition, NULL, NULL},
  	{"IconificationStyle", "Zoom", seIconificationStyles,
  	    &wPreferences.iconification_style, getEnum, NULL, NULL, NULL},
@@ -12,7 +12,7 @@ index 2f68539c..d5f82428 100644
  	{"DisableWSMouseActions", "NO", NULL,
  	    &wPreferences.disable_root_mouse, getBool, NULL, NULL, NULL},
 diff --git a/src/icon.c b/src/icon.c
-index 6f5f02e9..39aa3224 100644
+index 943e2d84..079fdee7 100644
 --- a/src/icon.c
 +++ b/src/icon.c
 @@ -336,22 +336,39 @@ void wIconChangeTitle(WIcon *icon, WWindow *wwin)
@@ -63,7 +63,7 @@ index 6f5f02e9..39aa3224 100644
  		RReleaseImage(icon);
  		icon = nimage;
  	}
-@@ -794,7 +811,7 @@ RImage *get_rimage_icon_from_wm_hints(WIcon *icon)
+@@ -791,7 +808,7 @@ RImage *get_rimage_icon_from_wm_hints(WIcon *icon)
  		return NULL;
  
  	/* Resize the icon to the wPreferences.icon_size size */
@@ -86,7 +86,7 @@ index cccd7a86..49054a5d 100644
  
  char *wIconStore(WIcon *icon);
 diff --git a/src/switchpanel.c b/src/switchpanel.c
-index 5bf84da8..e113f36d 100644
+index cb6cda10..16f91be0 100644
 --- a/src/switchpanel.c
 +++ b/src/switchpanel.c
 @@ -199,7 +199,7 @@ static void addIconForWindow(WSwitchPanel *panel, WMWidget *parent, WWindow *wwi
@@ -121,10 +121,10 @@ index 7aad3db5..0bb476b9 100644
  	return image;
  }
 diff --git a/src/wmspec.c b/src/wmspec.c
-index 64eaa05c..af29d5d8 100644
+index e61e6ae7..dff085ac 100644
 --- a/src/wmspec.c
 +++ b/src/wmspec.c
-@@ -536,7 +536,7 @@ RImage *get_window_image_from_x11(Window window)
+@@ -545,7 +545,7 @@ RImage *get_window_image_from_x11(Window window)
  		return NULL;
  
  	/* Resize the image to the correct value */
