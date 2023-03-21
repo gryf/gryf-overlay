@@ -44,7 +44,7 @@ src_unpack() {
 	git-r3_src_unpack
 }
 
-PATCHES=( )
+PATCHES=( "${FILESDIR}/wmaker-scale-icons.patch" )
 
 src_prepare() {
 	# Add info about commit in About window

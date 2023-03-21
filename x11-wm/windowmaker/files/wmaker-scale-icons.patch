@@ -1,0 +1,135 @@
+diff --git a/src/defaults.c b/src/defaults.c
+index 2f68539c..d5f82428 100644
+--- a/src/defaults.c
++++ b/src/defaults.c
+@@ -365,7 +365,7 @@ WDefaultEntry optionList[] = {
+ 	    &wPreferences.icon_yard, getEnum, setIconPosition, NULL, NULL},
+ 	{"IconificationStyle", "Zoom", seIconificationStyles,
+ 	    &wPreferences.iconification_style, getEnum, NULL, NULL, NULL},
+-	{"EnforceIconMargin", "NO", NULL,
++	{"EnforceIconMargin", "YES", NULL,
+ 	    &wPreferences.enforce_icon_margin, getBool, NULL, NULL, NULL},
+ 	{"DisableWSMouseActions", "NO", NULL,
+ 	    &wPreferences.disable_root_mouse, getBool, NULL, NULL, NULL},
+diff --git a/src/icon.c b/src/icon.c
+index 6f5f02e9..39aa3224 100644
+--- a/src/icon.c
++++ b/src/icon.c
+@@ -336,22 +336,39 @@ void wIconChangeTitle(WIcon *icon, WWindow *wwin)
+ 			icon->icon_name = wNETWMGetWindowName(wwin->client_win);
+ }
+ 
+-RImage *wIconValidateIconSize(RImage *icon, int max_size)
++RImage *wIconValidateIconSize(RImage *icon, int max_size, Bool scale_down)
+ {
+ 	RImage *nimage;
+ 
+ 	if (!icon)
+ 		return NULL;
+ 
+-	/* We should hold "ICON_BORDER" (~2) pixels to include the icon border */
+-	if (((max_size + ICON_BORDER) < icon->width) ||
+-	    ((max_size + ICON_BORDER) < icon->height)) {
++	int wanted = max_size;
++
++	if (scale_down) {
++		/* For some image sources, we want to ensure that the icon is fitting */
++
++		if (wPreferences.enforce_icon_margin) {
++			/* better use only 75% of icon_size. For 64x64 this means 48x48
++			* This leaves room around the icon for the miniwindow title and
++			* results in better overall aesthetics -Dan */
++			wanted = (int)((double)wPreferences.icon_size * 0.75 + 0.5);
++
++			/* the size should be a multiple of 4 */
++			wanted = (wanted >> 2) << 2;
++		} else {
++
++			/* This is the "old" approach, which just adds a 3px border */
++			wanted = (max_size - ICON_BORDER);
++		}
++	}
++
++	if (icon->width > wanted || icon->height > wanted) {
+ 		if (icon->width > icon->height)
+-			nimage = RScaleImage(icon, max_size - ICON_BORDER,
+-					     (icon->height * (max_size - ICON_BORDER) / icon->width));
++			nimage = RScaleImage(icon, wanted, icon->height * wanted / icon->width);
+ 		else
+-			nimage = RScaleImage(icon, (icon->width * (max_size - ICON_BORDER) / icon->height),
+-					     max_size - ICON_BORDER);
++			nimage = RScaleImage(icon, icon->width * wanted / icon->height, wanted);
++
+ 		RReleaseImage(icon);
+ 		icon = nimage;
+ 	}
+@@ -794,7 +811,7 @@ RImage *get_rimage_icon_from_wm_hints(WIcon *icon)
+ 		return NULL;
+ 
+ 	/* Resize the icon to the wPreferences.icon_size size */
+-	image = wIconValidateIconSize(image, wPreferences.icon_size);
++	image = wIconValidateIconSize(image, wPreferences.icon_size, True);
+ 
+ 	return image;
+ }
+diff --git a/src/icon.h b/src/icon.h
+index cccd7a86..49054a5d 100644
+--- a/src/icon.h
++++ b/src/icon.h
+@@ -70,7 +70,7 @@ void update_icon_pixmap(WIcon *icon);
+ 
+ int wIconChangeImageFile(WIcon *icon, const char *file);
+ 
+-RImage *wIconValidateIconSize(RImage *icon, int max_size);
++RImage *wIconValidateIconSize(RImage *icon, int max_size, Bool scale_down);
+ RImage *get_rimage_icon_from_wm_hints(WIcon *icon);
+ 
+ char *wIconStore(WIcon *icon);
+diff --git a/src/switchpanel.c b/src/switchpanel.c
+index 5bf84da8..e113f36d 100644
+--- a/src/switchpanel.c
++++ b/src/switchpanel.c
+@@ -199,7 +199,7 @@ static void addIconForWindow(WSwitchPanel *panel, WMWidget *parent, WWindow *wwi
+ 		image = get_icon_image(panel->scr, wwin->wm_instance, wwin->wm_class, icon_tile_size);
+ 
+ 	/* We must resize the icon size (~64) to the switch panel icon size (~48) */
+-	image = wIconValidateIconSize(image, icon_size);
++	image = wIconValidateIconSize(image, icon_size, False);
+ 
+ 	WMAddToArray(panel->images, image);
+ 	WMAddToArray(panel->icons, icon);
+diff --git a/src/wdefaults.c b/src/wdefaults.c
+index 7aad3db5..0bb476b9 100644
+--- a/src/wdefaults.c
++++ b/src/wdefaults.c
+@@ -435,7 +435,7 @@ RImage *get_rimage_from_file(WScreen *scr, const char *file_name, int max_size)
+ 		wwarning(_("error loading image file \"%s\": %s"), file_name,
+ 			 RMessageForError(RErrorCode));
+ 
+-	image = wIconValidateIconSize(image, max_size);
++	image = wIconValidateIconSize(image, max_size, False);
+ 
+ 	return image;
+ }
+@@ -472,7 +472,7 @@ RImage *get_default_image(WScreen *scr)
+ 
+ 	/* Resize the icon to the wPreferences.icon_size size
+ 	 * usually this function will return early, because size is right */
+-	image = wIconValidateIconSize(image, wPreferences.icon_size);
++	image = wIconValidateIconSize(image, wPreferences.icon_size, False);
+ 
+ 	return image;
+ }
+diff --git a/src/wmspec.c b/src/wmspec.c
+index 64eaa05c..af29d5d8 100644
+--- a/src/wmspec.c
++++ b/src/wmspec.c
+@@ -536,7 +536,7 @@ RImage *get_window_image_from_x11(Window window)
+ 		return NULL;
+ 
+ 	/* Resize the image to the correct value */
+-	image = wIconValidateIconSize(image, wPreferences.icon_size);
++	image = wIconValidateIconSize(image, wPreferences.icon_size, False);
+ 
+ 	return image;
+ }
