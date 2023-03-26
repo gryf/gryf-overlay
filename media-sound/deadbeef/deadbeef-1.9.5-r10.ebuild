@@ -16,14 +16,19 @@ LICENSE="
 "
 SLOT="0"
 KEYWORDS="~amd64 ~riscv ~x86"
-IUSE="aac alsa cdda converter cover dts ffmpeg flac +hotkeys lastfm libretro libsamplerate mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq threads vorbis wavpack"
+IUSE="aac alsa cdda converter cover dts ffmpeg flac gtk2 -gtk3 +hotkeys lastfm libretro libsamplerate mod mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq threads vorbis wavpack"
 
 REQUIRED_USE="
 	|| ( alsa oss pulseaudio pipewire nullout )
 "
 
 DEPEND="
-	x11-libs/gtk+:3
+	gtk2? (
+		x11-libs/gtk+:2
+	)
+	gtk3? (
+		x11-libs/gtk+:3
+	)
 	net-misc/curl:=
 	dev-libs/jansson:=
 	aac? ( media-libs/faad2 )
@@ -97,7 +102,7 @@ src_prepare() {
 	use elibc_musl || drop_and_stub "${S}/intl"
 
 	# Plugins that are undesired for whatever reason, candidates for unbundling and such.
-	for i in adplug alac dumb ffap mms gme mono2stereo psf shn soundtouch wma; do
+	for i in adplug alac ffap mms gme mono2stereo psf shn soundtouch wma; do
 		drop_and_stub "${S}/plugins/${i}"
 	done
 
@@ -123,12 +128,9 @@ src_configure () {
 		"--disable-staticlink"
 		"--disable-portable"
 		"--disable-rpath"
-
 		"--disable-libmad"
-		"--disable-gtk2"
 		"--disable-adplug"
 		"--disable-coreaudio"
-		"--disable-dumb"
 		"--disable-alac"
 		"--disable-ffap"
 		"--disable-gme"
@@ -148,6 +150,7 @@ src_configure () {
 		"$(use_enable alsa)"
 		"$(use_enable oss)"
 		"$(use_enable pulseaudio pulse)"
+		"$(use_enable mod dumb)"
 		"$(use_enable mp3)"
 		"$(use_enable mp3 libmpg123)"
 		"$(use_enable nls)"
@@ -178,12 +181,16 @@ src_configure () {
 		"$(use_enable libsamplerate src)"
 		"$(use_enable wavpack)"
 
-		"--enable-gtk3"
 		"--enable-vfs-curl"
 		"--enable-shared"
 		"--enable-m3u"
 		"--enable-pltbrowser"
 	)
+	if use gtk2; then
+		myconf+=( "--disable-gtk3" "--enable-gtk2" )
+	elif use gtk3; then
+		myconf+=( "--disable-gtk2" "--enable-gtk3" )
+	fi
 
 	econf "${myconf[@]}"
 }
