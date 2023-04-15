@@ -15,6 +15,7 @@ KEYWORDS="~amd64"
 RESTRICT="mirror"
 
 DEPEND="
+	dev-libs/wayland
 	net-misc/curl
 	sys-apps/gawk
 	virtual/wine"
