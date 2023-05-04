@@ -136,8 +136,6 @@ src_install() {
 	function mess_install() {
 		dosym ${MAMEBIN} "/usr/bin/mess${suffix}"
 		dosym ${MAMEBIN} "/usr/bin/sdlmess"
-		newman docs/man/mess.6 sdlmess.6
-		doman docs/man/mess.6
 	}
 	if use arcade ; then
 		if use mess ; then
