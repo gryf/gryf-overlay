@@ -1,0 +1,31 @@
+Description: Switch to enchant-2
+Author: Laurent Bigonville <bigon@debian.org>
+Forwarded: not-needed
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=949720
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -319,10 +319,10 @@ if test "$ac_cv_enable_gtkspell" = yes;
+ 		LIBS="$LIBS `$PKG_CONFIG --libs gtkspell-2.0`"
+ 		if $PKG_CONFIG --atleast-version 2.0.13 gtkspell-2.0 ; then
+ 			AC_DEFINE(USE_ENCHANT, 1, Use Enchant with GtkSpell)
+-			LIBS="$LIBS `$PKG_CONFIG --libs enchant`"
++			LIBS="$LIBS `$PKG_CONFIG --libs enchant-2`"
+ 
+ 			dnl Workaroud for zemberek crash
+-			if $PKG_CONFIG --atleast-version 1.4.2 enchant ; then
++			if $PKG_CONFIG --atleast-version 1.4.2 enchant-2 ; then
+ 				CFLAGS="$CFLAGS `$PKG_CONFIG --cflags dbus-glib-1`"
+ 				LIBS="$LIBS `$PKG_CONFIG --libs dbus-glib-1`"
+ 			fi
+--- a/src/compose.c
++++ b/src/compose.c
+@@ -71,7 +71,7 @@
+ #  include <gtk/gtkradiomenuitem.h>
+ #  include <gtkspell/gtkspell.h>
+ #if USE_ENCHANT
+-#  include <enchant/enchant.h>
++#  include <enchant-2/enchant.h>
+ #else
+ #  include <aspell.h>
+ #endif
