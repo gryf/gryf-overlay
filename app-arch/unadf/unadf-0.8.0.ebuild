@@ -3,24 +3,20 @@
 
 EAPI=8
 
-inherit autotools
+inherit autotools git-r3
 
 MY_PN="adflib"
 
 DESCRIPTION="Extract files from Amiga adf disk images"
-HOMEPAGE="http://lclevy.free.fr/adflib/"
-SRC_URI="http://lclevy.free.fr/${MY_PN}/${MY_PN}-${PV}.tar.bz2"
+HOMEPAGE="https://github.com/lclevy/adflib"
+EGIT_REPO_URI="https://github.com/lclevy/adflib"
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~hppa ~ppc ~x86 ~x86-linux ~ppc-macos ~sparc-solaris ~x86-solaris"
 IUSE="static-libs"
 
-S="${WORKDIR}/${MY_PN}-${PV}"
-PATCHES=( 
-	"${FILESDIR}/${PN}-0.7.12-CVE-2016-1243_CVE-2016-1244.patch"
-	"${FILESDIR}/${PN}-0.7.12_separate_comment.patch"
-)
+#S="${WORKDIR}/${MY_PN}-${PV}"
 
 src_prepare() {
 	default
