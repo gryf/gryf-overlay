@@ -22,7 +22,7 @@ if [[ ${PV} == 9999* ]]; then
 else
 	SRC_URI="https://github.com/vim/vim/archive/v${PV}.tar.gz -> vim-${PV}.tar.gz
 		https://gitweb.gentoo.org/proj/vim-patches.git/snapshot/vim-patches-vim-${VIM_PATCHES_VERSION}-patches.tar.bz2"
-	KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ppc ppc64 ~riscv ~s390 sparc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-solaris"
+	KEYWORDS="~alpha amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~s390 ~sparc x86 ~amd64-linux ~x86-linux ~ppc-macos"
 fi
 S="${WORKDIR}"/vim-${PV}
 
@@ -82,7 +82,8 @@ RDEPEND="
 	sound? ( media-libs/libcanberra )
 	tcl? ( dev-lang/tcl:0= )
 "
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	x11-base/xorg-proto"
 # configure runs the Lua interpreter
 BDEPEND="
 	sys-devel/autoconf
@@ -144,12 +145,6 @@ src_prepare() {
 		"${S}"/runtime/menu.vim \
 		"${S}"/src/configure.ac || die 'sed failed'
 
-	# Don't be fooled by /usr/include/libc.h.  When found, vim thinks
-	# this is NeXT, but it's actually just a file in dev-libs/9libs
-	# This fixes bug 43885 (20 Mar 2004 agriffis)
-	sed -i -e \
-		's/ libc\.h / /' "${S}"/src/configure.ac || die 'sed failed'
-
 	# gcc on sparc32 has this, uhm, interesting problem with detecting EOF
 	# correctly. To avoid some really entertaining error messages about stuff
 	# which isn't even in the source file being invalid, we'll do some trickery
@@ -166,11 +161,6 @@ src_prepare() {
 	fi
 
 	cp -v "${S}"/src/config.mk.dist "${S}"/src/auto/config.mk || die "cp failed"
-
-	# Bug #378107 - Build properly with >=perl-core/ExtUtils-ParseXS-3.20.0
-	sed -i -e \
-		"s:\\\$(PERLLIB)/ExtUtils/xsubpp:${EPREFIX}/usr/bin/xsubpp:" \
-		"${S}"/src/Makefile || die 'sed for ExtUtils-ParseXS failed'
 
 	# Fix bug 18245: Prevent "make" from the following chain:
 	# (1) Notice configure.ac is newer than auto/configure
@@ -278,13 +268,6 @@ src_configure() {
 
 	# keep prefix env contained within the EPREFIX
 	use prefix && myconf+=( --without-local-dir )
-
-	if [[ ${CHOST} == *-interix* ]]; then
-		# avoid finding of this function, to avoid having to patch either
-		# configure or the source, which would be much more hackish.
-		# after all vim does it right, only interix is badly broken (again)
-		export ac_cv_func_sigaction=no
-	fi
 
 	if tc-is-cross-compiler ; then
 		export vim_cv_getcwd_broken=no \
