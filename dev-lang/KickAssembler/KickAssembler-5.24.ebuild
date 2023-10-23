@@ -10,7 +10,7 @@ HOMEPAGE="http://www.theweb.dk/KickAssembler/Main.php"
 # This is unchanged archive downloaded from homepage. For some reason IIS 
 # which is used for hosting rejects direct download for tools like curl/wget, 
 # hence the mirror on my web server.
-SRC_URI="https://vimja.pl/filez/${PN}${PV}.zip"
+SRC_URI="https://nc.vimja.com/s/mBGsc9ajpzJzNJj/download/${PN}${PV}.zip"
 
 KEYWORDS="~amd64 ~x86"
 
