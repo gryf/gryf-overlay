@@ -1,23 +1,30 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+# NOTE: WICD is still broken, although there was some work done with porting
+# it to Python3 and make it work again. See https://git.launchpad.net/wicd for 
+# latest commits.
 
-PYTHON_COMPAT=( python3_{7,8} )
+EAPI=8
+
+PYTHON_COMPAT=( python3_{11,12} )
 PYTHON_REQ_USE="ncurses,xml"
 
-inherit eutils distutils-r1 linux-info readme.gentoo-r1 systemd git-r3
+inherit distutils-r1 linux-info readme.gentoo-r1 systemd git-r3
 
+DISTUTILS_USE_PEP517=setuptools
 DESCRIPTION="A lightweight wired and wireless network manager for Linux"
 HOMEPAGE="https://launchpad.net/wicd"
-#EGIT_REPO_URI='https://git.launchpad.net/wicd'
+EGIT_REPO_URI='https://git.launchpad.net/wicd'
 #EGIT_COMMIT='63812468bec3ee94c2dd6c8268f9e7b341273be5'
 #EGIT_REPO_URI='https://github.com/gryf/wicd'
-EGIT_REPO_URI='file:///home/gryf/Devel/Python/wicd'
+#EGIT_REPO_URI='file:///home/gryf/Devel/Python/wicd'
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~mips ~ppc ~ppc64 ~x86"
+#KEYWORDS="~amd64 ~arm ~mips ~ppc ~ppc64 ~x86"
+
+KEYWORDS=""
 IUSE="doc nls +pm-utils"
 
 DEPEND="nls? ( dev-python/Babel[${PYTHON_USEDEP}] )"
@@ -38,6 +45,21 @@ RDEPEND="${PYTHON_DEPS}
 	dev-python/pygobject:3[${PYTHON_USEDEP}]
 	pm-utils? ( sys-power/pm-utils )
 	"
+PATCHES=(
+	# This one is probably not needed: "${FILESDIR}"/${PN}-init-sve-start.patch
+	# The Categories entry in the .desktop files is outdated. Valid.
+	"${FILESDIR}"/${PN}-1.7.2.4-fix-desktop-categories.patch
+	# Upstream bug https://bugs.launchpad.net/wicd/+bug/1412413
+	# Creates files -> give -p
+	# This one is probably outdated now: "${FILESDIR}"/${PN}-1.7.3-add-missing-gnome-shell-extension.patch
+	# If LANG is undefined, build can fail (bug 537202)
+	# Outdated, setup.py is totally rewroten: "${FILESDIR}"/${PN}-1.7.3-undefined-LANG.patch
+	# Fix urwid compat again
+	# This one might be not needed, as currently urwid is in version 2.1.x: "${FILESDIR}"/${PN}-1.7.3-urwid-1.3.0.patch
+	# Another compatibility patch from launchpad bug 1075399. This one is 
+	# valid.
+	"${FILESDIR}"/${PN}-1.7.3-bitrate-property.patch
+)
 
 src_prepare() {
 	CONFIG_CHECK="~CFG80211_WEXT"
