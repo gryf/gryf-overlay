@@ -1,0 +1,163 @@
+diff --git a/config.h.in b/config.h.in
+index 51e6d76..b9c7e0c 100644
+--- a/config.h.in
++++ b/config.h.in
+@@ -12,6 +12,9 @@
+ /* Define if you want handling for rarely used but handy features */
+ #undef ENABLE_FRILLS
+ 
++/* Define if you want line spacing fix */
++#undef ENABLE_LINE_SPACING
++
+ /* Define if you can embed a perl interpreter */
+ #undef ENABLE_PERL
+ 
+diff --git a/configure b/configure
+index 1b72b89..6b50a6b 100755
+--- a/configure
++++ b/configure
+@@ -740,6 +740,7 @@ enable_xft
+ enable_font_styles
+ enable_wide_glyphs
+ enable_font_width
++enable_line_spacing
+ enable_pixbuf
+ enable_startup_notification
+ enable_transparency
+@@ -1416,6 +1417,7 @@ Optional Features:
+   --enable-font-styles    enable bold and italic support
+   --enable-wide-glyphs    enable displaying of wide glyphs
+   --enable-font-width     enable proper way to calculate character width
++  --enable-line-spacing   enable line spacing fix
+   --enable-pixbuf         enable integration with gdk-pixbuf for background images
+   --enable-startup-notification  enable freedesktop startup notification support
+   --enable-transparency   enable transparent backgrounds
+@@ -4998,6 +5000,7 @@ support_8bitctrls=no
+ support_iso14755=yes
+ support_styles=yes
+ support_font_width=no
++support_line_spacing=no
+ support_perl=yes
+ codesets=all
+ 
+@@ -5030,6 +5033,7 @@ then :
+        support_styles=no
+        support_wide_glyphs=no
+        support_font_width=no
++       support_line_spacing=no
+        support_perl=no
+        codesets=
+     fi
+@@ -5057,6 +5061,7 @@ then :
+        support_styles=yes
+        support_wide_glyphs=yes
+        support_font_width=yes
++       support_line_spacing=yes
+        support_perl=yes
+        codesets=all
+     fi
+@@ -5191,6 +5196,15 @@ then :
+ fi
+ 
+ 
++# Check whether --enable-line-spacing was given.
++if test ${enable_line_spacing+y}
++then :
++  enableval=$enable_line_spacing; if test x$enableval = xyes -o x$enableval = xno; then
++    support_line_spacing=$enableval
++  fi
++fi
++
++
+ # Check whether --enable-pixbuf was given.
+ if test ${enable_pixbuf+y}
+ then :
+@@ -7700,6 +7714,11 @@ if test x$support_font_width = xyes; then
+ 
+ printf "%s\n" "#define ENABLE_FONT_WIDTH 1" >>confdefs.h
+ 
++fi
++if test x$support_line_spacing = xyes; then
++
++printf "%s\n" "#define ENABLE_LINE_SPACING 1" >>confdefs.h
++
+ fi
+ if test x$support_iso14755 = xyes; then
+ 
+diff --git a/configure.ac b/configure.ac
+index 54ab35b..1cffda6 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -91,6 +91,7 @@ support_8bitctrls=no
+ support_iso14755=yes
+ support_styles=yes
+ support_font_width=no
++support_line_spacing=no
+ support_perl=yes
+ codesets=all
+ 
+@@ -126,6 +127,7 @@ AC_ARG_ENABLE(everything,
+        support_styles=no
+        support_wide_glyphs=no
+        support_font_width=no
++       support_line_spacing=no
+        support_perl=no
+        codesets=
+     fi
+@@ -153,6 +155,7 @@ AC_ARG_ENABLE(everything,
+        support_styles=yes
+        support_wide_glyphs=yes
+        support_font_width=yes
++       support_line_spacing=yes
+        support_perl=yes
+        codesets=all
+     fi
+@@ -238,6 +241,12 @@ AC_ARG_ENABLE(font-width,
+     support_font_width=$enableval
+   fi])
+ 
++AC_ARG_ENABLE(line-spacing,
++  [  --enable-line-spacing   enable line spacing fix],
++  [if test x$enableval = xyes -o x$enableval = xno; then
++    support_line_spacing=$enableval
++  fi])
++
+ AC_ARG_ENABLE(pixbuf,
+   [  --enable-pixbuf         enable integration with gdk-pixbuf for background images],
+   [if test x$enableval = xyes -o x$enableval = xno; then
+@@ -666,6 +675,9 @@ fi
+ if test x$support_font_width = xyes; then
+   AC_DEFINE(ENABLE_FONT_WIDTH, 1, Define if you want proper way to calculate character width)
+ fi
++if test x$support_line_spacing = xyes; then
++  AC_DEFINE(ENABLE_LINE_SPACING, 1, Define if you want line spacing fix)
++fi
+ if test x$support_iso14755 = xyes; then
+   AC_DEFINE(ISO_14755, 1, Define if you want ISO 14755 extended support)
+ fi
+diff --git a/src/rxvtfont.C b/src/rxvtfont.C
+index 50f629f..9420a22 100644
+--- a/src/rxvtfont.C
++++ b/src/rxvtfont.C
+@@ -1279,10 +1279,21 @@ rxvt_font_xft::load (const rxvt_fontprop &prop, bool force_prop)
+           break;
+         }
+ 
++#ifdef ENABLE_LINE_SPACING
++/*
++ * use ascent, descent and height from XftFont *f instead of FT_Face face.
++ * this somehow reproduces the behaviour of the line height as seen on xterm.
++ */
++      ascent  = f->ascent;
++      descent = f->descent;
++      height  = max (ascent + descent, f->height);
++      width   = 0;
++#else
+       ascent  = (face->size->metrics.ascender + 63) >> 6;
+       descent = (-face->size->metrics.descender + 63) >> 6;
+       height  = max (ascent + descent, (face->size->metrics.height + 63) >> 6);
+       width   = 0;
++#endif
+ 
+       bool scalable = face->face_flags & FT_FACE_FLAG_SCALABLE;
+ 

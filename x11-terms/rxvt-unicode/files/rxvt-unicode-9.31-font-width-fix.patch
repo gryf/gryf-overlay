@@ -1,0 +1,164 @@
+diff --git a/config.h.in b/config.h.in
+index b50ab85..51e6d76 100644
+--- a/config.h.in
++++ b/config.h.in
+@@ -6,6 +6,9 @@
+ /* Define if you want to automatically compose combining characters */
+ #undef ENABLE_COMBINING
+ 
++/* Define if you want proper way to calculate character width */
++#undef ENABLE_FONT_WIDTH
++
+ /* Define if you want handling for rarely used but handy features */
+ #undef ENABLE_FRILLS
+ 
+diff --git a/configure b/configure
+index ed2f2b2..1b72b89 100755
+--- a/configure
++++ b/configure
+@@ -739,6 +739,7 @@ enable_combining
+ enable_xft
+ enable_font_styles
+ enable_wide_glyphs
++enable_font_width
+ enable_pixbuf
+ enable_startup_notification
+ enable_transparency
+@@ -1414,6 +1415,7 @@ Optional Features:
+   --enable-xft            enable xft support on systems that have it
+   --enable-font-styles    enable bold and italic support
+   --enable-wide-glyphs    enable displaying of wide glyphs
++  --enable-font-width     enable proper way to calculate character width
+   --enable-pixbuf         enable integration with gdk-pixbuf for background images
+   --enable-startup-notification  enable freedesktop startup notification support
+   --enable-transparency   enable transparent backgrounds
+@@ -4995,6 +4997,7 @@ support_combining=yes
+ support_8bitctrls=no
+ support_iso14755=yes
+ support_styles=yes
++support_font_width=no
+ support_perl=yes
+ codesets=all
+ 
+@@ -5026,6 +5029,7 @@ then :
+        support_iso14755=no
+        support_styles=no
+        support_wide_glyphs=no
++       support_font_width=no
+        support_perl=no
+        codesets=
+     fi
+@@ -5052,6 +5056,7 @@ then :
+        support_iso14755=yes
+        support_styles=yes
+        support_wide_glyphs=yes
++       support_font_width=yes
+        support_perl=yes
+        codesets=all
+     fi
+@@ -5177,6 +5182,15 @@ if test "${enable_wide_glyphs+set}" = set; then :
+ fi
+ 
+ 
++# Check whether --enable-font-width was given.
++if test ${enable_font_width+y}
++then :
++  enableval=$enable_font_width; if test x$enableval = xyes -o x$enableval = xno; then
++    support_font_width=$enableval
++  fi
++fi
++
++
+ # Check whether --enable-pixbuf was given.
+ if test ${enable_pixbuf+y}
+ then :
+@@ -7681,6 +7695,11 @@ if test x$support_styles = xyes; then
+ 
+ printf "%s\n" "#define ENABLE_STYLES 1" >>confdefs.h
+ 
++fi
++if test x$support_font_width = xyes; then
++
++printf "%s\n" "#define ENABLE_FONT_WIDTH 1" >>confdefs.h
++
+ fi
+ if test x$support_iso14755 = xyes; then
+ 
+diff --git a/configure.ac b/configure.ac
+index 510fa44..54ab35b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -90,6 +90,7 @@ support_combining=yes
+ support_8bitctrls=no
+ support_iso14755=yes
+ support_styles=yes
++support_font_width=no
+ support_perl=yes
+ codesets=all
+ 
+@@ -124,6 +125,7 @@ AC_ARG_ENABLE(everything,
+        support_iso14755=no
+        support_styles=no
+        support_wide_glyphs=no
++       support_font_width=no
+        support_perl=no
+        codesets=
+     fi
+@@ -150,6 +152,7 @@ AC_ARG_ENABLE(everything,
+        support_iso14755=yes
+        support_styles=yes
+        support_wide_glyphs=yes
++       support_font_width=yes
+        support_perl=yes
+        codesets=all
+     fi
+@@ -229,6 +232,12 @@ AC_ARG_ENABLE(wide-glyphs,
+     support_wide_glyphs=$enableval
+   fi])
+ 
++AC_ARG_ENABLE(font-width,
++  [  --enable-font-width     enable proper way to calculate character width],
++  [if test x$enableval = xyes -o x$enableval = xno; then
++    support_font_width=$enableval
++  fi])
++
+ AC_ARG_ENABLE(pixbuf,
+   [  --enable-pixbuf         enable integration with gdk-pixbuf for background images],
+   [if test x$enableval = xyes -o x$enableval = xno; then
+@@ -654,6 +663,9 @@ fi
+ if test x$support_wide_glyphs = xyes; then
+   AC_DEFINE(ENABLE_WIDE_GLYPHS, 1, Define if you want to display wide glyphs)
+ fi
++if test x$support_font_width = xyes; then
++  AC_DEFINE(ENABLE_FONT_WIDTH, 1, Define if you want proper way to calculate character width)
++fi
+ if test x$support_iso14755 = xyes; then
+   AC_DEFINE(ISO_14755, 1, Define if you want ISO 14755 extended support)
+ fi
+diff --git a/src/rxvtfont.C b/src/rxvtfont.C
+index 5d51eea..50f629f 100644
+--- a/src/rxvtfont.C
++++ b/src/rxvtfont.C
+@@ -1307,12 +1307,22 @@ rxvt_font_xft::load (const rxvt_fontprop &prop, bool force_prop)
+           XGlyphInfo g;
+           XftTextExtents16 (disp, f, &ch, 1, &g);
+ 
++#if ENABLE_FONT_WIDTH
++/*
++ * bukind: don't use g.width as a width of a character!
++ * instead use g.xOff, see e.g.: http://keithp.com/~keithp/render/Xft.tutorial
++ */
++          int wcw = WCWIDTH (ch);
++          if (wcw > 1) g.xOff = g.xOff / wcw;
++          if (width < g.xOff) width = g.xOff;
++#else
+           g.width -= g.x;
+ 
+           int wcw = WCWIDTH (ch);
+           if (wcw > 0) g.width = (g.width + wcw - 1) / wcw;
+ 
+           if (width    < g.width       ) width    = g.width;
++#endif
+           if (height   < g.height      ) height   = g.height;
+           if (glheight < g.height - g.y) glheight = g.height - g.y;
+         }
