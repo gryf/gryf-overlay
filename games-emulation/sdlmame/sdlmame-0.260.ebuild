@@ -16,7 +16,7 @@ SRC_URI="https://github.com/mamedev/mame/archive/mame${MY_PV}.tar.gz -> mame-${P
 LICENSE="GPL-2+ BSD-2 MIT CC0-1.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="alsa +arcade debug +mess opengl openmp tools"
+IUSE="alsa +arcade debug +mess opengl openmp -pulseaudio tools"
 REQUIRED_USE="|| ( arcade mess )"
 
 # MESS (games-emulation/sdlmess) has been merged into MAME upstream since mame-0.162 (see below)
@@ -38,6 +38,7 @@ RDEPEND="!games-emulation/sdlmametools
 	virtual/opengl
 	alsa? ( media-libs/alsa-lib
 		media-libs/portmidi )
+	pulseaudio? ( media-sound/pulseaudio )
 	debug? ( dev-qt/qtcore:5
 		dev-qt/qtgui:5
 		dev-qt/qtwidgets:5 )
@@ -78,6 +79,8 @@ src_prepare() {
 	# Disable warnings being treated as errors and enable verbose build output
 	enable_feature NOWERROR
 	enable_feature VERBOSE
+
+	! use pulseaudio && enable_feature NO_USE_PULSEAUDIO
 
 	use amd64 && enable_feature PTR64
 	use debug && enable_feature DEBUG
