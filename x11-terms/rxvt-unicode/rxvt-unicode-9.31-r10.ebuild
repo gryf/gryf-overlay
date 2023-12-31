@@ -8,11 +8,10 @@
 #   - smart-resize
 # 3rd party patches (by flags):
 #   - font-width - use xOff instead of width attribute for a glyph.
-#   - line-spacing - use ascent, descent and height from XftFont *f instead of 
+#   - line-spacing - use ascent, descent and height from XftFont *f instead of
 #     FT_Face face.
-#   - use-space - add space for characters to figure out width and height of 
+#   - use-space - add space for characters to figure out width and height of
 #     chars
-#   - wide-glyphs - add support for wide glyphs
 EAPI=8
 
 inherit autotools desktop systemd prefix
@@ -48,6 +47,11 @@ BDEPEND="virtual/pkgconfig"
 PATCHES=(
 	"${FILESDIR}"/${PN}-9.06-case-insensitive-fs.patch
 	"${FILESDIR}"/${PN}-9.21-xsubpp.patch
+	"${FILESDIR}"/${PN}-9.31-enable-wide-glyphs.patch
+	"${FILESDIR}"/${PN}-9.31-perl5.38.patch
+	"${FILESDIR}"/${PN}-9.31-font-width-fix.patch
+	"${FILESDIR}"/${PN}-9.31-line-spacing-fix.patch
+	"${FILESDIR}"/${PN}-9.31-add-space-to-extent-test-chars.patch
 )
 DOCS=(
 	Changes
@@ -67,20 +71,6 @@ src_prepare() {
 		eautoreconf
 	fi
 
-	# custom patches
-	if use font-width; then
-		eapply "${FILESDIR}"/${PN}-9.22-font-width-fix.patch
-	fi
-	if use line-spacing; then
-		eapply "${FILESDIR}"/${PN}-9.22-line-spacing-fix.patch
-	fi
-	if use wide-glyphs; then
-		eapply "${FILESDIR}"/${PN}-9.30-enable-wide-glyphs.patch
-	fi
-	if use use-space; then
-		eapply "${FILESDIR}"/${PN}-9.22-add-space-to-extent_test_chars.patch
-	fi
-
 	# kill the rxvt-unicode terminfo file - #192083
 	sed -i -e "/rxvt-unicode.terminfo/d" doc/Makefile.in || die "sed failed"
 
@@ -96,21 +86,21 @@ src_configure() {
 		$(use_enable blink text-blink)
 		$(use_enable fading-colors fading)
 		$(use_enable font-styles)
+		$(use_enable font-width)
 		$(use_enable gdk-pixbuf pixbuf)
 		$(use_enable iso14755)
+		$(use_enable line-spacing)
 		$(use_enable mousewheel)
 		$(use_enable perl)
 		$(use_enable smart-resize)
 		$(use_enable startup-notification)
 		$(use_enable unicode3)
+		$(use_enable use-space)
 		$(use_enable wide-glyphs)
 		$(use_enable xft)
 	)
 	if use 24-bit-color; then
 		myconf+=( --enable-24-bit-color )
-	fi
-	if use wide-glyphs; then
-		myconf+=( --enable-wide-glyphs )
 	fi
 	econf "${myconf[@]}"
 }
@@ -143,5 +133,12 @@ pkg_postinst() {
 	fi
 	if use perl && ! use fading-colors; then
 		ewarn "Note that some of the Perl plug-ins bundled with ${PN} will fail to load without USE=fading-colors"
+	fi
+	if use wide-glyphs; then
+		ewarn
+		ewarn "You have enabled wide-glyph support in ${PN}, which is UNOFFICIAL."
+		ewarn "You may or may not encounter visual glitches or stability issues. When in doubt,"
+		ewarn "rebuild =${CATEGORY}/${PF} with USE=-wide-glyphs (the default setting)."
+		ewarn
 	fi
 }
