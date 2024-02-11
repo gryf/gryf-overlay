@@ -22,7 +22,7 @@ RDEPEND=">=x11-libs/gtk+-2.12:2
 	app-text/gtkspell:2
 	>=x11-libs/libnotify-0.7"
 DEPEND="${RDEPEND}
-	sys-devel/automake:1.16
+	dev-build/automake:1.16
 	virtual/pkgconfig"
 
 #PATCHES=( "${FILESDIR}/${P}-01-fix-build-without-webkit.patch"
@@ -30,10 +30,7 @@ DEPEND="${RDEPEND}
 #
 src_configure() {
 	append-flags -I/usr/include/libical
-
-	econf \
-		--disable-dependency-tracking \
-		--without-libsyncml
+	econf --disable-dependency-tracking
 }
 
 src_install() {
