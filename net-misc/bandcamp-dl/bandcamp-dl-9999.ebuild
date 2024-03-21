@@ -7,10 +7,11 @@ PYTHON_COMPAT=( python3_11 )
 PYPI_NO_NORMALIZE=1
 PYPI_PN="bandcamp-downloader"
 
-inherit distutils-r1 pypi
+inherit distutils-r1 git-r3
 
 DESCRIPTION="Simple python script to download Bandcamp albums"
-HOMEPAGE="https://pypi.org/project/bandcamp-downloader"
+HOMEPAGE="https://github.com/iheanyi/bandcamp-dl"
+EGIT_REPO_URI="https://github.com/iheanyi/bandcamp-dl.git"
 
 LICENSE="Unlicense"
 SLOT="0"
