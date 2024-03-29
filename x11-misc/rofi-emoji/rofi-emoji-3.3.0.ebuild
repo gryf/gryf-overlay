@@ -7,6 +7,7 @@ inherit autotools git-r3
 DESCRIPTION="Emoji selector plugin for Rofi "
 HOMEPAGE="https://github.com/Mange/rofi-emoji"
 EGIT_REPO_URI="https://github.com/Mange/rofi-emoji"
+EGIT_COMMIT="v${PV}"
 
 LICENSE="MIT"
 SLOT="0"
