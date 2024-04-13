@@ -39,8 +39,11 @@ src_install() {
 		echo "${inst_path}/${REAL_PN}" '"$@"'
 
 	) > "${tmpwrapper}"
-	chmod go+rx "${tmpwrapper}"
-	newbin "${tmpwrapper}" "${REAL_PN,,}"
+	(
+	exeopts -m 0755
+	exeinto "/opt/bin"
+	newexe "${tmpwrapper}" "${REAL_PN,,}"
+	) || die
 	# ------------------
 
 	doicon "${REAL_PN}Icon.png"
