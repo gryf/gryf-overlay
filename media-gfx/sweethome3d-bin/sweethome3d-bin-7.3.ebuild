@@ -48,7 +48,7 @@ src_install() {
 
 	doicon "${REAL_PN}Icon.png"
 
-	make_desktop_entry "${REAL_PN}" "${REAL_PN}" "${REAL_PN}"
+	make_desktop_entry "${REAL_PN,,}" "${REAL_PN}" "${REAL_PN}" "Graphics;Engineering"
 
 	dodir $inst_path
 	fperms 755 "${inst_path}/${REAL_PN}" \
