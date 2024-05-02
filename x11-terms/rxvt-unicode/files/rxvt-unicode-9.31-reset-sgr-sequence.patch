@@ -1,0 +1,15 @@
+diff -ur rxvt-unicode-9.31/src/command.C rxvt-unicode-9.31_patched/src/command.C
+--- rxvt-unicode-9.31/src/command.C	2022-12-23 22:36:57.000000000 +0100
++++ rxvt-unicode-9.31_patched/src/command.C	2024-05-02 12:02:47.275705061 +0200
+@@ -3426,9 +3426,9 @@
+         snprintf (rgba_str, sizeof (rgba_str), "rgb:%04x/%04x/%04x", c.r, c.g, c.b);
+ 
+       if (IN_RANGE_INC (color, minCOLOR, maxTermCOLOR))
+-        tt_printf ("\033]%d;%d;%s%c", report, color - minCOLOR, rgba_str, resp);
++        tt_printf ("\033]%d;%d;%s\033\\", report, color - minCOLOR, rgba_str);
+       else
+-        tt_printf ("\033]%d;%s%c", report, rgba_str, resp);
++        tt_printf ("\033]%d;%s\033\\", report, rgba_str, resp);
+     }
+   else
+     set_window_color (color, str);

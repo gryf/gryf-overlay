@@ -52,6 +52,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.31-font-width-fix.patch
 	"${FILESDIR}"/${PN}-9.31-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.31-add-space-to-extent-test-chars.patch
+	"${FILESDIR}"/${PN}-9.31-reset-sgr-sequence.patch
 )
 DOCS=(
 	Changes
