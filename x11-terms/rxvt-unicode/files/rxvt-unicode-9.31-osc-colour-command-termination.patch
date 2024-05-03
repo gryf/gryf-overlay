@@ -1,7 +1,11 @@
-diff -ur rxvt-unicode-9.31/src/command.C rxvt-unicode-9.31_patched/src/command.C
---- rxvt-unicode-9.31/src/command.C	2022-12-23 22:36:57.000000000 +0100
-+++ rxvt-unicode-9.31_patched/src/command.C	2024-05-02 12:02:47.275705061 +0200
-@@ -3426,9 +3426,9 @@
+OSC commands returning the colour sequence must be terminated by either
+of ST, ESC \, or BEL. rxvt-unicode tries to use the same type of termination
+as was in the query but doesn't correctly handle the multiple-char sequence
+used for 7-bit queries. Force to using ESC \ instead for now.
+
+--- a/src/command.C
++++ b/src/command.C
+@@ -3426,9 +3426,9 @@ rxvt_term::process_color_seq (int report, int color, c
          snprintf (rgba_str, sizeof (rgba_str), "rgb:%04x/%04x/%04x", c.r, c.g, c.b);
  
        if (IN_RANGE_INC (color, minCOLOR, maxTermCOLOR))

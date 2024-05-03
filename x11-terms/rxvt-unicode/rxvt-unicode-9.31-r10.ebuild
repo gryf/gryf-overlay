@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 #
 # NOTE(gryf): this ebuild differ from official one by using 3rd party patches,
@@ -25,7 +25,7 @@ SRC_URI="http://dist.schmorp.de/rxvt-unicode/Attic/${P}.tar.bz2
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~sparc ~x86"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="24-bit-color 256-color blink fading-colors +font-styles -font-width
 	gdk-pixbuf iso14755 -line-spacing +mousewheel +perl -smart-resize
 	-use-space startup-notification unicode3 -wide-glyphs xft"
@@ -49,10 +49,10 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.21-xsubpp.patch
 	"${FILESDIR}"/${PN}-9.31-enable-wide-glyphs.patch
 	"${FILESDIR}"/${PN}-9.31-perl5.38.patch
+	"${FILESDIR}"/${PN}-9.31-osc-colour-command-termination.patch
 	"${FILESDIR}"/${PN}-9.31-font-width-fix.patch
 	"${FILESDIR}"/${PN}-9.31-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.31-add-space-to-extent-test-chars.patch
-	"${FILESDIR}"/${PN}-9.31-reset-sgr-sequence.patch
 )
 DOCS=(
 	Changes
