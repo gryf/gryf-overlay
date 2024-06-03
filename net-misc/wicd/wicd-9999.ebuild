@@ -7,7 +7,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{11,12} )
+PYTHON_COMPAT=( python3_{11..13} )
 PYTHON_REQ_USE="ncurses,xml"
 
 inherit distutils-r1 linux-info readme.gentoo-r1 systemd git-r3

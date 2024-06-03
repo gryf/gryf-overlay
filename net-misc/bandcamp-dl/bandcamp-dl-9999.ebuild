@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_11 )
+PYTHON_COMPAT=( python3_{8..13} )
 PYPI_NO_NORMALIZE=1
 PYPI_PN="bandcamp-downloader"
 

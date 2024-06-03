@@ -3,7 +3,7 @@
 # $Id$
 
 EAPI=8
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{8..13} )
 inherit distutils-r1
 
 DESCRIPTION="A simple GUI frontend for the scrot, imlib2, or ImageMagick screenshooters"
