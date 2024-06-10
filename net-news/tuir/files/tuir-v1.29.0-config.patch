@@ -1,0 +1,12 @@
+diff -ur tuir-v1.29.0-orig/tuir/config.py tuir-v1.29.0/tuir/config.py
+--- tuir-v1.29.0-orig/tuir/config.py	2020-04-26 09:12:09.000000000 +0200
++++ tuir-v1.29.0/tuir/config.py	2024-06-10 09:11:01.010022758 +0200
+@@ -131,7 +131,7 @@
+         config = configparser.RawConfigParser()
+         if os.path.exists(filename):
+             with codecs.open(filename, encoding='utf-8') as fp:
+-                config.readfp(fp)
++                config.read(fp)
+ 
+         return cls._parse_tuir_file(config)
+ 

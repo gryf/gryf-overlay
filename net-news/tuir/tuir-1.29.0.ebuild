@@ -27,4 +27,8 @@ RDEPEND="${DEPEND}"
 BDEPEND=""
 RESTRICT="test"
 
+PATCHES=(
+	"${FILESDIR}"/${PN}-config.patch
+)
+
 S=${WORKDIR}/${PN}-v${PV}
