@@ -1,6 +1,6 @@
-diff -ur tuir-v1.29.0-orig/tuir/config.py tuir-v1.29.0/tuir/config.py
+diff '--color=auto' -ur tuir-v1.29.0-orig/tuir/config.py tuir-v1.29.0/tuir/config.py
 --- tuir-v1.29.0-orig/tuir/config.py	2020-04-26 09:12:09.000000000 +0200
-+++ tuir-v1.29.0/tuir/config.py	2024-06-10 09:11:01.010022758 +0200
++++ tuir-v1.29.0/tuir/config.py	2024-06-14 11:32:12.559187415 +0200
 @@ -131,7 +131,7 @@
          config = configparser.RawConfigParser()
          if os.path.exists(filename):
@@ -9,4 +9,16 @@ diff -ur tuir-v1.29.0-orig/tuir/config.py tuir-v1.29.0/tuir/config.py
 +                config.read_file(fp)
  
          return cls._parse_tuir_file(config)
+ 
+diff '--color=auto' -ur tuir-v1.29.0-orig/tuir/theme.py tuir-v1.29.0/tuir/theme.py
+--- tuir-v1.29.0-orig/tuir/theme.py	2020-04-26 09:12:09.000000000 +0200
++++ tuir-v1.29.0/tuir/theme.py	2024-06-14 11:32:21.555329941 +0200
+@@ -399,7 +399,7 @@
+             config = configparser.ConfigParser()
+             config.optionxform = six.text_type  # Preserve case
+             with codecs.open(filename, encoding='utf-8') as fp:
+-                config.readfp(fp)
++                config.read_file(fp)
+         except configparser.ParsingError as e:
+             raise ConfigError(e.message)
  
