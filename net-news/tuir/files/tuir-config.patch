@@ -6,7 +6,7 @@ diff -ur tuir-v1.29.0-orig/tuir/config.py tuir-v1.29.0/tuir/config.py
          if os.path.exists(filename):
              with codecs.open(filename, encoding='utf-8') as fp:
 -                config.readfp(fp)
-+                config.read(fp)
++                config.read_file(fp)
  
          return cls._parse_tuir_file(config)
  
