@@ -12,7 +12,7 @@ SRC_URI="http://jpilot.org/tarballs/${P}.tar.gz"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~ppc64 ~x86"
-IUSE="nls"
+IUSE="nls plugins"
 
 RDEPEND="
 	app-pda/pilot-link
@@ -40,7 +40,7 @@ src_prepare() {
 }
 
 src_configure() {
-	econf $(use_enable nls)
+	econf $(use_enable nls) $(use_enable plugins)
 }
 
 src_install() {
