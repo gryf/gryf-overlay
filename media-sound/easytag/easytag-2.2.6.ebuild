@@ -10,7 +10,7 @@ HOMEPAGE="https://wiki.gnome.org/Apps/EasyTAG"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="flac mp3 mp4 nls speex vorbis wavpack"
+IUSE="flac gtk2 mp3 mp4 nls speex vorbis wavpack"
 
 RDEPEND=">=x11-libs/gtk+-2.24:2
 	mp3? (
@@ -53,7 +53,8 @@ src_configure() {
 		$(use_enable speex) \
 		$(use_enable flac) \
 		$(use_enable mp4) \
-		$(use_enable wavpack)
+		$(use_enable wavpack) \
+		$(use_with gtk2)
 	# workaround for gcc>10
 	sed -i -e 's/\(^CFLAGS = .*\)/\1 -fcommon/' Makefile || die
 }
