@@ -6,16 +6,26 @@ EAPI=8
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{8..13} )
 
-inherit distutils-r1 git-r3
+inherit distutils-r1
 
 DESCRIPTION="Automate archives and state for fs-uae"
 HOMEPAGE="https://github.com/gryf/fs-uae-wrapper"
-EGIT_REPO_URI="https://github.com/gryf/fs-uae-wrapper"
-EGIT_BRANCH="master"
+
+if [[ ${PV} == *9999 ]];then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/gryf/fs-uae-wrapper"
+	EGIT_BRANCH="master"
+else
+	SRC_URI="
+	https://github.com/gryf/fs-uae-wrapper/archive/refs/tags/${PV}.tar.gz
+	-> ${P}.gh.tar.gz
+	"
+	KEYWORDS="amd64 x86 ~amd64-linux ~x86-linux"
+fi
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="~amd64"
 
 RDEPEND=""
 DEPEND="${RDEPEND}"
