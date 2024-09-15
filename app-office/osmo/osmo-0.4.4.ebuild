@@ -6,7 +6,7 @@ EAPI="8"
 inherit flag-o-matic
 
 DESCRIPTION="A handy personal organizer"
-HOMEPAGE="http://clayo.org/osmo/"
+HOMEPAGE="https://osmo-pim.sourceforge.net"
 SRC_URI="mirror://sourceforge/${PN}-pim/${P}.tar.gz"
 
 LICENSE="GPL-2"
