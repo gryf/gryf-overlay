@@ -1,4 +1,4 @@
-# Copyright 1999-2023 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -6,24 +6,24 @@ EAPI=8
 inherit autotools flag-o-matic
 
 MY_P="${P/_/-}"
+DESCRIPTION="GNU Midnight Commander is a text based file manager"
+HOMEPAGE="https://midnight-commander.org"
 SRC_URI="
 	http://ftp.midnight-commander.org/${MY_P}.tar.xz
 	https://raw.githubusercontent.com/gryf/uc1541/master/uc1541
 	https://raw.githubusercontent.com/gryf/mc_ulha/master/ulha
 "
-KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ~mips ~ppc ppc64 ~riscv ~s390 sparc x86 ~amd64-linux ~ppc-macos ~x64-macos"
-
-DESCRIPTION="GNU Midnight Commander is a text based file manager"
-HOMEPAGE="https://midnight-commander.org"
+S="${WORKDIR}/${MY_P}"
 
 LICENSE="GPL-3"
 SLOT="0"
+KEYWORDS="~amd64"
 IUSE="+edit gpm nls sftp +slang spell test unicode X"
 
 REQUIRED_USE="spell? ( edit )"
+RESTRICT="!test? ( test )"
 
-DEPEND="
-	dev-python/extfslib
+COMMON_DEPEND="
 	>=dev-libs/glib-2.30.0:2
 	gpm? ( sys-libs/gpm )
 	kernel_linux? ( sys-fs/e2fsprogs[tools(+)] )
@@ -32,37 +32,50 @@ DEPEND="
 	!slang? ( sys-libs/ncurses:=[unicode(+)?] )
 	spell? ( app-text/aspell )
 	X? (
-		x11-libs/libX11
 		x11-libs/libICE
-		x11-libs/libXau
-		x11-libs/libXdmcp
 		x11-libs/libSM
+		x11-libs/libX11
 	)
 "
-RDEPEND="${DEPEND}
-	spell? ( app-dicts/aspell-en )"
+
+DEPEND="
+	${COMMON_DEPEND}
+	X? ( x11-base/xorg-proto )
+"
+
+RDEPEND="
+	${DEPEND}
+	dev-python/extfslib
+	spell? ( app-dicts/aspell-en )
+"
+
 BDEPEND="
 	app-arch/xz-utils
 	virtual/pkgconfig
+	dev-python/extfslib
 	nls? ( sys-devel/gettext )
 	test? ( dev-libs/check )
 "
 
-RESTRICT="!test? ( test )"
-
-S="${WORKDIR}/${MY_P}"
-
 PATCHES=(
 	"${FILESDIR}"/${PN}-4.8.26-ncurses-mouse.patch
 	"${FILESDIR}"/${PN}-4.8.29-gentoo-tools.patch
-	"${FILESDIR}"/${PN}-4.8.30-mcdiff-segfault.patch
+)
+
+# This is a check for AIX, on Linux mc uses statvfs() regardless of whether
+# LFS64 interfaces are available in libc or not.
+QA_CONFIG_IMPL_DECL_SKIP=(
+	statvfs64
 )
 
 src_prepare() {
 	default
 
-	# Bug #906194
-	use elibc_musl && eapply "${FILESDIR}"/${PN}-4.8.30-musl-tests.patch
+	# Bug #906194, #922483
+	if use elibc_musl; then
+		eapply "${FILESDIR}"/${PN}-4.8.30-musl-tests.patch
+		eapply "${FILESDIR}"/${PN}-4.8.31-musl-tests.patch
+	fi
 
 	eautoreconf
 }
@@ -105,6 +118,7 @@ src_test() {
 	# information.
 	CK_FORK=no emake check VERBOSE=1
 }
+
 src_install() {
 	emake DESTDIR="${D}" install
 	dodoc AUTHORS NEWS README
@@ -120,6 +134,8 @@ src_install() {
 }
 
 pkg_postinst() {
+	elog "${PN} extension scripts depend on many external tools, install them as needed"
+	elog
 	if use spell && ! has_version app-dicts/aspell-en ; then
 		elog "'spell' USE flag is enabled however app-dicts/aspell-en is not installed."
 		elog "You should manually set 'spell_language' in the Misc section of ~/.config/mc/ini"
