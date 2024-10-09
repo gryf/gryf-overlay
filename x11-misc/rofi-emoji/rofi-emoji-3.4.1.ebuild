@@ -11,8 +11,8 @@ EGIT_COMMIT="v${PV}"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS=""
-IUSE="+clipboard primary clipboard wayland +X"
+KEYWORDS="~amd64 ~x86"
+IUSE="+clipboard primary wayland +X"
 
 DEPEND="x11-misc/rofi"
 RDEPEND="${DEPEND}

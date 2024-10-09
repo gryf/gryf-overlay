@@ -1,0 +1,49 @@
+diff --git a/clipboard-adapter.sh b/clipboard-adapter.sh
+index 80f8e6e..12a384a 100755
+--- a/clipboard-adapter.sh
++++ b/clipboard-adapter.sh
+@@ -53,7 +53,9 @@ main() {
+     exit 0
+     ;;
+   copy)
+-    perform_copy
++    input="$(cat -)"
++    printf "%s" "$input" | perform_copy
++    printf "%s" "$input" | perform_primary
+     ;;
+   insert)
+     # Also copy when doing insert to give users a fallback in case automatic
+@@ -116,6 +118,33 @@ perform_copy() {
+   esac
+ }
+ 
++perform_primary() {
++  tool=$(find_copy_tool)
++
++  case "$tool" in
++  xsel)
++    xsel --primary --input
++    ;;
++  xclip)
++    xclip -selection primary -in
++    ;;
++  copyq)
++    copyq copy -
++    ;;
++  wl-copy)
++    wl-copy --primary
++    ;;
++  "")
++    show_error "Could not find any tool to handle copying. Please install a primary handler."
++    exit 1
++    ;;
++  *)
++    show_error "$tool has no implementation for copying into primary yet"
++    exit 2
++    ;;
++  esac
++}
++
+ perform_insert() {
+   tool=$(find_insert_tool)
+ 
