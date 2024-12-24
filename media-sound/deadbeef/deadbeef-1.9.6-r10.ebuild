@@ -13,11 +13,12 @@ SRC_URI="https://sourceforge.net/projects/${PN}/files/travis/linux/${PV}/deadbee
 LICENSE="
 	GPL-2
 	LGPL-2.1
+	MIT
 	wavpack? ( BSD )
 "
 SLOT="0"
 KEYWORDS="~amd64 ~riscv ~x86"
-IUSE="aac alsa cdda converter cover dts ffmpeg flac gtk2 -gtk3 +hotkeys lastfm libretro libsamplerate mod mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq vorbis wavpack"
+IUSE="aac alsa cdda converter cover dts ffmpeg flac gtk2 -gtk3 +hotkeys lastfm libretro libsamplerate mod mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq vorbis wavpack zip"
 
 REQUIRED_USE="
 	|| ( alsa oss pulseaudio pipewire nullout )
@@ -47,8 +48,10 @@ DEPEND="
 		media-libs/flac:=
 		media-libs/libogg
 	)
+	gtk2? ( x11-libs/gtk+:2 )
+	gtk3? ( x11-libs/gtk+:3 )
 	libsamplerate? ( media-libs/libsamplerate )
-	mp3? ( media-sound/mpg123 )
+	mp3? ( media-sound/mpg123-base )
 	musepack? ( media-sound/musepack-tools )
 	nls? ( virtual/libintl )
 	notify? ( sys-apps/dbus )
@@ -58,14 +61,15 @@ DEPEND="
 	sid? ( media-libs/libsidplay )
 	vorbis? ( media-libs/libvorbis )
 	wavpack? ( media-sound/wavpack )
+	zip? ( dev-libs/libzip:= )
 "
 
 RDEPEND="${DEPEND}"
 BDEPEND="
 	dev-util/intltool
-	sys-devel/clang
+	llvm-core/clang
 	>=sys-devel/gettext-0.21
-	sys-devel/llvm
+	llvm-core/llvm
 	virtual/pkgconfig
 "
 
@@ -105,8 +109,6 @@ src_prepare() {
 	for i in adplug alac ffap mms gme mono2stereo psf shn soundtouch wma; do
 		drop_and_stub "${S}/plugins/${i}"
 	done
-
-	rm -r "${S}/plugins/rg_scanner/ebur128" || die
 }
 
 src_configure () {
@@ -138,12 +140,10 @@ src_configure () {
 		"--disable-mms"
 		"--disable-mono2stereo"
 		"--disable-psf"
-		"--disable-rgscanner"
 		"--disable-shn"
 		"--disable-sndfile"
 		"--disable-soundtouch"
 		"--disable-tta"
-		"--disable-vfs-zip"
 		"--disable-vtx"
 		"--disable-wildmidi"
 		"--disable-wma"
@@ -180,11 +180,13 @@ src_configure () {
 		"$(use_enable libretro)"
 		"$(use_enable libsamplerate src)"
 		"$(use_enable wavpack)"
+		"$(use_enable zip vfs-zip)"
 
 		"--enable-vfs-curl"
 		"--enable-shared"
 		"--enable-m3u"
 		"--enable-pltbrowser"
+		"--enable-rgscanner"
 	)
 	if use gtk2; then
 		myconf+=( "--disable-gtk3" "--enable-gtk2" )
