@@ -18,7 +18,7 @@ KEYWORDS="~amd64"
 
 DEPEND="
 	gui-libs/gtk
-	=x11-libs/gtk+-3.22
+	>=x11-libs/gtk+-3.22
 	dev-python/pygobject[${PYTHON_USEDEP}]
 	media-libs/libsdl2
 	dev-libs/libspnav
