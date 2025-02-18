@@ -6,7 +6,7 @@ inherit autotools xdg-utils
 
 DESCRIPTION="A GTK-based image browser"
 HOMEPAGE="http://gqview.sourceforge.net/"
-SRC_URI="mirror://sourceforge/gqview/${P}.tar.gz"
+SRC_URI="https://downloads.sourceforge.net/gqview/${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -27,6 +27,7 @@ PATCHES=(
 	"${FILESDIR}"/${P}-helpdir.patch
 	"${FILESDIR}"/${P}-readmedir.patch
 	"${FILESDIR}"/${P}-format-security.patch
+	"${FILESDIR}"/${P}-terminator_pos-type.patch
 )
 
 src_prepare() {

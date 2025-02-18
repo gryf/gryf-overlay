@@ -1,0 +1,12 @@
+diff '--color=auto' -ur gqview-2.1.5_orig/src/remote.c gqview-2.1.5/src/remote.c
+--- gqview-2.1.5_orig/src/remote.c	2005-08-15 23:06:37.000000000 +0200
++++ gqview-2.1.5/src/remote.c	2025-02-18 14:44:10.229318350 +0100
+@@ -52,7 +52,7 @@
+ 		GList *work;
+ 		gchar *buffer = NULL;
+ 		GError *error = NULL;
+-		guint termpos;
++		gsize termpos;
+ 
+ 		while (g_io_channel_read_line(source, &buffer, NULL, &termpos, &error) == G_IO_STATUS_NORMAL)
+ 			{
