@@ -30,6 +30,7 @@ PATCHES=(
 	"${FILESDIR}"/${P}-qa-desktop-file.patch
 	"${FILESDIR}"/${P}-fix-paths.patch
 	"${FILESDIR}"/${P}-fno-common.patch
+	"${FILESDIR}"/${P}-fix-configure-clang16.patch
 )
 
 src_prepare() {

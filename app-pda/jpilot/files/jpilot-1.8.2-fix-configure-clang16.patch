@@ -1,0 +1,15 @@
+diff '--color=auto' -ur jpilot-1.8.2-orig/configure.in jpilot-1.8.2/configure.in
+--- jpilot-1.8.2-orig/configure.in	2014-05-18 04:19:06.000000000 +0200
++++ jpilot-1.8.2/configure.in	2025-03-19 10:43:56.927172082 +0100
+@@ -331,7 +331,10 @@
+ save_LIBS="$LIBS"
+ LIBS="$LIBS $PILOT_LIBS"
+ 
+-AC_TRY_COMPILE([#include <pi-version.h>], [
++AC_TRY_COMPILE([
++#include <stdlib.h>
++#include <pi-version.h>
++], [
+    exit(0);
+ ], ,
+  AC_MSG_ERROR([pilot-link header pi-version.h not found])
