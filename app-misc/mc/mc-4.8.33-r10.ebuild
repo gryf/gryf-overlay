@@ -1,15 +1,15 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
-inherit autotools flag-o-matic
+inherit flag-o-matic
 
 MY_P="${P/_/-}"
 DESCRIPTION="GNU Midnight Commander is a text based file manager"
-HOMEPAGE="https://midnight-commander.org"
+HOMEPAGE="https://midnight-commander.org https://github.com/MidnightCommander/mc"
 SRC_URI="
-	http://ftp.midnight-commander.org/${MY_P}.tar.xz
+	https://ftp.osuosl.org/pub/midnightcommander/${MY_P}.tar.xz
 	https://raw.githubusercontent.com/gryf/uc1541/master/uc1541
 	https://raw.githubusercontent.com/gryf/mc_ulha/master/ulha
 "
@@ -68,18 +68,6 @@ QA_CONFIG_IMPL_DECL_SKIP=(
 	statvfs64
 )
 
-src_prepare() {
-	default
-
-	# Bug #906194, #922483
-	if use elibc_musl; then
-		eapply "${FILESDIR}"/${PN}-4.8.30-musl-tests.patch
-		eapply "${FILESDIR}"/${PN}-4.8.31-musl-tests.patch
-	fi
-
-	eautoreconf
-}
-
 src_configure() {
 	[[ ${CHOST} == *-solaris* ]] && append-ldflags "-lnsl -lsocket"
 
@@ -105,23 +93,18 @@ src_configure() {
 }
 
 src_test() {
-	# Bug #759466
+	# Bug #759466 - tracked upstream at https://github.com/MidnightCommander/mc/issues/4643
 	if [[ ${EUID} == 0 ]] ; then
 		ewarn "You are emerging ${PN} as root with 'userpriv' disabled."
 		ewarn "Expect some test failures, or emerge with 'FEATURES=userpriv'!"
 	fi
 
-	# CK_FORK=no to avoid using fork() in check library
-	# as mc mocks fork() itself: bug #644462.
-	#
-	# VERBOSE=1 to make test failures contain detailed
-	# information.
-	CK_FORK=no emake check VERBOSE=1
+	emake check VERBOSE=1
 }
 
 src_install() {
 	emake DESTDIR="${D}" install
-	dodoc AUTHORS NEWS README
+	dodoc AUTHORS doc/{NEWS,README,TODO,FAQ}
 
 	# fix bug #334383
 	if use kernel_linux && [[ ${EUID} == 0 ]] ; then
