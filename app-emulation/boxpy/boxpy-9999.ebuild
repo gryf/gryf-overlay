@@ -3,11 +3,12 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..13} )
+DISTUTILS_USE_PEP517=setuptools
+PYTHON_COMPAT=( python3_{10..13} )
 
-inherit git-r3 bash-completion-r1
+inherit distutils-r1 git-r3
 
-DESCRIPTION="Run Ubuntu or Fedora cloud image on top of VirtualBox using commandline tool"
+DESCRIPTION="Run Linux cloud image on top of VirtualBox using commandline tool"
 HOMEPAGE="https://github.com/gryf/boxpy"
 EGIT_REPO_URI="https://github.com/gryf/boxpy"
 
@@ -24,10 +25,3 @@ RDEPEND="
 	app-emulation/qemu
 "
 DEPEND="${RDEPEND}"
-
-src_install() {
-	newbin box.py boxpy
-	cd "${S}"
-	./box.py completion bash > boxpy_completion
-	newbashcomp boxpy_completion boxpy
-}
