@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..13} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit distutils-r1
 
@@ -29,6 +29,7 @@ RESTRICT="test"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-config.patch
+	"${FILESDIR}"/${PN}-mailcap_fix_for_py313.patch
 )
 
 S=${WORKDIR}/${PN}-v${PV}
