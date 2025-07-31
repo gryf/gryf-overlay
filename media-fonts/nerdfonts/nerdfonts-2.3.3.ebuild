@@ -66,7 +66,7 @@ S="${WORKDIR}"
 
 LICENSE="OFL-1.1"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 IUSE_FONTS="3270 agave anonymouspro arimo aurulentsansmono bigblueterminal
 bitstreamverasansmono cascadiacode codenewroman cousine daddytimemono

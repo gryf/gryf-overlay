@@ -11,7 +11,7 @@ SRC_URI="https://www.gust.org.pl/projects/e-foundry/poltawski/download/ap${PV}ot
 
 LICENSE="GFL"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 BDEPEND="app-arch/unzip"
 

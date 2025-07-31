@@ -12,7 +12,7 @@ EGIT_REPO_URI="https://github.com/universal-ctags/ctags"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 IUSE=""
 
 RDEPEND="app-eselect/eselect-ctags"

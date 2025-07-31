@@ -11,7 +11,7 @@ EGIT_REPO_URI="https://github.com/cebix/macemu"
 
 LICENSE="GPL"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 IUSE="+jit -network"
 
 DEPEND="x11-libs/gtk+:2

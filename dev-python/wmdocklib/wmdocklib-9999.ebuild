@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..13} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit git-r3
 inherit distutils-r1
@@ -16,7 +16,7 @@ EGIT_BRANCH="master"
 
 LICENSE="LGPL"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 RDEPEND="
 	>=x11-libs/libX11-1.7.5

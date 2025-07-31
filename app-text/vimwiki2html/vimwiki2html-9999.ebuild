@@ -16,7 +16,7 @@ EGIT_BRANCH="master"
 
 LICENSE="LGPL"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 RDEPEND=""
 DEPEND="${RDEPEND}"

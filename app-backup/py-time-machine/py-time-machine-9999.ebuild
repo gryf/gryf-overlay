@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..13} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit git-r3
 
@@ -14,7 +14,7 @@ EGIT_BRANCH="master"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 RDEPEND="
 	dev-python/pyyaml

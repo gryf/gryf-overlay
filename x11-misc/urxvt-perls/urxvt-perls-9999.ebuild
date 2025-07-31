@@ -11,7 +11,7 @@ EGIT_REPO_URI="https://github.com/gryf/urxvt-perls"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 RDEPEND="x11-misc/xsel
 	x11-terms/rxvt-unicode[perl]"

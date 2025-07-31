@@ -12,7 +12,7 @@ SRC_URI="https://github.com/googlefonts/comfortaa/archive/refs/tags/3.101.zip ->
 
 LICENSE="OFL-1.1"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 BDEPEND="app-arch/unzip"
 

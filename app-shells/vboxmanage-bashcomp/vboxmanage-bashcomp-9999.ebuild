@@ -11,10 +11,10 @@ HOMEPAGE="https://github.com/gryf/vboxmanage-bash-completion"
 if [[ ${PV} == *9999 ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/gryf/vboxmanage-bash-completion"
-	KEYWORDS="~amd64"
+	KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 else
 	SRC_URI="https://github.com/gryf/vboxmanage-bash-completion/archive/refs/tags/${PV}.tar.gz"
-	KEYWORDS="amd64 x86"
+	KEYWORDS="amd64 x86 arm64 arm"
 	S="${WORKDIR}/vboxmanage-bash-completion-${PV}"
 fi
 

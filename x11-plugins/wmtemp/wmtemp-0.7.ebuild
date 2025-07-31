@@ -10,7 +10,7 @@ SRC_URI="https://github.com/gryf/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 RDEPEND="x11-libs/libdockapp
 	x11-libs/libXext

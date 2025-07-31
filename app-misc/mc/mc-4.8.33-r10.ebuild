@@ -17,7 +17,7 @@ S="${WORKDIR}/${MY_P}"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 IUSE="+edit gpm nls sftp +slang spell test unicode X"
 
 REQUIRED_USE="spell? ( edit )"

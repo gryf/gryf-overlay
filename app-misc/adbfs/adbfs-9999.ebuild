@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..13} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit git-r3
 
@@ -13,7 +13,7 @@ EGIT_REPO_URI="https://github.com/gryf/mc_adbfs"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 DEPEND="
 	dev-util/android-tools

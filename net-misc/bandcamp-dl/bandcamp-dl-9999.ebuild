@@ -16,7 +16,7 @@ EGIT_REPO_URI="https://github.com/iheanyi/bandcamp-dl.git"
 
 LICENSE="Unlicense"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 DEPEND="
 	>=dev-python/beautifulsoup4-4.11.1
