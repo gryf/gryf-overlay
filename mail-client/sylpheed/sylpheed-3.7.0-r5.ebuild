@@ -6,8 +6,8 @@ EAPI="8"
 inherit desktop xdg
 
 DESCRIPTION="A lightweight email client and newsreader"
-HOMEPAGE="http://sylpheed.sraoss.jp/"
-SRC_URI="http://${PN}.sraoss.jp/${PN}/v${PV%.*}/${P}.tar.bz2"
+HOMEPAGE="https://sylpheed.sraoss.jp/"
+SRC_URI="https://${PN}.sraoss.jp/${PN}/v${PV%.*}/${P}.tar.bz2"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0"
@@ -33,6 +33,7 @@ DEPEND="${CDEPEND}
 BDEPEND="virtual/pkgconfig"
 
 PATCHES=(
+	"${FILESDIR}/${P}-fix-incompatible-pointer-type.patch"
 	"${FILESDIR}"/${PN}-tls-1.3.patch
 	"${FILESDIR}"/${PN}-CVE-2021-37746.patch
 )

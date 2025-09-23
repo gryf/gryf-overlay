@@ -3,16 +3,15 @@
 
 EAPI="8"
 
-inherit git-r3 autotools desktop xdg
+inherit desktop xdg
 
 DESCRIPTION="A lightweight email client and newsreader"
-HOMEPAGE="http://sylpheed.sraoss.jp/"
-EGIT_REPO_URI="https://github.com/sylpheed-mail/sylpheed"
-EGIT_COMMIT="${EGIT_COMMIT:c47d366}"
+HOMEPAGE="https://sylpheed.sraoss.jp/"
+SRC_URI="https://${PN}.sraoss.jp/${PN}/v${PV%.*}beta/${PN}-${PV%_*}${PV#*_}.tar.bz2"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="~alpha amd64 ~arm ~hppa ~ia64 ppc ppc64 sparc x86"
 IUSE="crypt ipv6 ldap nls oniguruma spell ssl xface"
 
 CDEPEND="net-libs/liblockfile
@@ -33,6 +32,8 @@ DEPEND="${CDEPEND}
 	xface? ( media-libs/compface )"
 BDEPEND="virtual/pkgconfig"
 
+S="${WORKDIR}/${PN}-${PV/_/}"
+
 PATCHES=(
 	"${FILESDIR}"/${PN}-debian-address-book.patch
 	"${FILESDIR}"/${PN}-debian-escape-from-at-the-beginning.patch
@@ -41,13 +42,13 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-debian-support-SNI-for-IMAP.patch
 	"${FILESDIR}"/${PN}-debian-use-enchant-2.patch
 	"${FILESDIR}"/${PN}-debian-fix-typo-import.patch
+	"${FILESDIR}"/${PN}-debian-fix-FTBFS-GCC-14.patch
 	"${FILESDIR}"/${PN}-tls-1.3.patch
 	"${FILESDIR}"/${PN}-CVE-2021-37746.patch
 )
 DOCS="AUTHORS ChangeLog* NEW* PLUGIN* README* TODO*"
 
 src_configure() {
-	eautoreconf
 	local htmldir="${EPREFIX}"/usr/share/doc/${PF}/html
 	econf \
 		$(use_enable crypt gpgme) \

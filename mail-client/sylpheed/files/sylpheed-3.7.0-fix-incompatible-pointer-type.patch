@@ -1,0 +1,12 @@
+diff '--color=auto' -ur sylpheed-3.7.0_orig/libsylph/utils.c sylpheed-3.7.0/libsylph/utils.c
+--- sylpheed-3.7.0_orig/libsylph/utils.c	2017-11-30 03:34:14.000000000 +0100
++++ sylpheed-3.7.0/libsylph/utils.c	2025-09-23 14:17:33.492661137 +0200
+@@ -4263,7 +4263,7 @@
+ 	log_print("opening %s - %s\n", file, content_type ? content_type : "");
+ 
+ 	argv[1] = file;
+-	execute_async(argv);
++	execute_async((gchar *const *) argv);
+ #endif
+ 
+ 	return 0;
