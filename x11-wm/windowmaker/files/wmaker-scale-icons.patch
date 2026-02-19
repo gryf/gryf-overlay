@@ -1,8 +1,8 @@
 diff --git a/src/defaults.c b/src/defaults.c
-index f5cbf46f..77401c6d 100644
+index 43860599..db519401 100644
 --- a/src/defaults.c
 +++ b/src/defaults.c
-@@ -366,7 +366,7 @@ WDefaultEntry optionList[] = {
+@@ -367,7 +367,7 @@ WDefaultEntry optionList[] = {
  	    &wPreferences.icon_yard, getEnum, setIconPosition, NULL, NULL},
  	{"IconificationStyle", "Zoom", seIconificationStyles,
  	    &wPreferences.iconification_style, getEnum, NULL, NULL, NULL},
@@ -12,10 +12,10 @@ index f5cbf46f..77401c6d 100644
  	{"DisableWSMouseActions", "NO", NULL,
  	    &wPreferences.disable_root_mouse, getBool, NULL, NULL, NULL},
 diff --git a/src/icon.c b/src/icon.c
-index 943e2d84..079fdee7 100644
+index 14278d2c..bc47e443 100644
 --- a/src/icon.c
 +++ b/src/icon.c
-@@ -336,22 +336,39 @@ void wIconChangeTitle(WIcon *icon, WWindow *wwin)
+@@ -344,22 +344,39 @@ void wIconChangeTitle(WIcon *icon, WWindow *wwin)
  			icon->icon_name = wNETWMGetWindowName(wwin->client_win);
  }
  
@@ -63,7 +63,7 @@ index 943e2d84..079fdee7 100644
  		RReleaseImage(icon);
  		icon = nimage;
  	}
-@@ -791,7 +808,7 @@ RImage *get_rimage_icon_from_wm_hints(WIcon *icon)
+@@ -799,7 +816,7 @@ RImage *get_rimage_icon_from_wm_hints(WIcon *icon)
  		return NULL;
  
  	/* Resize the icon to the wPreferences.icon_size size */
@@ -85,11 +85,24 @@ index cccd7a86..49054a5d 100644
  RImage *get_rimage_icon_from_wm_hints(WIcon *icon);
  
  char *wIconStore(WIcon *icon);
+diff --git a/src/switchmenu.c b/src/switchmenu.c
+index a8c3937f..c9694f20 100644
+--- a/src/switchmenu.c
++++ b/src/switchmenu.c
+@@ -77,7 +77,7 @@ static WPixmap *switchMenuIconForWindow(WScreen *scr, WWindow *wwin)
+ 	if (!image)
+ 		return NULL;
+ 
+-	image = wIconValidateIconSize(image, max_size);
++	image = wIconValidateIconSize(image, max_size, False);
+ 	if (!image)
+ 		return NULL;
+ 
 diff --git a/src/switchpanel.c b/src/switchpanel.c
-index cb6cda10..16f91be0 100644
+index d11d4e45..6d592b39 100644
 --- a/src/switchpanel.c
 +++ b/src/switchpanel.c
-@@ -199,7 +199,7 @@ static void addIconForWindow(WSwitchPanel *panel, WMWidget *parent, WWindow *wwi
+@@ -205,7 +205,7 @@ static void addIconForWindow(WSwitchPanel *panel, WMWidget *parent, WWindow *wwi
  		image = get_icon_image(panel->scr, wwin->wm_instance, wwin->wm_class, icon_tile_size);
  
  	/* We must resize the icon size (~64) to the switch panel icon size (~48) */
@@ -99,10 +112,10 @@ index cb6cda10..16f91be0 100644
  	WMAddToArray(panel->images, image);
  	WMAddToArray(panel->icons, icon);
 diff --git a/src/wdefaults.c b/src/wdefaults.c
-index 7aad3db5..0bb476b9 100644
+index 9a3e92c0..aa8c6768 100644
 --- a/src/wdefaults.c
 +++ b/src/wdefaults.c
-@@ -435,7 +435,7 @@ RImage *get_rimage_from_file(WScreen *scr, const char *file_name, int max_size)
+@@ -434,7 +434,7 @@ RImage *get_rimage_from_file(WScreen *scr, const char *file_name, int max_size)
  		wwarning(_("error loading image file \"%s\": %s"), file_name,
  			 RMessageForError(RErrorCode));
  
@@ -111,7 +124,7 @@ index 7aad3db5..0bb476b9 100644
  
  	return image;
  }
-@@ -472,7 +472,7 @@ RImage *get_default_image(WScreen *scr)
+@@ -471,7 +471,7 @@ RImage *get_default_image(WScreen *scr)
  
  	/* Resize the icon to the wPreferences.icon_size size
  	 * usually this function will return early, because size is right */
@@ -121,10 +134,10 @@ index 7aad3db5..0bb476b9 100644
  	return image;
  }
 diff --git a/src/wmspec.c b/src/wmspec.c
-index e61e6ae7..dff085ac 100644
+index 4af9ab13..34a6703a 100644
 --- a/src/wmspec.c
 +++ b/src/wmspec.c
-@@ -545,7 +545,7 @@ RImage *get_window_image_from_x11(Window window)
+@@ -538,7 +538,7 @@ RImage *get_window_image_from_x11(Window window)
  		return NULL;
  
  	/* Resize the image to the correct value */
