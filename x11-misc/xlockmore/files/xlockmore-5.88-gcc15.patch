@@ -1,0 +1,51 @@
+--- xlockmore_orig/xglock/xglock.c	2026-03-31 14:30:19.287648907 +0200
++++ xlockmore/xglock/xglock.c	2026-03-31 14:33:42.738353309 +0200
+@@ -105,6 +105,8 @@
+ /*static GtkWidget *font_sel_entry =(GtkWidget *)NULL;*/
+ static GtkTooltips *tooltips=(GtkTooltips *)NULL;
+ 
++# define NeedFunctionsPrototypes 1
++
+ /* Prototypes */
+ #if defined( __ANSI_C__ ) || defined( NeedFunctionsPrototypes )
+ # define __PROTO( name, args )  name args
+@@ -114,14 +116,14 @@
+ 
+ #define STD_CB_ARGS	(GtkWidget *, gpointer)
+ 
+-static void *__PROTO( secured_malloc, (size_t) );
+-static void *__PROTO( secured_calloc, (int, size_t) );
++static void *__PROTO( secured_malloc, (gulong) );
++static void *__PROTO( secured_calloc, (gulong, gulong) );
+ static void *__PROTO( secured_realloc, (void *, size_t) );
+ static gchar *__PROTO( check_quotes, (gchar *str) );
+ 
+ static void __PROTO( mode_list_item_select_cb, STD_CB_ARGS );
+ static void __PROTO( mode_list_item_unselect_cb, STD_CB_ARGS );
+-static void __PROTO( compose_xlock_command, (char *) );
++static void __PROTO( compose_xlock_command, (gchar ***, gulong *, gulong *) );
+ static void __PROTO( kill_xlock_cb, STD_CB_ARGS );
+ static void __PROTO( launch_xlock, STD_CB_ARGS );
+ static void __PROTO( exit_xglock, STD_CB_ARGS );
+@@ -140,7 +142,7 @@
+ 
+ static void __PROTO( file_selection_cancel_cb, STD_CB_ARGS );
+ static void __PROTO( file_selection_ok_cb, STD_CB_ARGS );
+-static void __PROTO( create_file_selection_dialog, STD_CB_ARGS );
++static void __PROTO( create_file_selection_dialog, (GtkWidget *, struct_option_fntcol *) );
+ 
+ static void __PROTO( contextual_help_dialog, STD_CB_ARGS );
+ static void __PROTO( window_help_dialog, STD_CB_ARGS );
+@@ -151,9 +153,9 @@
+ static GtkWidget * __PROTO( create_file_menu, (GtkWidget *) );
+ static GtkWidget * __PROTO( create_help_menu, (GtkWidget *) );
+ 
+-static void __PROTO( create_fntColorOptions_entries, (GtkWidget *) );
+-static void __PROTO( create_genOptions_entries, (GtkWidget *) );
+-static void __PROTO( create_boolOptions_buttons, (GtkWidget *) );
++static void __PROTO( create_fntColorOptions_entries, (GtkScrolledWindow *) );
++static void __PROTO( create_genOptions_entries, (GtkScrolledWindow *) );
++static void __PROTO( create_boolOptions_buttons, (GtkScrolledWindow *) );
+ 
+ #if GTK_CHECK_VERSION(2,0,0)
+ /* GTK+ 2.x differences */

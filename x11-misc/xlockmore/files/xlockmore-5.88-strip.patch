@@ -1,0 +1,64 @@
+--- xlockmore_orig/configure.ac	2026-03-31 14:30:19.287648907 +0200
++++ xlockmore/configure.ac	2026-03-31 14:33:12.213872945 +0200
+@@ -5034,7 +5034,7 @@
+     BITMAPTYPE="bsd"
+     PIXMAPTYPE="bsd"
+     FORTUNE=""
+-    INSTPGMFLAGS="-s -o root -m 4111"
++    INSTPGMFLAGS="-o root -m 4111"
+     cpp_name=`echo $CC | cut -f1 -d' '`
+     if test "$cpp_name" = "gcc"; then
+         dirname=`which gcc`
+@@ -5105,7 +5105,6 @@
+           ;;
+       esac
+     fi
+-    INSTPGMFLAGS="-s $INSTPGMFLAGS"
+     BITMAPTYPE="linux"
+     PIXMAPTYPE="linux"
+ dnl if Shadow and not elf
+@@ -5132,7 +5131,7 @@
+         AC_SUBST(OSF1_ENH_SEC)
+         XLOCKLIBS="${XLOCKLIBS} -lsecurity"
+         # SETGID auth may not be enough for Tru64 5.x.
+-        INSTPGMFLAGS="-s -g auth -m 2111"
++        INSTPGMFLAGS="-g auth -m 2111"
+       else
+         AC_MSG_RESULT(no)
+       fi
+@@ -5158,7 +5157,7 @@
+         PIXMAPTYPE="sol"
+       ;;
+     esac
+-    INSTPGMFLAGS="-s -o root -m 4111"
++    INSTPGMFLAGS="-o root -m 4111"
+     AC_DEFINE([HAVE_SHADOW], [1], [Shadow passwording])
+     AC_DEFINE([SYSV], [1], [System 5])
+     AC_DEFINE([SVR4], [1], [System 5 Release 4])
+@@ -5187,7 +5186,7 @@
+   ;;
+ 
+   *-*-sysv5* )
+-    INSTPGMFLAGS="-s -o root -m 4111"
++    INSTPGMFLAGS="-o root -m 4111"
+     AC_DEFINE([HAVE_SHADOW], [1], [Shadow passwording])
+     AC_DEFINE([SYSV], [1], [System 5])
+     AC_DEFINE([SVR4], [1], [System 5 Release 4])
+@@ -5965,7 +5964,7 @@
+   case ${canonical} in
+   *-*-linux*)
+     if test "$vtlock" = "yes"; then
+-      INSTPGMFLAGS="-s -o root -g bin -m 4111"
++      INSTPGMFLAGS="-o root -g bin -m 4111"
+       AC_MSG_RESULT([defining install options (setuid/setgid) = "$INSTPGMFLAGS" for vtlock])
+        echo "experimental: Big buffer overrun security risk"
+     else
+@@ -5983,7 +5982,7 @@
+   case ${canonical} in
+   *-*-linux*)
+     if test "$vtlock" = "yes"; then
+-      INSTPGMFLAGS="-s -o root -g bin -m 4111"
++      INSTPGMFLAGS="-o root -g bin -m 4111"
+       AC_MSG_RESULT([defining install options (setuid/setgid) = "$INSTPGMFLAGS" for vtlock])
+     else
+   AC_MSG_RESULT([defining install options (setuid/setgid) = "$INSTPGMFLAGS"])
