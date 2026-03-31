@@ -16,7 +16,7 @@ S="${WORKDIR}/${P/_alpha/ALPHA}"
 LICENSE="BSD GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ppc ~ppc64 ~riscv ~sparc ~x86"
-IUSE="crypt debug gtk imagemagick motif nas opengl pam truetype xinerama xlockrc vtlock"
+IUSE="athena crypt debug gtk imagemagick motif nas opengl pam truetype xinerama xlockrc vtlock"
 
 REQUIRED_USE="
 	|| ( crypt pam )
@@ -87,6 +87,7 @@ src_configure() {
 		$(use_enable pam)
 		$(use_enable xlockrc)
 		$(use_enable vtlock)
+		$(use_with athena)
 		$(use_with crypt)
 		$(use_with debug editres)
 		$(use_with gtk gtk2)
