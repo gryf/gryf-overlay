@@ -1,0 +1,11 @@
+diff --git a/data/parcellite.desktop.in b/data/parcellite.desktop.in
+index 019368e..de3b45f 100644
+--- a/data/parcellite.desktop.in
++++ b/data/parcellite.desktop.in
+@@ -7,5 +7,5 @@ Exec=parcellite
+ Terminal=false
+ Type=Application
+ Keywords=clipboard;manager;copy;paste;
+-Categories=GTK;GNOME;Application;Utility;
++Categories=GTK;GNOME;Utility;
+ OnlyShowIn=GNOME;KDE;LXDE;MATE;Razor;ROX;TDE;Unity;XFCE;Old;LXQt;
