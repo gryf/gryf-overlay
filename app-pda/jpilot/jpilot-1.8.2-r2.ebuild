@@ -31,6 +31,7 @@ PATCHES=(
 	"${FILESDIR}"/${P}-fix-paths.patch
 	"${FILESDIR}"/${P}-fno-common.patch
 	"${FILESDIR}"/${P}-fix-configure-clang16.patch
+	"${FILESDIR}"/${P}-r2-gcc15-fixes.patch 
 )
 
 src_prepare() {

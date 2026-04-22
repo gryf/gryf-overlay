@@ -1,0 +1,132 @@
+--- jpilot-1.8.2_orig/jpilot.c	2026-04-01 11:12:55.442616025 +0200
++++ jpilot-1.8.2/jpilot.c	2026-04-01 12:42:00.000000000 +0200
+@@ -1103,65 +1103,66 @@
+ {
+ #define ICON(icon) "<StockItem>", icon
+ #define ICON_XPM(icon, size) "<ImageItem>", get_inline_pixbuf_data(icon, size)
++#define CB(func) ((GtkItemFactoryCallback)(func))
+ 
+    GtkItemFactoryEntry menu_items1[]={
+    { _("/_File"),                           NULL,         NULL,           0,                  "<Branch>", NULL },
+    { _("/File/tear"),                       NULL,         NULL,           0,                  "<Tearoff>", NULL },
+-   { _("/File/_Find"),                      "<control>F", cb_search_gui,  0,                  ICON(GTK_STOCK_FIND) },
++   { _("/File/_Find"),                      "<control>F", CB(cb_search_gui),  0,                  ICON(GTK_STOCK_FIND) },
+    { _("/File/sep1"),                       NULL,         NULL,           0,                  "<Separator>", NULL },
+-   { _("/File/_Install"),                   "<control>I", cb_install_gui, 0,                  ICON(GTK_STOCK_OPEN) },
+-   { _("/File/Import"),                     NULL,         cb_import,      0,                  ICON(GTK_STOCK_GO_FORWARD) },
+-   { _("/File/Export"),                     NULL,         cb_export,      0,                  ICON(GTK_STOCK_GO_BACK) },
+-   { _("/File/Preferences"),                "<control>S", cb_prefs_gui,   0,                  ICON(GTK_STOCK_PREFERENCES) },
+-   { _("/File/_Print"),                     "<control>P", cb_print,       0,                  ICON(GTK_STOCK_PRINT) },
++   { _("/File/_Install"),                   "<control>I", CB(cb_install_gui), 0,                  ICON(GTK_STOCK_OPEN) },
++   { _("/File/Import"),                     NULL,         CB(cb_import),      0,                  ICON(GTK_STOCK_GO_FORWARD) },
++   { _("/File/Export"),                     NULL,         CB(cb_export),      0,                  ICON(GTK_STOCK_GO_BACK) },
++   { _("/File/Preferences"),                "<control>S", CB(cb_prefs_gui),   0,                  ICON(GTK_STOCK_PREFERENCES) },
++   { _("/File/_Print"),                     "<control>P", CB(cb_print),       0,                  ICON(GTK_STOCK_PRINT) },
+    { _("/File/sep1"),                       NULL,         NULL,           0,                  "<Separator>", NULL },
+-   { _("/File/Install User"),               NULL,         cb_install_user,0,                  ICON_XPM(user_icon, 16) },
+-   { _("/File/Restore Handheld"),           NULL,         cb_restore,     0,                  ICON(GTK_STOCK_REDO) },
++   { _("/File/Install User"),               NULL,         CB(cb_install_user),0,                  ICON_XPM(user_icon, 16) },
++   { _("/File/Restore Handheld"),           NULL,         CB(cb_restore),     0,                  ICON(GTK_STOCK_REDO) },
+    { _("/File/sep1"),                       NULL,         NULL,           0,                  "<Separator>", NULL },
+-   { _("/File/_Quit"),                      "<control>Q", cb_delete_event,0,                  ICON(GTK_STOCK_QUIT) },
++   { _("/File/_Quit"),                      "<control>Q", CB(cb_delete_event),0,                  ICON(GTK_STOCK_QUIT) },
+    { _("/_View"),                           NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { _("/View/Hide Private Records"),       NULL,         cb_private,     HIDE_PRIVATES,      "<RadioItem>", NULL },
+-   { _("/View/Show Private Records"),       NULL,         cb_private,     SHOW_PRIVATES,      _("/View/Hide Private Records"), NULL },
+-   { _("/View/Mask Private Records"),       NULL,         cb_private,     MASK_PRIVATES,      _("/View/Hide Private Records"), NULL },
++   { _("/View/Hide Private Records"),       NULL,         CB(cb_private),     HIDE_PRIVATES,      "<RadioItem>", NULL },
++   { _("/View/Show Private Records"),       NULL,         CB(cb_private),     SHOW_PRIVATES,      _("/View/Hide Private Records"), NULL },
++   { _("/View/Mask Private Records"),       NULL,         CB(cb_private),     MASK_PRIVATES,      _("/View/Hide Private Records"), NULL },
+    { _("/View/sep1"),                       NULL,         NULL,           0,                  "<Separator>", NULL },
+-   { _("/View/Datebook"),                   "F1",         cb_app_button,  DATEBOOK,           ICON_XPM(date_menu_icon, 16) },
+-   { _("/View/Addresses"),                  "F2",         cb_app_button,  ADDRESS,            ICON_XPM(addr_menu_icon, 16) },
+-   { _("/View/Todos"),                      "F3",         cb_app_button,  TODO,               ICON_XPM(todo_menu_icon, 14) },
+-   { _("/View/Memos"),                      "F4",         cb_app_button,  MEMO,               ICON(GTK_STOCK_JUSTIFY_LEFT) },
++   { _("/View/Datebook"),                   "F1",         CB(cb_app_button),  DATEBOOK,           ICON_XPM(date_menu_icon, 16) },
++   { _("/View/Addresses"),                  "F2",         CB(cb_app_button),  ADDRESS,            ICON_XPM(addr_menu_icon, 16) },
++   { _("/View/Todos"),                      "F3",         CB(cb_app_button),  TODO,               ICON_XPM(todo_menu_icon, 14) },
++   { _("/View/Memos"),                      "F4",         CB(cb_app_button),  MEMO,               ICON(GTK_STOCK_JUSTIFY_LEFT) },
+    { _("/_Plugins"),                        NULL,         NULL,           0,                  "<Branch>", NULL },
+ #ifdef WEBMENU
+    { _("/_Web"),                            NULL,         NULL,           0,                  "<Branch>", NULL },/* web */
+    { _("/Web/Netscape"),                    NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[NETSCAPE_EXISTING].desc,  NULL,         cb_web,         NETSCAPE_EXISTING,  NULL, NULL },
+-   { url_commands[NETSCAPE_NEW_WINDOW].desc,NULL,         cb_web,         NETSCAPE_NEW_WINDOW,NULL, NULL },
+-   { url_commands[NETSCAPE_NEW].desc,       NULL,         cb_web,         NETSCAPE_NEW,       NULL, NULL },
++   { url_commands[NETSCAPE_EXISTING].desc,  NULL,         CB(cb_web),         NETSCAPE_EXISTING,  NULL, NULL },
++   { url_commands[NETSCAPE_NEW_WINDOW].desc,NULL,         CB(cb_web),         NETSCAPE_NEW_WINDOW,NULL, NULL },
++   { url_commands[NETSCAPE_NEW].desc,       NULL,         CB(cb_web),         NETSCAPE_NEW,       NULL, NULL },
+    { _("/Web/Mozilla"),                     NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[MOZILLA_EXISTING].desc,   NULL,         cb_web,         MOZILLA_EXISTING,   NULL, NULL },
+-   { url_commands[MOZILLA_NEW_WINDOW].desc, NULL,         cb_web,         MOZILLA_NEW_WINDOW, NULL, NULL },
+-   { url_commands[MOZILLA_NEW_TAB].desc,    NULL,         cb_web,         MOZILLA_NEW_TAB,    NULL, NULL },
+-   { url_commands[MOZILLA_NEW].desc,        NULL,         cb_web,         MOZILLA_NEW,        NULL, NULL },
++   { url_commands[MOZILLA_EXISTING].desc,   NULL,         CB(cb_web),         MOZILLA_EXISTING,   NULL, NULL },
++   { url_commands[MOZILLA_NEW_WINDOW].desc, NULL,         CB(cb_web),         MOZILLA_NEW_WINDOW, NULL, NULL },
++   { url_commands[MOZILLA_NEW_TAB].desc,    NULL,         CB(cb_web),         MOZILLA_NEW_TAB,    NULL, NULL },
++   { url_commands[MOZILLA_NEW].desc,        NULL,         CB(cb_web),         MOZILLA_NEW,        NULL, NULL },
+    { _("/Web/Galeon"),                      NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[GALEON_EXISTING].desc,    NULL,         cb_web,         GALEON_EXISTING,    NULL, NULL },
+-   { url_commands[GALEON_NEW_WINDOW].desc,  NULL,         cb_web,         GALEON_NEW_WINDOW,  NULL, NULL },
+-   { url_commands[GALEON_NEW_TAB].desc,     NULL,         cb_web,         GALEON_NEW_TAB,     NULL, NULL },
+-   { url_commands[GALEON_NEW].desc,         NULL,         cb_web,         GALEON_NEW,         NULL, NULL },
++   { url_commands[GALEON_EXISTING].desc,    NULL,         CB(cb_web),         GALEON_EXISTING,    NULL, NULL },
++   { url_commands[GALEON_NEW_WINDOW].desc,  NULL,         CB(cb_web),         GALEON_NEW_WINDOW,  NULL, NULL },
++   { url_commands[GALEON_NEW_TAB].desc,     NULL,         CB(cb_web),         GALEON_NEW_TAB,     NULL, NULL },
++   { url_commands[GALEON_NEW].desc,         NULL,         CB(cb_web),         GALEON_NEW,         NULL, NULL },
+    { _("/Web/Opera"),                       NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[OPERA_EXISTING].desc,     NULL,         cb_web,         OPERA_EXISTING,     NULL, NULL },
+-   { url_commands[OPERA_NEW_WINDOW].desc,   NULL,         cb_web,         OPERA_NEW_WINDOW,   NULL, NULL },
+-   { url_commands[OPERA_NEW].desc,          NULL,         cb_web,         OPERA_NEW,          NULL, NULL },
++   { url_commands[OPERA_EXISTING].desc,     NULL,         CB(cb_web),         OPERA_EXISTING,     NULL, NULL },
++   { url_commands[OPERA_NEW_WINDOW].desc,   NULL,         CB(cb_web),         OPERA_NEW_WINDOW,   NULL, NULL },
++   { url_commands[OPERA_NEW].desc,          NULL,         CB(cb_web),         OPERA_NEW,          NULL, NULL },
+    { _("/Web/GnomeUrl"),                    NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[GNOME_URL].desc,          NULL,         cb_web,         GNOME_URL,          NULL, NULL },
++   { url_commands[GNOME_URL].desc,          NULL,         CB(cb_web),         GNOME_URL,          NULL, NULL },
+    { _("/Web/Lynx"),                        NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[LYNX_NEW].desc,           NULL,         cb_web,         LYNX_NEW,           NULL, NULL },
++   { url_commands[LYNX_NEW].desc,           NULL,         CB(cb_web),         LYNX_NEW,           NULL, NULL },
+    { _("/Web/Links"),                       NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[LINKS_NEW].desc,          NULL,         cb_web,         LINKS_NEW,          NULL, NULL },
++   { url_commands[LINKS_NEW].desc,          NULL,         CB(cb_web),         LINKS_NEW,          NULL, NULL },
+    { _("/Web/W3M"),                         NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[W3M_NEW].desc,            NULL,         cb_web,         W3M_NEW,            NULL, NULL },
++   { url_commands[W3M_NEW].desc,            NULL,         CB(cb_web),         W3M_NEW,            NULL, NULL },
+    { _("/Web/Konqueror"),                   NULL,         NULL,           0,                  "<Branch>", NULL },
+-   { url_commands[KONQUEROR_NEW].desc,      NULL,         cb_web,         KONQUEROR_NEW,      NULL, NULL },
++   { url_commands[KONQUEROR_NEW].desc,      NULL,         CB(cb_web),         KONQUEROR_NEW,      NULL, NULL },
+ #endif
+    { _("/_Help"),                           NULL,         NULL,           0,                  "<LastBranch>", NULL },
+-   { _("/Help/About J-Pilot"),              NULL,         cb_about,       0,                  ICON(GTK_STOCK_DIALOG_INFO) },
++   { _("/Help/About J-Pilot"),              NULL,         CB(cb_about),       0,                  ICON(GTK_STOCK_DIALOG_INFO) },
+    { "END",                                 NULL,         NULL,           0,                  NULL, NULL }
+    };
+ 
+@@ -1187,7 +1188,7 @@
+    /* Irix doesn't like non-constant expressions in a static initializer */
+    /* So we have to do this to keep the compiler happy */
+    for (i=0; i<sizeof(menu_items1)/sizeof(menu_items1[0]); i++) {
+-      if (menu_items1[i].callback==cb_prefs_gui) {
++      if (menu_items1[i].callback==CB(cb_prefs_gui)) {
+          menu_items1[i].callback_action = GPOINTER_TO_INT(my_window);
+          break;
+       }
+@@ -1285,7 +1286,7 @@
+          } else {
+             menu_items2[i2].accelerator=NULL;
+          }
+-         menu_items2[i2].callback=cb_plugin_gui;
++         menu_items2[i2].callback=CB(cb_plugin_gui);
+          menu_items2[i2].callback_action=p->number;
+          menu_items2[i2].item_type=0;
+          str_i++;
+@@ -1316,7 +1317,7 @@
+          }
+          menu_items2[i2].path=plugin_help_strings[str_i];
+          menu_items2[i2].accelerator=NULL;
+-         menu_items2[i2].callback=cb_plugin_help;
++         menu_items2[i2].callback=CB(cb_plugin_help);
+          menu_items2[i2].callback_action=p->number;
+          menu_items2[i2].item_type=0;
+          str_i++;
