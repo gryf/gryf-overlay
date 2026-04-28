@@ -18,7 +18,7 @@ LICENSE="
 "
 SLOT="0"
 KEYWORDS="~amd64 ~riscv ~x86"
-IUSE="aac alsa cdda converter dts ffmpeg flac gtk2 -gtk3 +hotkeys lastfm libretro libsamplerate mod mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq vorbis wavpack zip"
+IUSE="aac alsa cdda converter dts ffmpeg flac +gme gtk2 -gtk3 +hotkeys lastfm libretro libsamplerate mod mp3 musepack nls notify +nullout opus oss pulseaudio pipewire sc68 shellexec sid +supereq vorbis wavpack zip"
 
 REQUIRED_USE="
 	|| ( alsa oss pulseaudio pipewire nullout )
@@ -110,7 +110,7 @@ src_prepare() {
 	drop_and_stub "${S}/intl"
 
 	# Plugins that are undesired for whatever reason, candidates for unbundling and such.
-	for i in adplug alac ffap mms gme mono2stereo psf shn soundtouch wma; do
+	for i in adplug alac ffap mms mono2stereo psf shn soundtouch wma; do
 		drop_and_stub "${S}/plugins/${i}"
 	done
 }
@@ -139,7 +139,6 @@ src_configure () {
 		"--disable-alac"
 		"--disable-coreaudio"
 		"--disable-ffap"
-		"--disable-gme"
 		"--disable-libmad"
 		"--disable-mms"
 		"--disable-mono2stereo"
@@ -175,6 +174,7 @@ src_configure () {
 		"$(use_enable pulseaudio pulse)"
 		"$(use_enable pipewire)"
 		"$(use_enable sc68)"
+		"$(use_enable gme)"
 		"$(use_enable shellexec)"
 		"$(use_enable sid)"
 		"$(use_enable shellexec shellexecui)"
