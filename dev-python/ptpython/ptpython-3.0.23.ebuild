@@ -3,7 +3,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..13} )
+PYTHON_COMPAT=( python3_{10..15} )
 inherit distutils-r1 pypi
 
 DESCRIPTION="Python REPL build on top of prompt_toolkit"
