@@ -24,11 +24,15 @@ RDEPEND="dev-db/sqlite:3
 	sys-libs/zlib
 	virtual/jpeg:0
 	virtual/opengl
-	alsa? ( media-libs/alsa-lib
-	media-libs/portmidi )
-	debug? ( dev-qt/qtcore:6
-	dev-qt/qtgui:6
-	dev-qt/qtwidgets:6 )
+	alsa? (
+		media-libs/alsa-lib
+		media-libs/portmidi
+	)
+	debug? (
+		dev-qt/qtcore:6
+		dev-qt/qtgui:6
+		dev-qt/qtwidgets:6
+	)
 	x11-libs/libX11
 	x11-libs/libXinerama
 	dev-libs/libutf8proc
@@ -40,6 +44,9 @@ DEPEND="${RDEPEND}
 	x11-base/xorg-proto"
 BDEPEND="${PYTHON_DEPS}"
 S="${WORKDIR}/mame-mame${MY_PV}"
+
+USER_INI_PATH="\$HOME/.config/${PN}"
+SYS_INI_PATH="/etc/${PN}"
 
 # Function to disable a makefile option
 disable_feature() {
@@ -97,14 +104,15 @@ src_prepare() {
 src_compile() {
 	local targetargs
 	local qtdebug=$(usex debug 1 0)
+	local ini_path=".;${USER_INI_PATH};${SYS_INI_PATH}"
 
 	# hack to replace shitty lua escape quotation
 	sed -i \
-		-e 's+#define INI_PATH "$HOME/.APP_NAME;.;ini"+#define INI_PATH "$HOME/.config/sdlmame;/etc/sdlmame"+' \
+		-e 's|\(#define INI_PATH\) "$HOME/.APP_NAME.*|\1 "'${ini_path}'"|' \
 		src/osd/sdl/sdlopts.cpp || die
 	# and for futureproof:
 	sed -i \
-		-e 's+#define INI_PATH "$HOME/.APP_NAME;.;ini"+#define INI_PATH "$HOME/.config/sdlmame;/etc/sdlmame"+' \
+		-e 's|\(#define INI_PATH\) "$HOME/.APP_NAME.*|\1 "'${ini_path}'"|' \
 		src/osd/sdl3/sdlopts.cpp || die
 	# untill its fixed: https://github.com/mamedev/mame/issues/10927
 
@@ -114,8 +122,8 @@ src_compile() {
 	OVERRIDE_CC=$(tc-getCC) \
 	OVERRIDE_CXX=$(tc-getCXX) \
 	OVERRIDE_LD=$(tc-getCXX) \
-	QT_SELECT=qt5 \
-	QT_HOME="$(qt5_get_libdir)/qt5" \
+	QT_SELECT=qt6 \
+	QT_HOME="$(qt6_get_libdir)/qt6" \
 	ARCH= \
 	emake ${targetargs} \
 		USE_QTDEBUG=${qtdebug} \
@@ -124,51 +132,48 @@ src_compile() {
 
 src_install() {
 	local MAMEBIN=mame
-	dobin $MAMEBIN
+	dobin ${MAMEBIN}
+	dosym ${MAMEBIN} "/usr/bin/${PN}"
 	doman docs/man/mame.6
 
 	insinto "/usr/share/${PN}"
 	doins -r keymaps hash
 
 	# Create default mame.ini and inject Gentoo settings into it
-	#  Note that '~' does not work and '$HOME' must be used
 	./${MAMEBIN} -noreadconfig -showconfig > "${T}/mame.ini" || die
 	# -- Paths --
 	for f in {rom,hash,sample,art,font,crosshair} ; do
 		sed -i \
-			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;/usr/share/${PN}/\2:" \
+			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t${USER_INI_PATH}/\2;/usr/share/${PN}/\2:" \
 			"${T}/mame.ini" || die
 	done
 	for f in {ctrlr,cheat} ; do
 		sed -i \
-			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2;/etc/${PN}/\2;/usr/share/${PN}/\2:" \
+			-e "s:\(${f}path\)[ \t]*\(.*\):\1 \t\t${USER_INI_PATH}/\2;${SYS_INI_PATH}/\2;/usr/share/${PN}/\2:" \
 			"${T}/mame.ini" || die
 	done
 	# -- Directories
 	for f in {cfg,nvram,memcard,input,state,snapshot,diff,comment} ; do
 		sed -i \
-			-e "s:\(${f}_directory\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2:" \
+			-e "s:\(${f}_directory\)[ \t]*\(.*\):\1 \t\t${USER_INI_PATH}/\2:" \
 			"${T}/mame.ini" || die
 	done
 	# -- Keymaps --
 	sed -i \
-		-e "s:\(keymap_file\)[ \t]*\(.*\):\1 \t\t\$HOME/.${PN}/\2:" \
+		-e "s:\(keymap_file\)[ \t]*\(.*\):\1 \t\t${USER_INI_PATH}/\2:" \
 		"${T}/mame.ini" || die
 	for f in keymaps/km*.map ; do
 		sed -i \
 			-e "/^keymap_file/a \#keymap_file \t\t/usr/share/${PN}/keymaps/${f##*/}" \
 			"${T}/mame.ini" || die
 	done
-	insinto "/etc/${PN}"
-	doins "${T}/mame.ini"
-
-	insinto "/etc/${PN}"
-	doins "${FILESDIR}/vector.ini"
+	insinto ${SYS_INI_PATH}
+	doins "${T}/mame.ini" "${FILESDIR}/vector.ini"
 
 	#dodoc docs/{config,mame,newvideo}.txt
 	keepdir \
 		"/usr/share/${PN}"/{ctrlr,cheat,roms,samples,artwork,crosshair} \
-		"/etc/${PN}"/{ctrlr,cheat}
+		"${SYS_INI_PATH}"/{ctrlr,cheat}
 
 	if use tools ; then
 		for f in castool chdman floptool imgtool jedutil ldresample ldverify romcmp ; do
@@ -186,7 +191,7 @@ pkg_postinst() {
 	xdg_desktop_database_update
 
 	elog "It is strongly recommended to change either the system-wide"
-	elog "  /etc/${PN}/mame.ini or use a per-user setup at ~/.${PN}/mame.ini"
+	elog "  ${SYS_INI_PATH}/mame.ini or use a per-user setup at ~/.${PN}/mame.ini"
 	elog
 	if use opengl ; then
 		elog "You built ${PN} with opengl support and should set"
