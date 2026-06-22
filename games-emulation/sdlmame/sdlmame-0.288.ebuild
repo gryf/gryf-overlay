@@ -104,7 +104,7 @@ src_prepare() {
 src_compile() {
 	local targetargs
 	local qtdebug=$(usex debug 1 0)
-	local ini_path=".;${USER_INI_PATH};${SYS_INI_PATH}"
+	local ini_path="${USER_INI_PATH};${SYS_INI_PATH}"
 
 	# hack to replace shitty lua escape quotation
 	sed -i \
