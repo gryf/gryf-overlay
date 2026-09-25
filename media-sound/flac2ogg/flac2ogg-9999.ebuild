@@ -20,6 +20,7 @@ KEYWORDS="amd64"
 DEPEND="
 	media-libs/flac
 	media-sound/vorbis-tools[ogg123]
+	media-sound/opus-tools
 	mac? ( media-sound/mac )
 	lame? ( media-sound/lame )
 	tags? ( media-libs/mutagen )
