@@ -1,0 +1,792 @@
+diff --git a/configure.ac b/configure.ac
+index f623818..3a1eb74 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -85,6 +85,7 @@ support_xim=yes
+ support_pixbuf=yes
+ support_startup_notification=yes
+ support_xft=yes
++support_harfbuzz=auto
+ support_unicode3=no
+ support_combining=yes
+ support_8bitctrls=no
+@@ -121,6 +122,7 @@ AC_ARG_ENABLE(everything,
+        support_pixbuf=no
+        support_startup_notification=no
+        support_xft=no
++       support_harfbuzz=no
+        support_unicode3=no
+        support_combining=no
+        support_8bitctrls=no
+@@ -150,6 +152,7 @@ AC_ARG_ENABLE(everything,
+        support_pixbuf=yes
+        support_startup_notification=yes
+        support_xft=yes
++       support_harfbuzz=auto
+        support_unicode3=yes
+        support_combining=yes
+        #support_8bitctrls=yes
+@@ -226,6 +229,12 @@ AC_ARG_ENABLE(xft,
+     support_xft=$enableval
+   fi])
+ 
++AC_ARG_ENABLE(harfbuzz,
++  [  --enable-harfbuzz       enable harfbuzz shaping text engine],
++  [if test x$enableval = xyes -o x$enableval = xno; then
++    support_harfbuzz=$enableval
++  fi])
++
+ AC_ARG_ENABLE(font-styles,
+   [  --enable-font-styles    enable bold and italic support],
+   [if test x$enableval = xyes -o x$enableval = xno; then
+@@ -654,6 +663,35 @@ if test x$support_xft = xyes && test x$rxvt_have_xrender = xyes; then
+   fi
+ fi
+ 
++HARFBUZZ_CFLAGS=
++HARFBUZZ_LIBS=
++
++if test x$support_harfbuzz != xno; then
++  if test x$support_xft != xyes; then
++    if test x$support_harfbuzz = xyes; then
++      AC_MSG_ERROR([--enable-harfbuzz needs xft, but xft support is disabled or unavailable])
++    fi
++    support_harfbuzz=no
++  else
++    RXVT_CHECK_MODULES([HARFBUZZ], [harfbuzz], [
++      X_LIBS="$HARFBUZZ_LIBS $X_LIBS"
++      CPPFLAGS="$CPPFLAGS $HARFBUZZ_CFLAGS"
++      AC_DEFINE(HAVE_HARFBUZZ, 1, Define if you want harfbuzz text shaping for emoji and compose characters)
++      support_harfbuzz=yes
++    ], [
++      if test x$support_harfbuzz = xyes; then
++        AC_MSG_ERROR([--enable-harfbuzz was given, but the harfbuzz library was not found])
++      fi
++      support_harfbuzz=no
++      HARFBUZZ_CFLAGS=
++      HARFBUZZ_LIBS=
++    ])
++  fi
++fi
++
++AC_SUBST(HARFBUZZ_CFLAGS)
++AC_SUBST(HARFBUZZ_LIBS)
++
+ if test x$support_image = xyes && test x$rxvt_have_xrender = xyes; then
+   AC_MSG_CHECKING(for Render >= 0.11)
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+@@ -837,6 +875,7 @@ fi
+ echo
+ echo "  embedded perl:              $support_perl"
+ echo "  image library:              $image_lib"
++echo "  harfbuzz text shaping:      $support_harfbuzz"
+ echo
+ if test x$support_xim = xyes -a x$rxvt_cv_func_xlocale = xno; then
+   echo ".----------------------------------------------------------------."
+diff --git a/src/Makefile.in b/src/Makefile.in
+index a3b22f2..bca1185 100644
+--- a/src/Makefile.in
++++ b/src/Makefile.in
+@@ -39,7 +39,7 @@ COMMON = \
+ 	command.o rxvtfont.o init.o main.o misc.o \
+ 	screen.o scrollbar.o scrollbar-next.o scrollbar-rxvt.o \
+ 	scrollbar-xterm.o scrollbar-plain.o xdefaults.o encoding.o \
+-	rxvttoolkit.o rxvtutil.o keyboard.o rxvtimg.o \
++	rxvttoolkit.o rxvtutil.o keyboard.o rxvtimg.o rxvthb.o \
+ 	ev_cpp.o @PERL_O@
+ 
+ COMMON_DAEMON = rxvtdaemon.o
+diff --git a/src/main.C b/src/main.C
+index 10e5065..d7985bf 100644
+--- a/src/main.C
++++ b/src/main.C
+@@ -92,17 +92,20 @@ rxvt_pop_locale () noexcept
+ #if ENABLE_COMBINING
+ class rxvt_composite_vec rxvt_composite;
+ 
+-text_t rxvt_composite_vec::compose (unicode_t c1, unicode_t c2)
++text_t rxvt_composite_vec::compose (unicode_t c1, unicode_t c2, bool dedup)
+ {
+   compose_char *cc;
+ 
+   // break compose chains, as stupid readline really likes to duplicate
+   // composing characters for some reason, near the end of a line.
+-  cc = (*this)[c1];
+-  while (cc)
++  if (dedup)
+     {
+-      if (cc->c2 == c2) return c1;
+-      cc = (*this)[cc->c1];
++      cc = (*this)[c1];
++      while (cc)
++        {
++          if (cc->c2 == c2) return c1;
++          cc = (*this)[cc->c1];
++        }
+     }
+ 
+   // check to see whether this combination already exists otherwise
+diff --git a/src/rxvt.h b/src/rxvt.h
+index bad5eae..5549ec7 100644
+--- a/src/rxvt.h
++++ b/src/rxvt.h
+@@ -657,6 +657,10 @@ typedef struct _mwmhints
+ // single-width.
+ #define WCWIDTH(c)		(IN_RANGE_INC (c, 0x20, 0x7e) ? 1 : wcwidth (c))
+ 
++#define IS_EMOJI_BASE(c)	(IS_COMPOSE (c)				\
++				 || IN_RANGE_INC ((c), 0x1F000, 0x1FAFF)	\
++				 || IN_RANGE_INC ((c), 0x2600,  0x27BF))
++
+ /* convert pixel dimensions to row/column values.  Everything as int32_t */
+ #define Pixel2Col(x)            Pixel2Width((int32_t)(x))
+ #define Pixel2Row(y)            Pixel2Height((int32_t)(y))
+@@ -815,7 +819,7 @@ struct rxvt_composite_vec
+ {
+   vector<compose_char> v;
+ 
+-  text_t compose (unicode_t c1, unicode_t c2 = NOCHAR);
++  text_t compose (unicode_t c1, unicode_t c2 = NOCHAR, bool dedup = true);
+   template<typename T> int expand (unicode_t c, T *r);
+   int expand (unicode_t c) { return expand (c, (text_t *)0); }
+   compose_char *operator [](text_t c)
+diff --git a/src/rxvtfont.C b/src/rxvtfont.C
+index 27b0958..03b1410 100644
+--- a/src/rxvtfont.C
++++ b/src/rxvtfont.C
+@@ -25,6 +25,7 @@
+ #include "rxvtfont.h"
+ 
+ #include <stdlib.h>
++#include <string.h>
+ 
+ #include <inttypes.h>
+ 
+@@ -32,6 +33,10 @@
+ # include <fontconfig/fontconfig.h>
+ #endif
+ 
++#ifdef HAVE_HARFBUZZ
++# include "rxvthb.h"
++#endif
++
+ #define MAX_OVERLAP_ROMAN  (8 + 2)	// max. character width in 8ths of the base width
+ #define MAX_OVERLAP_ITALIC (8 + 3)	// max. overlap for italic fonts
+ 
+@@ -1158,6 +1163,10 @@ struct rxvt_font_xft : rxvt_font
+   FT_UInt glyph_cache [char_cache_max - char_cache_min + 1];
+ #endif
+ 
++#ifdef HAVE_HARFBUZZ
++  rxvt_hb_font hb;
++#endif
++
+   rxvt_font_xft ()
+   {
+     f = 0;
+@@ -1175,6 +1184,10 @@ struct rxvt_font_xft : rxvt_font
+ 
+   bool has_char (unicode_t unicode, const rxvt_fontprop *prop, bool &careful) const;
+ 
++#ifdef HAVE_HARFBUZZ
++  bool shape_to_glyph (const uint32_t *cp, int ncp, uint32_t &glyph);
++#endif
++
+ protected:
+   XftFont *f;
+ };
+@@ -1184,6 +1197,9 @@ rxvt_font_xft::clear ()
+ {
+   if (f)
+     {
++#ifdef HAVE_HARFBUZZ
++      hb.unload ();
++#endif
+       XftFontClose (term->dpy, f);
+       f = 0;
+     }
+@@ -1395,6 +1411,15 @@ rxvt_font_xft::load (const rxvt_fontprop &prop, bool force_prop)
+     }
+ #endif
+ 
++#ifdef HAVE_HARFBUZZ
++  if (success)
++    if (FT_Face face = XftLockFace (f))
++      {
++        hb.load (face);
++        XftUnlockFace (f);
++      }
++#endif
++
+   return success;
+ }
+ 
+@@ -1450,12 +1475,207 @@ rxvt_font_xft::has_char (unicode_t unicode, const rxvt_fontprop *prop, bool &car
+   return true;
+ }
+ 
++#ifdef HAVE_HARFBUZZ
++static bool
++needs_harfbuzz_shaping (uint32_t chr)
++{
++  if (chr >= 0x1F000 && chr <= 0x1F9FF) return true;
++  if (chr >= 0x1F300 && chr <= 0x1F5FF) return true;
++  if (chr >= 0x1F600 && chr <= 0x1F64F) return true;
++  if (chr >= 0x1F680 && chr <= 0x1F6FF) return true;
++  if (chr >= 0x1F700 && chr <= 0x1F77F) return true;
++  if (chr >= 0x1F780 && chr <= 0x1F7FF) return true;
++  if (chr >= 0x1F800 && chr <= 0x1F8FF) return true;
++  if (chr >= 0x1F900 && chr <= 0x1F9FF) return true;
++  if (chr >= 0x2600 && chr <= 0x27BF) return true;
++  if (chr >= 0x2300 && chr <= 0x23FF) return true;
++
++  if (chr >= 0xFE00 && chr <= 0xFE0F) return true;
++  if (chr >= 0xE0100 && chr <= 0xE01EF) return true;
++
++  if (chr == 0x200D) return true;
++
++  if (chr >= 0x0300 && chr <= 0x036F) return true;
++
++  if (chr >= 0x20D0 && chr <= 0x20FF) return true;
++
++  return false;
++}
++
++// Shape text using harfbuzz, handling emoji, compose chars, ZWJ sequences, etc.
++// Note: Allocates new arrays that caller must free
++static void
++rxvt_hb_shape (hb_font_t *hb_font, const uint32_t *chars, int len,
++               hb_glyph_info_t *&glyph_info, hb_glyph_position_t *&glyph_pos,
++               unsigned int &glyph_count)
++{
++  glyph_count = 0;
++  glyph_info = NULL;
++  glyph_pos = NULL;
++
++  hb_buffer_t *buf = hb_buffer_create ();
++  if (!buf)
++    return;
++
++  hb_buffer_add_utf32 (buf, chars, len, 0, len);
++  hb_buffer_set_content_type (buf, HB_BUFFER_CONTENT_TYPE_UNICODE);
++  hb_buffer_guess_segment_properties (buf);
++
++  hb_shape (hb_font, buf, NULL, 0);
++
++  glyph_count = hb_buffer_get_length (buf);
++
++  // Copy the glyph data since we're destroying the buffer
++  if (glyph_count > 0)
++    {
++      hb_glyph_info_t *tmp_info = hb_buffer_get_glyph_infos (buf, NULL);
++      hb_glyph_position_t *tmp_pos = hb_buffer_get_glyph_positions (buf, NULL);
++
++      if (tmp_info && tmp_pos)
++        {
++          glyph_info = (hb_glyph_info_t *)malloc (glyph_count * sizeof (hb_glyph_info_t));
++          glyph_pos = (hb_glyph_position_t *)malloc (glyph_count * sizeof (hb_glyph_position_t));
++
++          memcpy (glyph_info, tmp_info, glyph_count * sizeof (hb_glyph_info_t));
++          memcpy (glyph_pos, tmp_pos, glyph_count * sizeof (hb_glyph_position_t));
++        }
++    }
++
++  hb_buffer_destroy (buf);
++}
++
++// Expand one screen cell into its codepoints. Zero-width characters such as
++// ZWJ and variation selectors are folded into the preceding cell as a compose
++// char by screen.C, so a cell is not always a single codepoint.
++static int
++hb_expand_cell (text_t t, uint32_t *out, int out_max)
++{
++#if ENABLE_COMBINING
++  if (IS_COMPOSE (t))
++    {
++      text_t tmp [HB_CLUSTER_MAX];
++      int n = rxvt_composite.expand (t, tmp);
++
++      if (n > out_max)
++        n = out_max;
++
++      for (int i = 0; i < n; i++)
++        out [i] = tmp [i];
++
++      return n;
++    }
++#endif
++
++  if (out_max < 1)
++    return 0;
++
++  out [0] = t;
++  return 1;
++}
++
++// Collect a composed emoji cluster starting at text[0]. Returns the number of
++// codepoints written to out, and sets cells to the number of screen cells the
++// cluster spans. A return of <= 1 means there is nothing to shape.
++int
++hb_build_cluster (const text_t *text, int len, uint32_t *out, int &cells)
++{
++  int ncp = hb_expand_cell (*text, out, HB_CLUSTER_MAX);
++  int c = 1;
++
++  cells = 1;
++
++  while (c < len && ncp < HB_CLUSTER_MAX)
++    {
++      // wide characters occupy a trailing NOCHAR cell
++      if (text [c] == NOCHAR)
++        {
++          c++;
++          continue;
++        }
++
++      uint32_t next [HB_CLUSTER_MAX];
++      int nn = hb_expand_cell (text [c], next, HB_CLUSTER_MAX);
++
++      if (nn < 1)
++        break;
++
++      bool join = out [ncp - 1] == 0x200D                       // pending ZWJ
++                  || next [0] == 0x200D                          // ZWJ in its own cell
++                  || (next [0] >= 0x1F3FB && next [0] <= 0x1F3FF) // skin tone
++                  || (next [0] >= 0xFE00  && next [0] <= 0xFE0F)  // variation selector
++                  || (ncp == 1
++                      && out [0]  >= 0x1F1E6 && out [0]  <= 0x1F1FF
++                      && next [0] >= 0x1F1E6 && next [0] <= 0x1F1FF); // flag pair
++
++      if (!join)
++        break;
++
++      if (ncp + nn > HB_CLUSTER_MAX)
++        break;
++
++      for (int i = 0; i < nn; i++)
++        out [ncp++] = next [i];
++
++      c++;
++      cells = c;
++    }
++
++  // the cluster owns the tail cells of its last wide character
++  while (cells < len && text [cells] == NOCHAR)
++    cells++;
++
++  return ncp;
++}
++
++bool
++rxvt_font_xft::shape_to_glyph (const uint32_t *cp, int ncp, uint32_t &glyph)
++{
++  if (!hb.hb_font)
++    return false;
++
++  hb_glyph_info_t *gi = NULL;
++  hb_glyph_position_t *gp = NULL;
++  unsigned int gc = 0;
++
++  rxvt_hb_shape (hb.hb_font, cp, ncp, gi, gp, gc);
++
++  bool ok = gc == 1 && gi && gp && gi [0].codepoint;
++
++  if (ok)
++    glyph = gi [0].codepoint;
++
++  free (gi);
++  free (gp);
++
++  return ok;
++}
++
++int
++rxvt_fontset::find_shaping_font (const uint32_t *cp, int ncp)
++{
++  // make sure the font that owns the base character is realized, it is the
++  // most likely candidate and would otherwise not be in the list yet
++  find_font_idx (cp [0]);
++
++  for (unsigned int i = firstFont; i < fonts.size (); i++)
++    {
++      uint32_t glyph;
++
++      if (fonts [i] && fonts [i]->shape_to_glyph (cp, ncp, glyph))
++        return i << 1;
++    }
++
++  return -1;
++}
++
++#endif
++
+ void
+ rxvt_font_xft::draw (rxvt_drawable &d, int x, int y,
+                      const text_t *text, int len,
+                      int fg, int bg)
+ {
+-  XftGlyphSpec *enc = rxvt_temp_buf<XftGlyphSpec> (len);
++  XftGlyphSpec *enc = rxvt_temp_buf<XftGlyphSpec> (len * 4);
+   XftGlyphSpec *ep = enc;
+ 
+   dTermDisplay;
+@@ -1475,12 +1695,38 @@ rxvt_font_xft::draw (rxvt_drawable &d, int x, int y,
+   int y_ = buffered ? 0 : y;
+ 
+   while (len)
+-    {
+-      int cwidth = term->fwidth;
+-      FcChar32 chr = *text++; len--;
++      {
++        int cwidth = term->fwidth;
++
++#ifdef HAVE_HARFBUZZ
++        if (hb.hb_font && (IS_COMPOSE (*text) || needs_harfbuzz_shaping (*text)))
++          {
++            uint32_t cluster [HB_CLUSTER_MAX];
++            int cells = 0;
++            int ncp = hb_build_cluster (text, len, cluster, cells);
++
++            uint32_t glyph;
++
++            if (ncp > 1 && shape_to_glyph (cluster, ncp, glyph))
++              {
++                ep->glyph = glyph;
++                ep->x = x_;
++                ep->y = y_ + ascent;
++                ++ep;
++
++                x_   += cwidth * cells;
++                text += cells;
++                len  -= cells;
++                continue;
++              }
++          }
++#endif
++
++        FcChar32 chr = *text++; len--;
++
+ 
+-      while (len && *text == NOCHAR)
+-        text++, len--, cwidth += term->fwidth;
++        while (len && *text == NOCHAR)
++          text++, len--, cwidth += term->fwidth;
+ 
+       if (chr != ' ') // skip spaces
+         {
+diff --git a/src/rxvtfont.h b/src/rxvtfont.h
+index 40bdc7f..39c0762 100644
+--- a/src/rxvtfont.h
++++ b/src/rxvtfont.h
+@@ -58,6 +58,11 @@ struct rxvt_font
+                      const text_t *text, int len,
+                      int fg, int bg) = 0;
+ 
++  virtual bool shape_to_glyph (const uint32_t *cp, int ncp, uint32_t &glyph)
++  {
++    return false;
++  }
++
+   void unref ()
+   {
+     clear ();
+@@ -65,6 +70,11 @@ struct rxvt_font
+   }
+ };
+ 
++#ifdef HAVE_HARFBUZZ
++# define HB_CLUSTER_MAX 32
++int hb_build_cluster (const text_t *text, int len, uint32_t *out, int &cells);
++#endif
++
+ struct rxvt_fallback_font;
+ 
+ struct rxvt_fontset
+@@ -90,6 +100,10 @@ struct rxvt_fontset
+   int find_font (const char *name) const;
+   bool realize_font (int i);
+ 
++#ifdef HAVE_HARFBUZZ
++  int find_shaping_font (const uint32_t *cp, int ncp);
++#endif
++
+   rxvt_font *operator [] (int id) const
+   {
+     return fonts[id >> 1];
+diff --git a/src/rxvthb.C b/src/rxvthb.C
+new file mode 100644
+index 0000000..cb0e516
+--- /dev/null
++++ b/src/rxvthb.C
+@@ -0,0 +1,33 @@
++#include "../config.h"
++#include "rxvt.h"
++#include "rxvthb.h"
++
++#ifdef HAVE_HARFBUZZ
++
++rxvt_hb_font::~rxvt_hb_font ()
++{
++  unload ();
++}
++
++bool
++rxvt_hb_font::load (FT_Face face)
++{
++  if (!face)
++    return false;
++
++  hb_font = hb_ft_font_create_referenced (face);
++
++  return hb_font != 0;
++}
++
++void
++rxvt_hb_font::unload ()
++{
++  if (hb_font)
++    {
++      hb_font_destroy (hb_font);
++      hb_font = 0;
++    }
++}
++
++#endif
+diff --git a/src/rxvthb.h b/src/rxvthb.h
+new file mode 100644
+index 0000000..e436f53
+--- /dev/null
++++ b/src/rxvthb.h
+@@ -0,0 +1,18 @@
++#ifndef RXVTHB_H_
++#define RXVTHB_H_
++#ifdef HAVE_HARFBUZZ
++# include <hb.h>
++# include <hb-ft.h>
++
++struct rxvt_hb_font
++{
++  hb_font_t *hb_font;
++
++  rxvt_hb_font () : hb_font (0) { }
++  ~rxvt_hb_font ();
++
++  bool load (FT_Face face);
++  void unload ();
++};
++#endif
++#endif
+diff --git a/src/screen.C b/src/screen.C
+index bede4d5..fb85fcb 100644
+--- a/src/screen.C
++++ b/src/screen.C
+@@ -788,6 +788,74 @@ rxvt_term::scr_scroll_text (int row1, int row2, int count) noexcept
+   return count;
+ }
+ 
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++static unicode_t
++scr_cell_base (text_t t)
++{
++  while (compose_char *cc = rxvt_composite [t])
++    t = cc->c1;
++
++  return t;
++}
++
++static bool
++scr_emoji_continues (text_t *tp, text_t *start, unicode_t c)
++{
++  bool joiner = c == 0x200D || IN_RANGE_INC (c, 0xFE00, 0xFE0F);
++  bool skin   = IN_RANGE_INC (c, 0x1F3FB, 0x1F3FF);
++
++  if (!joiner && !skin && !IS_EMOJI_BASE (c))
++    return false;
++
++  while (*tp == NOCHAR && tp > start)
++    tp--;
++
++  compose_char *pcc = rxvt_composite [*tp];
++
++  if (pcc && pcc->c2 == 0x200D)
++    return true;
++
++  return (joiner || skin) && IS_EMOJI_BASE (scr_cell_base (*tp));
++}
++
++static void
++scr_group_emoji (line_t &l, int col, int ncol, rxvt_fontset *fs)
++{
++  int s = col;
++
++  while (s > 0)
++    {
++      int p = s - 1;
++
++      while (p > 0 && l.t[p] == NOCHAR)
++        p--;
++
++      compose_char *pcc = rxvt_composite [l.t[p]];
++
++      if (!((pcc && pcc->c2 == 0x200D)
++            || IN_RANGE_INC (scr_cell_base (l.t[s]), 0x1F3FB, 0x1F3FF)))
++        break;
++
++      s = p;
++    }
++
++  uint32_t cluster [HB_CLUSTER_MAX];
++  int cells = 0;
++  int ncp = hb_build_cluster (l.t + s, ncol - s, cluster, cells);
++
++  if (ncp < 2)
++    return;
++
++  int fid = fs->find_shaping_font (cluster, ncp);
++
++  if (fid < 0)
++    return;
++
++  for (int i = s; i < s + cells && i < ncol; i++)
++    l.r[i] = SET_FONT (l.r[i], fid);
++}
++#endif
++
+ /* ------------------------------------------------------------------------- */
+ /*
+  * Add text given in <str> of length <len> to screen struct
+@@ -878,7 +946,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+           CLEAR_SELECTION ();
+         }
+ 
+-      if (ecb_unlikely (screen.flags & Screen_WrapNext))
++      if (ecb_unlikely (screen.flags & Screen_WrapNext)
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++          && !scr_emoji_continues (line->t + ncol - 1, line->t, c)
++#endif
++         )
+         {
+           scr_do_wrap ();
+ 
+@@ -925,6 +997,39 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+       if (ecb_unlikely (screen.flags & Screen_Insert))
+         scr_insdel_chars (width, INSERT);
+ 
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++      if (ecb_unlikely (width > 0 && screen.cur.col > 0))
++        {
++          int back = screen.flags & Screen_WrapNext ? 0 : 1;
++          text_t *tp = line->t + screen.cur.col - back;
++          rend_t *rp = line->r + screen.cur.col - back;
++
++          while (*tp == NOCHAR && tp > line->t)
++            tp--, rp--;
++
++          if (scr_emoji_continues (tp, line->t, c)
++              && rxvt_composite.expand (*tp) < HB_CLUSTER_MAX - 1)
++            {
++              line->touch ();
++
++              *tp = rxvt_composite.compose (*tp, c, false);
++              *rp = SET_FONT (*rp, FONTSET (*rp)->find_font (*tp));
++              if (!(screen.flags & Screen_WrapNext))
++                for (int span = screen.cur.col - (tp - line->t);
++                     span < width && screen.cur.col < ncol;
++                     span++)
++                  {
++                    line->t[screen.cur.col] = NOCHAR;
++                    line->r[screen.cur.col] = *rp;
++                    screen.cur.col++;
++                  }
++
++              scr_group_emoji (*line, tp - line->t, ncol, FONTSET (*rp));
++              continue;
++            }
++        }
++#endif
++
+       if (width != 0)
+         {
+ #if !UNICODE_3
+@@ -978,6 +1083,8 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+                       while (*tp == NOCHAR && tp > linep->t)
+                         tp--, rp--;
+ 
++                      if (!IS_EMOJI_BASE (*tp))
++                        {
+                       // first try to find a precomposed character
+                       unicode_t n = rxvt_compose (*tp, c);
+                       if (n == NOCHAR)
+@@ -985,6 +1092,7 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+ 
+                       *tp = n;
+                       *rp = SET_FONT (*rp, FONTSET (*rp)->find_font (*tp));
++                        }
+                     }
+                   rend = SET_FONT (rstyle, GET_FONT(*rp));
+                 }
+@@ -1016,6 +1124,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+ 
+           line->touch ();
+ 
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++          unicode_t emoji_c = c;
++          int emoji_col = screen.cur.col;
++#endif
++
+           do
+             {
+               line->t[screen.cur.col] = c;
+@@ -1045,6 +1158,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+ 
+ end_of_line:
+           ;
++
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++          if (ecb_unlikely (IS_EMOJI_BASE (emoji_c)))
++            scr_group_emoji (*line, emoji_col, ncol, FONTSET (rstyle));
++#endif
+         }
+ #if ENABLE_COMBINING
+       else // width == 0
+@@ -1083,10 +1201,15 @@ end_of_line:
+               // first try to find a precomposed character
+               unicode_t n = rxvt_compose (*tp, c);
+               if (n == NOCHAR)
+-                n = rxvt_composite.compose (*tp, c);
++                n = rxvt_composite.compose (*tp, c,
++                      !(c == 0x200D || IN_RANGE_INC (c, 0xFE00, 0xFE0F)));
+ 
+               *tp = n;
+               *rp = SET_FONT (*rp, FONTSET (*rp)->find_font (*tp));
++
++#ifdef HAVE_HARFBUZZ
++              scr_group_emoji (*linep, tp - linep->t, ncol, FONTSET (*rp));
++#endif
+             }
+         }
+ #endif
+@@ -2567,8 +2690,21 @@ rxvt_term::scr_remap_chars (line_t &l) noexcept
+ 
+   l.touch (); // maybe a bit of an overkill, but it's not performance-relevant
+ 
+-  for (int i = ncol; i--; )
+-    l.r[i] = SET_FONT (l.r[i], FONTSET (l.r[i])->find_font (l.t[i]));
++  for (int i = 0; i < ncol; i++)
++    {
++      l.r[i] = SET_FONT (l.r[i], FONTSET (l.r[i])->find_font (l.t[i]));
++
++      if (i > 0 && l.t[i] == NOCHAR)
++        {
++          l.r[i] = SET_FONT (l.r[i], GET_FONT (l.r[i - 1]));
++          continue;
++        }
++
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++      if (IS_EMOJI_BASE (l.t[i]))
++        scr_group_emoji (l, i, ncol, FONTSET (l.r[i]));
++#endif
++    }
+ }
+ 
+ void ecb_cold

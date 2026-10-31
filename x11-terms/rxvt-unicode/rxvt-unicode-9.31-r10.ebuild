@@ -30,7 +30,7 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="24-bit-color 256-color blink fading-colors +font-styles -font-width
-	gdk-pixbuf iso14755 -line-spacing +mousewheel +perl -smart-resize
+	gdk-pixbuf -harfbuzz iso14755 -line-spacing +mousewheel +perl -smart-resize
 	-use-space startup-notification unicode3 -wide-glyphs xft
 	${GENTOO_PERL_USESTRING}"
 
@@ -48,6 +48,7 @@ RDEPEND="
 	)
 	startup-notification? ( x11-libs/startup-notification )
 	xft? ( x11-libs/libXft )
+	harfbuzz? ( media-libs/harfbuzz )
 "
 DEPEND="
 	${RDEPEND}
@@ -65,6 +66,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.31-font-width-fix.patch
 	"${FILESDIR}"/${PN}-9.31-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.31-add-space-to-extent-test-chars.patch
+	"${FILESDIR}"/${PN}-9.31-harfbuzz.patch
 )
 DOCS=(
 	Changes
@@ -81,8 +83,10 @@ src_prepare() {
 	# Current patch is too aggressive to apply unconditionally, see Bug #801571
 	if use 24-bit-color; then
 		eapply "${WORKDIR}"/${COLOUR_PATCH_NAME}
-		eautoreconf
 	fi
+	# do the autoconf every time, as it help to regenerate configure script 
+	# when there are changes made by patches.
+	eautoreconf
 
 	# kill the rxvt-unicode terminfo file - #192083
 	sed -i -e "/rxvt-unicode.terminfo/d" doc/Makefile.in || die "sed failed"
@@ -101,6 +105,7 @@ src_configure() {
 		$(use_enable font-styles)
 		$(use_enable font-width)
 		$(use_enable gdk-pixbuf pixbuf)
+		$(use_enable harfbuzz)
 		$(use_enable iso14755)
 		$(use_enable line-spacing)
 		$(use_enable mousewheel)
