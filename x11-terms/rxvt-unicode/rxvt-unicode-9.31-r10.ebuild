@@ -1,4 +1,4 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 #
 # NOTE(gryf): this ebuild differ from official one by using 3rd party patches,
@@ -14,34 +14,45 @@
 #     chars
 EAPI=8
 
-inherit autotools desktop systemd prefix
+GENTOO_DEPEND_ON_PERL=no
+inherit autotools desktop systemd perl-module prefix
 
 COLOUR_PATCH_NAME="${PN}-9.31_24-bit-color_aur-9.31-20239117.patch"
 
 DESCRIPTION="rxvt clone with xft and unicode support"
 HOMEPAGE="http://software.schmorp.de/pkg/rxvt-unicode.html"
-SRC_URI="http://dist.schmorp.de/rxvt-unicode/Attic/${P}.tar.bz2
-	https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz"
+SRC_URI="
+	http://dist.schmorp.de/rxvt-unicode/Attic/${P}.tar.bz2
+	https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz
+"
 
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="24-bit-color 256-color blink fading-colors +font-styles -font-width
 	gdk-pixbuf iso14755 -line-spacing +mousewheel +perl -smart-resize
-	-use-space startup-notification unicode3 -wide-glyphs xft"
+	-use-space startup-notification unicode3 -wide-glyphs xft
+	${GENTOO_PERL_USESTRING}"
 
-RDEPEND=">=sys-libs/ncurses-5.7-r6:=
+RDEPEND="
 	dev-libs/libptytty
 	media-libs/fontconfig
+	>=sys-libs/ncurses-5.7-r6:=
 	x11-libs/libX11
 	x11-libs/libXrender
 	x11-libs/libXt
 	gdk-pixbuf? ( x11-libs/gdk-pixbuf )
-	perl? ( dev-lang/perl:= )
+	perl? (
+		${GENTOO_PERL_DEPSTRING}
+		dev-lang/perl:=
+	)
 	startup-notification? ( x11-libs/startup-notification )
-	xft? ( x11-libs/libXft )"
-DEPEND="${RDEPEND}
-	x11-base/xorg-proto"
+	xft? ( x11-libs/libXft )
+"
+DEPEND="
+	${RDEPEND}
+	x11-base/xorg-proto
+"
 BDEPEND="virtual/pkgconfig"
 
 PATCHES=(
@@ -50,6 +61,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-9.31-enable-wide-glyphs.patch
 	"${FILESDIR}"/${PN}-9.31-perl5.38.patch
 	"${FILESDIR}"/${PN}-9.31-osc-colour-command-termination.patch
+	"${FILESDIR}"/${PN}-9.31-cxx20.patch
 	"${FILESDIR}"/${PN}-9.31-font-width-fix.patch
 	"${FILESDIR}"/${PN}-9.31-line-spacing-fix.patch
 	"${FILESDIR}"/${PN}-9.31-add-space-to-extent-test-chars.patch
@@ -112,6 +124,11 @@ src_compile() {
 	sed -i \
 		-e 's/RXVT_BASENAME = "rxvt"/RXVT_BASENAME = "urxvt"/' \
 		"${S}"/doc/rxvt-tabbed || die
+}
+
+src_test() {
+	# Avoid perl-module_src_test (bug #963096)
+	default
 }
 
 src_install() {
