@@ -1,5 +1,5 @@
 diff --git a/configure.ac b/configure.ac
-index f623818..3a1eb74 100644
+index f623818..04be4e8 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -85,6 +85,7 @@ support_xim=yes
@@ -31,7 +31,7 @@ index f623818..3a1eb74 100644
    fi])
  
 +AC_ARG_ENABLE(harfbuzz,
-+  [  --enable-harfbuzz       enable harfbuzz shaping text engine],
++  [  --enable-harfbuzz       enable harfbuzz shaping of composed emoji (needs xft)],
 +  [if test x$enableval = xyes -o x$enableval = xno; then
 +    support_harfbuzz=$enableval
 +  fi])
@@ -97,24 +97,66 @@ index a3b22f2..bca1185 100644
  
  COMMON_DAEMON = rxvtdaemon.o
 diff --git a/src/main.C b/src/main.C
-index 10e5065..89e7c7a 100644
+index 10e5065..14efae8 100644
 --- a/src/main.C
 +++ b/src/main.C
-@@ -92,18 +92,21 @@ rxvt_pop_locale () noexcept
+@@ -92,23 +92,72 @@ rxvt_pop_locale () noexcept
  #if ENABLE_COMBINING
  class rxvt_composite_vec rxvt_composite;
  
 -text_t rxvt_composite_vec::compose (unicode_t c1, unicode_t c2)
++void rxvt_composite_vec::idx_insert (uint32_t i)
++{
++  uint32_t p = idx_hash (v[i].c1, v[i].c2) & idx_mask;
++
++  while (idx[p] != EMPTY)
++    p = (p + 1) & idx_mask;
++
++  idx[p] = i;
++}
++
++void rxvt_composite_vec::idx_rehash ()
++{
++  uint32_t size = idx_mask ? (idx_mask + 1) * 2 : 256;
++
++  free (idx);
++  idx = (uint32_t *)rxvt_malloc (size * sizeof (uint32_t));
++  memset (idx, 0xff, size * sizeof (uint32_t));
++  idx_mask = size - 1;
++
++  for (uint32_t i = 0; i < v.size (); i++)
++    idx_insert (i);
++}
++
++int rxvt_composite_vec::idx_find (unicode_t c1, unicode_t c2) const
++{
++  if (!idx_mask)
++    return -1;
++
++  uint32_t p = idx_hash (c1, c2) & idx_mask;
++
++  while (idx[p] != EMPTY)
++    {
++      const compose_char &cc = v[idx[p]];
++
++      if (cc.c1 == c1 && cc.c2 == c2)
++        return idx[p];
++
++      p = (p + 1) & idx_mask;
++    }
++
++  return -1;
++}
++
 +text_t rxvt_composite_vec::compose (unicode_t c1, unicode_t c2, bool dedup)
  {
    compose_char *cc;
  
    // break compose chains, as stupid readline really likes to duplicate
    // composing characters for some reason, near the end of a line.
--  cc = (*this)[c1];
 +  if (dedup)
 +    {
-+      cc = (*this)[c1];
+   cc = (*this)[c1];
    while (cc)
      {
        if (cc->c2 == c2) return c1;
@@ -123,9 +165,32 @@ index 10e5065..89e7c7a 100644
 +    }
  
    // check to see whether this combination already exists otherwise
-   for (cc = v.begin (); cc < v.end (); cc++)
+-  for (cc = v.begin (); cc < v.end (); cc++)
+-    if (cc->c1 == c1 && cc->c2 == c2)
+-      return COMPOSE_LO + (cc - v.begin ());
++  {
++    int i = idx_find (c1, c2);
++
++    if (i >= 0)
++      return COMPOSE_LO + i;
++  }
+ 
+   // allocate a new combination
+   if (v.size () == COMPOSE_HI - COMPOSE_LO + 1)
+@@ -123,6 +172,11 @@ text_t rxvt_composite_vec::compose (unicode_t c1, unicode_t c2)
+ 
+   v.push_back (compose_char (c1, c2));
+ 
++  if (v.size () * 2 > idx_mask)
++    idx_rehash ();
++  else
++    idx_insert (v.size () - 1);
++
+   return v.size () - 1 + COMPOSE_LO;
+ }
+ 
 diff --git a/src/rxvt.h b/src/rxvt.h
-index bad5eae..5549ec7 100644
+index bad5eae..5603930 100644
 --- a/src/rxvt.h
 +++ b/src/rxvt.h
 @@ -657,6 +657,10 @@ typedef struct _mwmhints
@@ -139,17 +204,46 @@ index bad5eae..5549ec7 100644
  /* convert pixel dimensions to row/column values.  Everything as int32_t */
  #define Pixel2Col(x)            Pixel2Width((int32_t)(x))
  #define Pixel2Row(y)            Pixel2Height((int32_t)(y))
-@@ -815,7 +819,7 @@ struct rxvt_composite_vec
+@@ -815,7 +819,10 @@ struct rxvt_composite_vec
  {
    vector<compose_char> v;
  
 -  text_t compose (unicode_t c1, unicode_t c2 = NOCHAR);
++  rxvt_composite_vec () : idx(0), idx_mask(0) { }
++  ~rxvt_composite_vec () { free (idx); }
++
 +  text_t compose (unicode_t c1, unicode_t c2 = NOCHAR, bool dedup = true);
    template<typename T> int expand (unicode_t c, T *r);
    int expand (unicode_t c) { return expand (c, (text_t *)0); }
    compose_char *operator [](text_t c)
+@@ -824,6 +831,25 @@ struct rxvt_composite_vec
+            ? &v[c - COMPOSE_LO]
+            : 0;
+   }
++
++private:
++  uint32_t *idx;
++  uint32_t  idx_mask;
++
++  enum { EMPTY = 0xffffffffU };
++
++  static uint32_t idx_hash (unicode_t c1, unicode_t c2)
++  {
++    uint32_t h = c1 * 0x9e3779b1U ^ c2 * 0x85ebca6bU;
++    h ^= h >> 15;
++    return h * 0xc2b2ae35U;
++  }
++
++  void idx_insert (uint32_t i);
++  void idx_rehash ();
++
++public:
++  int idx_find (unicode_t c1, unicode_t c2) const;
+ };
+ 
+ extern class rxvt_composite_vec rxvt_composite;
 diff --git a/src/rxvtfont.C b/src/rxvtfont.C
-index 27b0958..13461a0 100644
+index 27b0958..1b5bd43 100644
 --- a/src/rxvtfont.C
 +++ b/src/rxvtfont.C
 @@ -25,6 +25,7 @@
@@ -171,18 +265,57 @@ index 27b0958..13461a0 100644
  #define MAX_OVERLAP_ROMAN  (8 + 2)	// max. character width in 8ths of the base width
  #define MAX_OVERLAP_ITALIC (8 + 3)	// max. overlap for italic fonts
  
-@@ -1158,6 +1163,10 @@ struct rxvt_font_xft : rxvt_font
+@@ -1158,10 +1163,49 @@ struct rxvt_font_xft : rxvt_font
    FT_UInt glyph_cache [char_cache_max - char_cache_min + 1];
  #endif
  
 +#ifdef HAVE_HARFBUZZ
 +  rxvt_hb_font hb;
++
++  enum { shape_cache_size = 256, shape_cache_ncp_max = 12 };
++
++  struct shape_cache_entry
++  {
++    uint8_t  ncp;
++    bool     ok;
++    uint32_t glyph;
++    uint32_t cp [shape_cache_ncp_max];
++  };
++
++  shape_cache_entry *shape_cache;
++
++  static uint32_t shape_cache_hash (const uint32_t *cp, int ncp)
++  {
++    uint32_t h = 2166136261U;
++
++    for (int i = 0; i < ncp; i++)
++      {
++        h ^= cp [i];
++        h *= 16777619U;
++      }
++
++    return h;
++  }
 +#endif
 +
    rxvt_font_xft ()
    {
      f = 0;
-@@ -1175,6 +1184,10 @@ struct rxvt_font_xft : rxvt_font
++#ifdef HAVE_HARFBUZZ
++    shape_cache = 0;
++#endif
++  }
++
++#ifdef HAVE_HARFBUZZ
++  ~rxvt_font_xft ()
++  {
++    free (shape_cache);
+   }
++#endif
+ 
+   void clear ();
+ 
+@@ -1175,6 +1219,10 @@ struct rxvt_font_xft : rxvt_font
  
    bool has_char (unicode_t unicode, const rxvt_fontprop *prop, bool &careful) const;
  
@@ -193,17 +326,19 @@ index 27b0958..13461a0 100644
  protected:
    XftFont *f;
  };
-@@ -1184,6 +1197,9 @@ rxvt_font_xft::clear ()
+@@ -1184,6 +1232,11 @@ rxvt_font_xft::clear ()
  {
    if (f)
      {
 +#ifdef HAVE_HARFBUZZ
 +      hb.unload ();
++      free (shape_cache);
++      shape_cache = 0;
 +#endif
        XftFontClose (term->dpy, f);
        f = 0;
      }
-@@ -1395,6 +1411,15 @@ rxvt_font_xft::load (const rxvt_fontprop &prop, bool force_prop)
+@@ -1395,6 +1448,15 @@ rxvt_font_xft::load (const rxvt_fontprop &prop, bool force_prop)
      }
  #endif
  
@@ -219,7 +354,7 @@ index 27b0958..13461a0 100644
    return success;
  }
  
-@@ -1450,12 +1475,200 @@ rxvt_font_xft::has_char (unicode_t unicode, const rxvt_fontprop *prop, bool &car
+@@ -1450,12 +1512,325 @@ rxvt_font_xft::has_char (unicode_t unicode, const rxvt_fontprop *prop, bool &car
    return true;
  }
  
@@ -376,6 +511,25 @@ index 27b0958..13461a0 100644
 +  if (!hb.hb_font)
 +    return false;
 +
++  shape_cache_entry *e = 0;
++
++  if (ncp >= 1 && ncp <= shape_cache_ncp_max)
++    {
++      if (!shape_cache)
++        shape_cache = (shape_cache_entry *)
++                        rxvt_calloc (shape_cache_size, sizeof (shape_cache_entry));
++
++      e = shape_cache + (shape_cache_hash (cp, ncp) & (shape_cache_size - 1));
++
++      if (e->ncp == ncp && !memcmp (e->cp, cp, ncp * sizeof (uint32_t)))
++        {
++          if (e->ok)
++            glyph = e->glyph;
++
++          return e->ok;
++        }
++    }
++
 +  hb_glyph_info_t *gi = NULL;
 +  hb_glyph_position_t *gp = NULL;
 +  unsigned int gc = 0;
@@ -390,23 +544,129 @@ index 27b0958..13461a0 100644
 +  free (gi);
 +  free (gp);
 +
++  if (e)
++    {
++      e->ncp   = ncp;
++      e->ok    = ok;
++      e->glyph = ok ? glyph : 0;
++      memcpy (e->cp, cp, ncp * sizeof (uint32_t));
++    }
++
 +  return ok;
++}
++
++rxvt_fontset::shape_font_entry *
++rxvt_fontset::shape_cache_find (const uint32_t *cp, int ncp) const
++{
++  if (!shape_cache_mask)
++    return 0;
++
++  uint32_t p = shape_cache_hash (cp, ncp) & shape_cache_mask;
++
++  while (shape_cache [p].ncp)
++    {
++      const shape_font_entry &e = shape_cache [p];
++
++      if (e.ncp == ncp && !memcmp (e.cp, cp, ncp * sizeof (uint32_t)))
++        return shape_cache + p;
++
++      p = (p + 1) & shape_cache_mask;
++    }
++
++  return 0;
++}
++
++void
++rxvt_fontset::shape_cache_grow ()
++{
++  uint32_t old_size = shape_cache_mask ? shape_cache_mask + 1 : 0;
++  shape_font_entry *old = shape_cache;
++
++  uint32_t size = old_size ? old_size * 2 : 256;
++
++  shape_cache = (shape_font_entry *)rxvt_calloc (size, sizeof (shape_font_entry));
++  shape_cache_mask = size - 1;
++
++  for (uint32_t i = 0; i < old_size; i++)
++    if (old [i].ncp)
++      {
++        uint32_t p = shape_cache_hash (old [i].cp, old [i].ncp) & shape_cache_mask;
++
++        while (shape_cache [p].ncp)
++          p = (p + 1) & shape_cache_mask;
++
++        shape_cache [p] = old [i];
++      }
++
++  free (old);
++}
++
++void
++rxvt_fontset::shape_cache_insert (const uint32_t *cp, int ncp, int fid)
++{
++  if (shape_cache_used >= shape_cache_max)
++    return;
++
++
++  // keep the load factor at or below 1/2
++  if ((shape_cache_used + 1) * 2 > shape_cache_mask)
++    shape_cache_grow ();
++
++  uint32_t p = shape_cache_hash (cp, ncp) & shape_cache_mask;
++
++  while (shape_cache [p].ncp)
++    p = (p + 1) & shape_cache_mask;
++
++  shape_cache [p].ncp = ncp;
++  shape_cache [p].fid = fid;
++  memcpy (shape_cache [p].cp, cp, ncp * sizeof (uint32_t));
++
++  shape_cache_used++;
++}
++
++void
++rxvt_fontset::shape_cache_flush ()
++{
++  if (shape_cache_used)
++
++  free (shape_cache);
++  shape_cache = 0;
++  shape_cache_mask = 0;
++  shape_cache_used = 0;
 +}
 +
 +int
 +rxvt_fontset::find_shaping_font (const uint32_t *cp, int ncp)
 +{
++  bool cacheable = ncp >= 1 && ncp <= shape_cache_ncp_max;
++
++  if (cacheable)
++    if (shape_font_entry *e = shape_cache_find (cp, ncp))
++      {
++        return e->fid;
++      }
++
 +  find_font_idx (cp [0]);
 +
-+  for (unsigned int i = firstFont; i < fonts.size (); i++)
++  int fid = -1;
++
++  unsigned int last = min<unsigned int> (fonts.size (), fontCount);
++
++  for (unsigned int i = firstFont; i < last; i++)
 +    {
 +      uint32_t glyph;
 +
 +      if (fonts [i] && fonts [i]->shape_to_glyph (cp, ncp, glyph))
-+        return i << 1;
++        {
++          fid = i << 1;
++          break;
++        }
 +    }
 +
-+  return -1;
++  if (cacheable)
++    shape_cache_insert (cp, ncp, fid);
++
++  return fid;
 +}
 +
 +#endif
@@ -421,7 +681,7 @@ index 27b0958..13461a0 100644
    XftGlyphSpec *ep = enc;
  
    dTermDisplay;
-@@ -1477,6 +1690,31 @@ rxvt_font_xft::draw (rxvt_drawable &d, int x, int y,
+@@ -1477,8 +1852,34 @@ rxvt_font_xft::draw (rxvt_drawable &d, int x, int y,
    while (len)
      {
        int cwidth = term->fwidth;
@@ -452,9 +712,46 @@ index 27b0958..13461a0 100644
 +
        FcChar32 chr = *text++; len--;
  
++
        while (len && *text == NOCHAR)
+         text++, len--, cwidth += term->fwidth;
+ 
+@@ -1628,7 +2029,11 @@ rxvt_font_xft::draw (rxvt_drawable &d, int x, int y,
+ 
+ rxvt_fontset::rxvt_fontset (rxvt_term *term)
+ : fontdesc (0), term (term)
++#ifdef HAVE_HARFBUZZ
++, shape_cache (0), shape_cache_mask (0), shape_cache_used (0)
++#endif
+ {
++  // clear () releases the shape cache, so it must already be sane here
+   clear ();
+ }
+ 
+@@ -1650,6 +2055,10 @@ rxvt_fontset::clear ()
+   for (pagemap **p = fmap.begin (); p != fmap.end (); p++)
+     delete *p;
+ 
++#ifdef HAVE_HARFBUZZ
++  shape_cache_flush ();
++#endif
++
+   free (fontdesc); fontdesc = 0;
+ 
+   fonts.clear ();
+@@ -1702,6 +2111,10 @@ rxvt_fontset::new_font (const char *name, codeset cs)
+ void
+ rxvt_fontset::push_font (rxvt_font *font)
+ {
++#ifdef HAVE_HARFBUZZ
++  shape_cache_flush ();
++#endif
++
+   // the fontCount index is reserved for the overflow font, it is only
+   // necessary when we get fontCount or more fonts, as they cannot be
+   // represented in the rendition.
 diff --git a/src/rxvtfont.h b/src/rxvtfont.h
-index 40bdc7f..39c0762 100644
+index 40bdc7f..ecc36c0 100644
 --- a/src/rxvtfont.h
 +++ b/src/rxvtfont.h
 @@ -58,6 +58,11 @@ struct rxvt_font
@@ -492,75 +789,100 @@ index 40bdc7f..39c0762 100644
    rxvt_font *operator [] (int id) const
    {
      return fonts[id >> 1];
+@@ -131,6 +145,42 @@ private:
+   };
+   vector<pagemap *> fmap;
+ 
++#ifdef HAVE_HARFBUZZ
++  enum {
++    shape_cache_ncp_max = 8,
++    shape_cache_max     = 4096,
++  };
++
++  struct shape_font_entry
++  {
++    uint8_t  ncp;
++    int32_t  fid;
++    uint32_t cp [shape_cache_ncp_max];
++  };
++
++  shape_font_entry *shape_cache;
++  uint32_t          shape_cache_mask;
++  uint32_t          shape_cache_used;
++
++  static uint32_t shape_cache_hash (const uint32_t *cp, int ncp)
++  {
++    uint32_t h = 2166136261U;
++
++    for (int i = 0; i < ncp; i++)
++      {
++        h ^= cp [i];
++        h *= 16777619U;
++      }
++
++    return h;
++  }
++
++  shape_font_entry *shape_cache_find (const uint32_t *cp, int ncp) const;
++  void shape_cache_insert (const uint32_t *cp, int ncp, int fid);
++  void shape_cache_grow ();
++  void shape_cache_flush ();
++#endif
++
+   void clear ();
+   rxvt_font *new_font (const char *name, codeset cs);
+   void prepare_font (rxvt_font *font, codeset cs);
 diff --git a/src/rxvthb.C b/src/rxvthb.C
 new file mode 100644
-index 0000000..cb0e516
+index 0000000..160bff8
 --- /dev/null
 +++ b/src/rxvthb.C
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,20 @@
 +#include "../config.h"
 +#include "rxvt.h"
 +#include "rxvthb.h"
-+
 +#ifdef HAVE_HARFBUZZ
-+
-+rxvt_hb_font::~rxvt_hb_font ()
-+{
++rxvt_hb_font::~rxvt_hb_font () {
 +  unload ();
 +}
-+
-+bool
-+rxvt_hb_font::load (FT_Face face)
-+{
++bool rxvt_hb_font::load (FT_Face face) {
 +  if (!face)
 +    return false;
-+
 +  hb_font = hb_ft_font_create_referenced (face);
-+
 +  return hb_font != 0;
 +}
-+
-+void
-+rxvt_hb_font::unload ()
-+{
-+  if (hb_font)
-+    {
++void rxvt_hb_font::unload () {
++  if (hb_font) {
 +      hb_font_destroy (hb_font);
 +      hb_font = 0;
 +    }
 +}
-+
 +#endif
 diff --git a/src/rxvthb.h b/src/rxvthb.h
 new file mode 100644
-index 0000000..70266bd
+index 0000000..371ea30
 --- /dev/null
 +++ b/src/rxvthb.h
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,14 @@
 +#ifndef RXVTHB_H_
 +#define RXVTHB_H_
 +#ifdef HAVE_HARFBUZZ
 +# include <hb.h>
 +# include <hb-ft.h>
-+
-+struct rxvt_hb_font
-+{
++struct rxvt_hb_font {
 +  hb_font_t *hb_font;
-+
 +  rxvt_hb_font () : hb_font (0) { }
 +  ~rxvt_hb_font ();
-+
 +  bool load (FT_Face face);
 +  void unload ();
 +};
-+
 +#endif
-+#endif
++#endif 
 diff --git a/src/screen.C b/src/screen.C
-index bede4d5..2d106be 100644
+index bede4d5..bffd987 100644
 --- a/src/screen.C
 +++ b/src/screen.C
-@@ -788,6 +788,74 @@ rxvt_term::scr_scroll_text (int row1, int row2, int count) noexcept
+@@ -788,6 +788,76 @@ rxvt_term::scr_scroll_text (int row1, int row2, int count) noexcept
    return count;
  }
  
@@ -594,7 +916,7 @@ index bede4d5..2d106be 100644
 +  return (joiner || skin) && IS_EMOJI_BASE (scr_cell_base (*tp));
 +}
 +
-+static void
++static bool
 +scr_group_emoji (line_t &l, int col, int ncol, rxvt_fontset *fs)
 +{
 +  int s = col;
@@ -620,22 +942,24 @@ index bede4d5..2d106be 100644
 +  int ncp = hb_build_cluster (l.t + s, ncol - s, cluster, cells);
 +
 +  if (ncp < 2)
-+    return;
++    return false;
 +
 +  int fid = fs->find_shaping_font (cluster, ncp);
 +
 +  if (fid < 0)
-+    return;
++    return false;
 +
 +  for (int i = s; i < s + cells && i < ncol; i++)
 +    l.r[i] = SET_FONT (l.r[i], fid);
++
++  return true;
 +}
 +#endif
 +
  /* ------------------------------------------------------------------------- */
  /*
   * Add text given in <str> of length <len> to screen struct
-@@ -878,7 +946,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+@@ -878,7 +948,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
            CLEAR_SELECTION ();
          }
  
@@ -648,7 +972,7 @@ index bede4d5..2d106be 100644
          {
            scr_do_wrap ();
  
-@@ -925,6 +997,40 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+@@ -925,6 +999,40 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
        if (ecb_unlikely (screen.flags & Screen_Insert))
          scr_insdel_chars (width, INSERT);
  
@@ -689,7 +1013,7 @@ index bede4d5..2d106be 100644
        if (width != 0)
          {
  #if !UNICODE_3
-@@ -978,6 +1084,8 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+@@ -978,6 +1086,8 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
                        while (*tp == NOCHAR && tp > linep->t)
                          tp--, rp--;
  
@@ -698,15 +1022,43 @@ index bede4d5..2d106be 100644
                        // first try to find a precomposed character
                        unicode_t n = rxvt_compose (*tp, c);
                        if (n == NOCHAR)
-@@ -986,6 +1094,7 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+@@ -985,6 +1095,7 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+ 
                        *tp = n;
                        *rp = SET_FONT (*rp, FONTSET (*rp)->find_font (*tp));
++                        }
                      }
-+                    }
                    rend = SET_FONT (rstyle, GET_FONT(*rp));
                  }
+@@ -993,8 +1104,17 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+             }
+ #endif
+ 
++          int fitwidth = width;
++
++#if defined(HAVE_HARFBUZZ) && ENABLE_COMBINING
++          if (ecb_unlikely (IN_RANGE_INC (c, 0x1F1E6, 0x1F1FF))
++              && str < strend
++              && IN_RANGE_INC ((unicode_t)*str, 0x1F1E6, 0x1F1FF))
++            fitwidth = 2;
++#endif
++
+           // if the character doesn't fit into the remaining columns...
+-          if (ecb_unlikely (screen.cur.col > ncol - width && ncol >= width))
++          if (ecb_unlikely (screen.cur.col > ncol - fitwidth && ncol >= fitwidth))
+             {
+               if (screen.flags & Screen_Autowrap)
+                 {
+@@ -1004,7 +1124,7 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+                   --str;
+                 }
                else
-@@ -1016,6 +1125,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+-                screen.cur.col = ncol - width;
++                screen.cur.col = ncol - fitwidth;
+             }
+ 
+           // nuke the character at this position, if required
+@@ -1016,6 +1136,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
  
            line->touch ();
  
@@ -718,7 +1070,7 @@ index bede4d5..2d106be 100644
            do
              {
                line->t[screen.cur.col] = c;
-@@ -1045,6 +1159,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
+@@ -1045,6 +1170,11 @@ rxvt_term::scr_add_lines (const wchar_t *str, int len, int minlines) noexcept
  
  end_of_line:
            ;
@@ -730,7 +1082,7 @@ index bede4d5..2d106be 100644
          }
  #if ENABLE_COMBINING
        else // width == 0
-@@ -1083,10 +1202,15 @@ end_of_line:
+@@ -1083,10 +1213,32 @@ end_of_line:
                // first try to find a precomposed character
                unicode_t n = rxvt_compose (*tp, c);
                if (n == NOCHAR)
@@ -742,12 +1094,29 @@ index bede4d5..2d106be 100644
                *rp = SET_FONT (*rp, FONTSET (*rp)->find_font (*tp));
 +
 +#ifdef HAVE_HARFBUZZ
-+              scr_group_emoji (*linep, tp - linep->t, ncol, FONTSET (*rp));
++              if (ecb_unlikely (c == 0x200D
++                                || IN_RANGE_INC (c, 0xFE00, 0xFE0F)
++                                || IN_RANGE_INC (c, 0x1F3FB, 0x1F3FF)
++                                || IS_EMOJI_BASE (scr_cell_base (*tp))))
++                if (scr_group_emoji (*linep, tp - linep->t, ncol,
++                                     FONTSET (*rp)))
++                  {
++                    if (linep == line
++                        && tp == line->t + screen.cur.col - 1
++                        && !(screen.flags & Screen_WrapNext)
++                        && screen.cur.col < ncol
++                        && WCWIDTH (scr_cell_base (*tp)) < 2)
++                      {
++                        line->t[screen.cur.col] = NOCHAR;
++                        line->r[screen.cur.col] = *rp;
++                        screen.cur.col++;
++                      }
++                  }
 +#endif
              }
          }
  #endif
-@@ -2567,8 +2691,21 @@ rxvt_term::scr_remap_chars (line_t &l) noexcept
+@@ -2567,8 +2719,21 @@ rxvt_term::scr_remap_chars (line_t &l) noexcept
  
    l.touch (); // maybe a bit of an overkill, but it's not performance-relevant
  

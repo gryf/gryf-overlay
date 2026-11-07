@@ -18,6 +18,7 @@ GENTOO_DEPEND_ON_PERL=no
 inherit autotools desktop systemd perl-module prefix
 
 COLOUR_PATCH_NAME="${PN}-9.31_24-bit-color_aur-9.31-20239117.patch"
+COLOUR_PATCH_NAME="${PN}-9.31_24-bit-color_aur-9.31-20239117.patch"
 
 DESCRIPTION="rxvt clone with xft and unicode support"
 HOMEPAGE="http://software.schmorp.de/pkg/rxvt-unicode.html"
@@ -26,10 +27,14 @@ SRC_URI="
 	https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz
 "
 
+echo https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz
+echo https://dev.gentoo.org/~marecki/dists/${CATEGORY}/${PN}/${COLOUR_PATCH_NAME}.xz
+
+
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~sparc ~x86"
-IUSE="24-bit-color 256-color blink fading-colors +font-styles -font-width
+IUSE="-24-bit-color 256-color blink fading-colors +font-styles -font-width
 	gdk-pixbuf -harfbuzz iso14755 -line-spacing +mousewheel +perl -smart-resize
 	-use-space startup-notification unicode3 -wide-glyphs xft
 	${GENTOO_PERL_USESTRING}"
@@ -163,5 +168,17 @@ pkg_postinst() {
 		ewarn "You may or may not encounter visual glitches or stability issues. When in doubt,"
 		ewarn "rebuild =${CATEGORY}/${PF} with USE=-wide-glyphs (the default setting)."
 		ewarn
+	fi
+	if use harfbuzz; then
+		ewarn
+		ewarn "You have enabled harfbuzz support in ${PN}, which is UNOFFICIAL."
+		ewarn "You may or may not encounter visual glitches or performance issues. When in doubt,"
+		ewarn "rebuild =${CATEGORY}/${PF} with USE=-harfbuzz (the default setting)."
+		ewarn
+		einfo
+		einfo "If you have performance issue with color emoji/unicode, adjust Xft resource"
+		einfo "Xft.maxglyphmemory, which is by default 4 * 1024 * 1024 to something larger"
+		einfo "like 400 * 1024 * 1024"
+		einfo
 	fi
 }
